@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Model Diagnostics: Sensitivity, Specificity, ROC-AUC &amp; VIF | Impeccker Consulting</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Bricolage+Grotesque:wght@300;400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0d0d0d;--paper:#faf8f3;--cream:#f2ede3;
+  --accent:#7c3aed;--accent2:#2563eb;--accent3:#16a34a;
+  --gold:#d97706;--red:#e84c3d;--teal:#0d9488;
+  --muted:#6b6b6b;--border:#d4cfc4;--card:#fff;
+  --mono:"Space Mono",monospace;--sans:"Bricolage Grotesque",sans-serif;
+  --c1:#7c3aed;--c2:#2563eb;--c3:#16a34a;--c4:#d97706;--c5:#e84c3d;--c6:#0d9488
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--sans);background:var(--paper);color:var(--ink);min-height:100vh;overflow-x:hidden}
+#particles{position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.15}
+#scoreboard{position:fixed;top:16px;right:16px;background:var(--ink);color:var(--paper);border-radius:16px;padding:16px 20px;z-index:999;min-width:190px;box-shadow:4px 4px 0 var(--accent);font-family:var(--mono);font-size:.76em}
+#scoreboard .label{color:#888;font-size:.72em;letter-spacing:.1em;text-transform:uppercase}
+#scoreboard .big-score{font-size:1.9em;font-weight:700;color:var(--accent);line-height:1}
+.badges-row{display:flex;gap:5px;flex-wrap:wrap;margin-top:9px}
+.badge{width:30px;height:30px;border-radius:50%;background:#333;border:2px solid #555;display:flex;align-items:center;justify-content:center;font-size:.85em;transition:all .3s;filter:grayscale(1)}
+.badge.earned{filter:none;border-color:var(--gold);background:#222;transform:scale(1.15)}
+.prog-bar{height:4px;background:#333;border-radius:4px;margin-top:9px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--gold));transition:width .5s;border-radius:4px}
+.page-wrap{max-width:960px;margin:0 auto;padding:20px 20px 80px;position:relative;z-index:1}
+.hero{text-align:center;padding:44px 20px 32px;border-bottom:2px solid var(--ink);margin-bottom:36px}
+.hero .kicker{font-family:var(--mono);font-size:.72em;letter-spacing:.15em;color:var(--accent);text-transform:uppercase;margin-bottom:10px}
+.hero h1{font-size:clamp(1.9em,5vw,3.3em);font-weight:800;line-height:1.05;letter-spacing:-.02em}
+.hero h1 span{color:var(--accent)}
+.hero .sub{font-size:1em;color:var(--muted);margin-top:12px;max-width:540px;margin-inline:auto;line-height:1.65}
+.session-pills{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:18px}
+.pill{font-family:var(--mono);font-size:.72em;border:1.5px solid var(--border);border-radius:100px;padding:4px 13px;color:var(--muted)}
+.mod-nav{display:flex;border:2px solid var(--ink);border-radius:12px;overflow:hidden;margin-bottom:32px;flex-wrap:wrap}
+.mod-tab{flex:1;min-width:80px;padding:12px 5px;text-align:center;font-weight:600;font-size:.78em;cursor:pointer;border-right:2px solid var(--ink);background:white;transition:all .2s;line-height:1.3}
+.mod-tab:last-child{border-right:none}
+.mod-tab:hover{background:var(--cream)}
+.mod-tab.active{background:var(--ink);color:white}
+.mod-tab .num{font-family:var(--mono);font-size:1.1em;display:block}
+.module{display:none;animation:fadeSlide .3s ease}
+.module.active{display:block}
+@keyframes fadeSlide{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.sec-title{font-size:1.8em;font-weight:800;letter-spacing:-.02em;border-left:6px solid var(--accent);padding-left:14px;margin-bottom:5px}
+.sec-sub{color:var(--muted);margin-bottom:24px;font-size:.97em}
+.theory-slide{background:linear-gradient(135deg,#1e1b4b 0%,#1e3a5f 100%);color:white;border-radius:18px;padding:28px 32px;margin:20px 0;position:relative;overflow:hidden;border:2px solid #3730a3}
+.theory-slide .ts-tag{font-family:var(--mono);font-size:.65em;letter-spacing:.15em;color:#a5b4fc;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.theory-slide .ts-tag::before{content:"";width:30px;height:2px;background:#a5b4fc;display:block}
+.theory-slide h3{font-size:1.3em;font-weight:800;margin-bottom:14px;color:white}
+.theory-slide p{color:#c7d2fe;line-height:1.75;margin-bottom:12px;font-size:.94em}
+.theory-slide p:last-child{margin-bottom:0}
+.theory-slide strong{color:white}
+.theory-bullets{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.t-bullet{background:rgba(255,255,255,.07);border-radius:10px;padding:12px 14px;border-left:3px solid #818cf8;font-size:.88em;line-height:1.6;color:#c7d2fe}
+.t-bullet strong{color:#a5b4fc;display:block;margin-bottom:4px;font-size:.85em;text-transform:uppercase;letter-spacing:.06em}
+.story-block{display:grid;grid-template-columns:64px 1fr;gap:16px;background:var(--card);border:2px solid var(--ink);border-radius:16px;padding:22px;margin-bottom:18px;box-shadow:4px 4px 0 var(--ink)}
+.story-icon{font-size:2.6em;display:flex;align-items:flex-start;justify-content:center;padding-top:2px}
+.story-body h3{font-size:1.15em;font-weight:800;margin-bottom:7px}
+.story-body p{color:#444;line-height:1.72;margin-bottom:9px;font-size:.95em}
+.story-body p:last-child{margin-bottom:0}
+.math-story{background:var(--ink);color:var(--paper);border-radius:16px;padding:24px;margin:20px 0;position:relative;overflow:hidden}
+.math-story::before{content:"ALGORITHM DECODED";position:absolute;top:13px;right:18px;font-family:var(--mono);font-size:.6em;color:var(--accent);letter-spacing:.1em}
+.math-story h4{font-size:1em;color:var(--gold);margin-bottom:11px;font-weight:700}
+.formula-display{background:#1a1a1a;border-radius:10px;padding:13px 16px;font-family:var(--mono);font-size:1em;color:#7dd3fc;margin:11px 0;border-left:3px solid var(--accent)}
+.formula-parts{display:grid;gap:9px;margin-top:12px}
+.formula-part{display:flex;gap:11px;align-items:flex-start;background:#1a1a1a;border-radius:8px;padding:10px 12px}
+.fp-sym{font-family:var(--mono);color:#7dd3fc;min-width:90px;font-weight:700;font-size:.88em;padding-top:1px}
+.fp-desc{color:#ccc;font-size:.86em;line-height:1.65}
+.fp-desc strong{color:var(--paper)}
+.interactive{background:var(--cream);border:2px dashed var(--border);border-radius:16px;padding:24px;margin:20px 0}
+.interactive h4{font-size:1em;font-weight:700;margin-bottom:12px}
+.interactive h4 .tag{display:inline-block;background:var(--accent);color:white;font-size:.6em;padding:2px 9px;border-radius:100px;vertical-align:middle;margin-left:7px;font-family:var(--mono)}
+.slider-wrap{margin:12px 0}
+.slider-label{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-weight:600;font-size:.86em}
+.slider-val{font-family:var(--mono);background:var(--ink);color:var(--paper);padding:2px 9px;border-radius:6px;font-size:.81em}
+input[type=range]{width:100%;-webkit-appearance:none;height:6px;background:var(--border);border-radius:6px;outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--ink);cursor:pointer;border:3px solid white;box-shadow:0 0 0 2px var(--ink);transition:transform .2s}
+input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
+.btn{display:inline-flex;align-items:center;gap:6px;font-family:var(--sans);font-weight:700;font-size:.9em;padding:10px 20px;border:2px solid var(--ink);border-radius:10px;cursor:pointer;transition:all .2s;background:var(--ink);color:white}
+.btn:hover{transform:translateY(-2px);box-shadow:3px 3px 0 var(--accent)}
+.btn:active{transform:translateY(0);box-shadow:none}
+.btn-ghost{background:transparent;color:var(--ink)}
+.btn-ghost:hover{background:var(--cream);box-shadow:3px 3px 0 var(--ink)}
+.chart-box{background:white;border:2px solid var(--border);border-radius:12px;padding:12px;margin:12px 0}
+.quiz-block{background:#f5f0ff;border:2px solid var(--accent);border-radius:16px;padding:20px;margin:20px 0}
+.quiz-block h4{font-weight:700;margin-bottom:4px;color:#4c1d95}
+.quiz-block .q-prompt{font-size:.93em;color:var(--ink);margin:9px 0 13px;line-height:1.65}
+.quiz-opt{background:white;border:2px solid var(--border);border-radius:10px;padding:12px 15px;margin:6px 0;cursor:pointer;transition:all .2s;font-size:.91em;display:flex;align-items:flex-start;gap:10px;line-height:1.5}
+.quiz-opt:hover{border-color:var(--accent);background:#f5f0ff}
+.quiz-opt.correct{background:#dcfce7;border-color:var(--accent3)}
+.quiz-opt.incorrect{background:#fee2e2;border-color:var(--red)}
+.quiz-opt .marker{width:23px;height:23px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:.71em;flex-shrink:0;margin-top:1px}
+.q-feedback{margin-top:10px;padding:11px 14px;border-radius:10px;font-size:.88em;line-height:1.6;display:none}
+.q-feedback.ok{background:#dcfce7;color:#166534;border-left:4px solid var(--accent3)}
+.q-feedback.no{background:#fee2e2;color:#991b1b;border-left:4px solid var(--red)}
+.info-strip{background:#eff6ff;border-left:4px solid var(--accent2);padding:12px 15px;border-radius:6px;margin:11px 0;font-size:.9em;line-height:1.72}
+.warn-strip{background:#fff7ed;border-left:4px solid var(--gold);padding:12px 15px;border-radius:6px;margin:11px 0;font-size:.9em;line-height:1.72}
+.success-strip{background:#f0fdf4;border-left:4px solid var(--accent3);padding:12px 15px;border-radius:6px;margin:11px 0;font-size:.9em;line-height:1.72}
+.purple-strip{background:#f5f3ff;border-left:4px solid var(--accent);padding:12px 15px;border-radius:6px;margin:11px 0;font-size:.9em;line-height:1.72}
+.challenge-toggle{border:2px solid var(--ink);border-radius:14px;margin:12px 0;overflow:hidden;box-shadow:3px 3px 0 var(--ink);transition:box-shadow .2s}
+.challenge-toggle:hover{box-shadow:5px 5px 0 var(--accent)}
+.ch-header{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;cursor:pointer;background:white;user-select:none}
+.ch-header:hover{background:var(--cream)}
+.ch-left{display:flex;align-items:center;gap:13px}
+.ch-icon{font-size:1.8em}
+.ch-title{font-weight:800;font-size:1em}
+.ch-sub{color:var(--muted);font-size:.81em;margin-top:2px}
+.ch-badge{font-family:var(--mono);font-size:.65em;padding:3px 10px;border-radius:100px;border:1.5px solid}
+.ch-badge.hard{border-color:var(--red);color:var(--red)}
+.ch-badge.med{border-color:var(--gold);color:var(--gold)}
+.ch-arrow{font-size:1.1em;transition:transform .3s}
+.ch-arrow.open{transform:rotate(180deg)}
+.ch-body{display:none;padding:20px;border-top:2px solid var(--border);background:var(--cream)}
+.ch-body.open{display:block}
+.cmp-table{width:100%;border-collapse:collapse;margin:16px 0;border-radius:12px;overflow:hidden;border:2px solid var(--ink)}
+.cmp-table th{background:var(--ink);color:var(--paper);padding:12px 14px;text-align:left;font-family:var(--mono);font-size:.76em}
+.cmp-table td{padding:10px 14px;border-bottom:1px solid var(--border);font-size:.86em}
+.cmp-table tr:last-child td{border-bottom:none}
+.cmp-table tr:nth-child(even) td{background:var(--cream)}
+.divider{display:flex;align-items:center;gap:12px;margin:24px 0}
+.divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--border)}
+.divider span{font-family:var(--mono);font-size:.7em;color:var(--muted);letter-spacing:.1em;text-transform:uppercase}
+.mod-nav-btns{display:flex;justify-content:space-between;margin-top:40px;padding-top:20px;border-top:2px solid var(--border)}
+.clust-tab-bar{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0 10px}
+.clust-tab{font-family:var(--mono);font-size:.72em;padding:6px 14px;border:2px solid var(--border);border-radius:8px;background:white;cursor:pointer;transition:all .2s;font-weight:600}
+.clust-tab:hover{border-color:var(--ink);background:var(--cream)}
+.clust-tab.active{background:var(--ink);color:white;border-color:var(--ink)}
+.clust-panel{display:none}.clust-panel.active{display:block;animation:fadeSlide .3s ease}
+.flow-diagram{background:#0f172a;border-radius:14px;padding:20px;margin:16px 0;border:2px solid #1e293b;overflow-x:auto}
+.flow-row{display:flex;align-items:center;gap:0;min-width:560px}
+.flow-node{background:#1e293b;border:2px solid #334155;border-radius:10px;padding:10px 12px;text-align:center;font-size:.78em;min-width:90px;flex-shrink:0}
+.flow-node .fn-icon{font-size:1.3em;margin-bottom:3px}
+.flow-node .fn-label{font-weight:700;color:#e2e8f0;font-size:.82em}
+.flow-node .fn-sub{color:#94a3b8;font-size:.72em;margin-top:2px;line-height:1.3}
+.flow-node.active-node{background:#2d1b69;border-color:var(--accent)}
+.flow-node.result-node{background:#14532d;border-color:#16a34a}
+.flow-arrow{color:#475569;font-size:1.3em;padding:0 3px;flex-shrink:0}
+.dataset-box{background:var(--ink);color:var(--paper);border-radius:16px;padding:22px 26px;margin:20px 0;position:relative;overflow:hidden}
+.dataset-box::before{content:"LIVE DATASET";position:absolute;top:13px;right:18px;font-family:var(--mono);font-size:.6em;color:var(--gold);letter-spacing:.12em}
+.dataset-box h4{font-size:1em;color:var(--gold);margin-bottom:8px;font-weight:700}
+.ds-context{color:#bbb;font-size:.88em;line-height:1.7;margin-bottom:14px}
+.data-table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:.76em;margin-bottom:10px}
+.data-table th{background:#1f1f1f;color:var(--gold);padding:9px 11px;text-align:left;border-bottom:1px solid #333;white-space:nowrap}
+.data-table td{padding:8px 11px;border-bottom:1px solid #222;color:#ddd}
+.data-table td.hi{color:#7dd3fc;font-weight:700}
+.data-table td.c1{color:#c4b5fd;font-weight:700}
+.data-table td.c2{color:#93c5fd;font-weight:700}
+.data-table td.c3{color:#86efac;font-weight:700}
+.data-table td.c4{color:#fde68a;font-weight:700}
+.data-table td.c5{color:#fca5a5;font-weight:700}
+.analogy-box{display:grid;grid-template-columns:1fr 1fr;border:2px solid var(--ink);border-radius:14px;overflow:hidden;margin:16px 0}
+.ana-side{padding:18px}
+.ana-side:first-child{border-right:2px solid var(--ink)}
+.ana-side h5{font-weight:700;font-size:.81em;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+.ana-side p{font-size:.86em;line-height:1.72;color:#444}
+.ana-left{background:#fef9c3}
+.ana-right{background:#dbeafe}
+.clust-type-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin:20px 0}
+.clust-card{border:2px solid var(--ink);border-radius:14px;padding:18px;background:white;box-shadow:3px 3px 0 var(--ink);cursor:pointer;transition:all .22s;position:relative;overflow:hidden}
+.clust-card:hover{transform:translateY(-3px);box-shadow:5px 5px 0 var(--ink)}
+.clust-card.selected{background:var(--ink);color:white}
+.clust-card .cc-icon{font-size:2em;margin-bottom:8px}
+.clust-card .cc-tag{font-family:var(--mono);font-size:.62em;letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px}
+.clust-card .cc-name{font-weight:800;font-size:1em;margin-bottom:6px}
+.clust-card .cc-desc{font-size:.82em;line-height:1.6;color:#555}
+.clust-card.selected .cc-desc{color:#aaa}
+.clust-detail{background:var(--ink);color:white;border-radius:16px;padding:24px;margin-top:16px;display:none;animation:fadeSlide .3s ease}
+.clust-detail.show{display:block}
+.step-timeline{border-left:3px solid var(--accent);padding-left:20px;margin:16px 0}
+.step-item{margin-bottom:18px;position:relative}
+.step-item::before{content:"";position:absolute;left:-26px;top:6px;width:12px;height:12px;border-radius:50%;background:var(--accent)}
+.step-num{font-family:var(--mono);font-size:.68em;color:var(--accent);font-weight:700;letter-spacing:.1em;margin-bottom:3px}
+.step-title{font-weight:700;margin-bottom:4px;font-size:.97em}
+.step-desc{font-size:.86em;color:#555;line-height:1.65}
+.trophy-screen{text-align:center;padding:52px 20px}
+.trophy-screen .big-trophy{font-size:4.5em;margin-bottom:16px;animation:bounce 1s infinite alternate}
+@keyframes bounce{from{transform:translateY(0)}to{transform:translateY(-13px)}}
+.trophy-screen h2{font-size:2.2em;font-weight:800;margin-bottom:10px}
+#finalScore{font-family:var(--mono);font-size:2.6em;font-weight:700;color:var(--accent);margin:20px 0;display:block}
+.final-breakdown{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;max-width:580px;margin:20px auto}
+.fb-card{background:white;border:2px solid var(--border);border-radius:10px;padding:13px;text-align:center}
+.fb-card .icon{font-size:1.8em}
+.fb-card .label{font-size:.76em;color:var(--muted);margin-top:4px}
+.confetti-piece{position:fixed;pointer-events:none;z-index:9999;font-size:1.1em;animation:fall linear forwards}
+@keyframes fall{0%{transform:translateY(-20px) rotate(0deg);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}
+.cluster-visual{border:2px solid var(--border);border-radius:12px;overflow:hidden;background:white;margin:16px 0}
+.cluster-visual-title{background:var(--ink);color:var(--paper);font-family:var(--mono);font-size:.7em;padding:8px 14px;letter-spacing:.08em}
+/* Elbow chart styles */
+.elbow-wrap{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+/* Comparison grid */
+.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}
+.compare-card{border:2px solid var(--border);border-radius:12px;padding:16px}
+.compare-card h5{font-weight:800;margin-bottom:8px;font-size:.95em}
+.compare-card p{font-size:.84em;color:#555;line-height:1.65}
+/* Use case strip */
+.use-case-strip{background:linear-gradient(135deg,#1e1b4b,#0f172a);border-radius:14px;padding:20px;margin:16px 0;border:1px solid #3730a3}
+.uc-tag{font-family:var(--mono);font-size:.65em;color:#a5b4fc;letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px}
+.uc-title{font-size:1.05em;font-weight:800;color:white;margin-bottom:10px}
+.uc-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.uc-item{background:rgba(255,255,255,.06);border-radius:8px;padding:11px;border-left:3px solid #818cf8}
+.uc-item .uc-org{font-family:var(--mono);font-size:.68em;color:#a5b4fc;margin-bottom:4px;font-weight:700}
+.uc-item .uc-desc{font-size:.83em;color:#c7d2fe;line-height:1.65}
+/* cluster colour chips */
+.chip{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:middle}
+@media(max-width:640px){
+  #scoreboard{top:auto;bottom:12px;right:12px;min-width:150px}
+  .analogy-box,.theory-bullets,.elbow-wrap,.compare-grid,.uc-grid{grid-template-columns:1fr}
+  .ana-side:first-child{border-right:none;border-bottom:2px solid var(--ink)}
+  .story-block{grid-template-columns:1fr}
+  .story-icon{display:none}
+  .clust-type-grid{grid-template-columns:1fr 1fr}
+}
+.confusion-wrap{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;margin:16px 0}
+.conf-matrix{border:2px solid var(--ink);border-radius:14px;overflow:hidden;background:white}
+.conf-row{display:grid;grid-template-columns:130px 1fr 1fr}
+.conf-cell{padding:16px 10px;text-align:center;border:1px solid var(--border);font-family:var(--mono)}
+.conf-head{background:var(--ink);color:var(--paper);font-weight:700;font-size:.72em;display:flex;align-items:center;justify-content:center;letter-spacing:.05em}
+.conf-label{background:var(--cream);font-weight:700;font-size:.76em;display:flex;align-items:center;justify-content:center;text-align:center;padding:8px}
+.conf-tp{background:#dcfce7}.conf-tn{background:#dbeafe}.conf-fp{background:#fef3c7}.conf-fn{background:#fee2e2}
+.conf-cell .cnum{font-size:1.7em;font-weight:800;display:block}
+.conf-cell .clabel{font-size:.62em;letter-spacing:.08em;text-transform:uppercase;color:#555;margin-top:2px}
+.metric-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+.metric-card{border:2px solid var(--ink);border-radius:12px;padding:14px;text-align:center;box-shadow:3px 3px 0 var(--ink)}
+.metric-card .mval{font-family:var(--mono);font-size:1.9em;font-weight:800}
+.metric-card .mlabel{font-size:.72em;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:2px}
+.metric-card .mform{font-family:var(--mono);font-size:.68em;color:#888;margin-top:6px}
+.patient-strip{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0;padding:14px;background:var(--cream);border-radius:12px;border:2px dashed var(--border)}
+.p-chip{width:52px;padding:5px 3px;border-radius:8px;text-align:center;font-family:var(--mono);font-size:.62em;border:2px solid;background:white;line-height:1.35}
+.p-chip .pscore{font-weight:800;font-size:1.05em;display:block}
+.chip-tp{border-color:#16a34a;background:#dcfce7}
+.chip-tn{border-color:#2563eb;background:#dbeafe}
+.chip-fp{border-color:#d97706;background:#fef3c7}
+.chip-fn{border-color:#dc2626;background:#fee2e2}
+.legend-row{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:.78em}
+.legend-item{display:flex;align-items:center;gap:6px}
+.legend-dot{width:13px;height:13px;border-radius:4px;border:2px solid}
+.roc-wrap{display:grid;grid-template-columns:1.15fr 1fr;gap:18px;align-items:start}
+.auc-badge{background:var(--ink);color:white;border-radius:14px;padding:18px;text-align:center;margin-top:10px}
+.auc-badge .aucval{font-family:var(--mono);font-size:2.4em;font-weight:800;color:var(--gold)}
+.auc-badge .auclabel{font-size:.7em;letter-spacing:.1em;text-transform:uppercase;color:#aaa;margin-top:2px}
+.vif-wrap{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+.vif-display{border:3px solid var(--ink);border-radius:16px;padding:22px;text-align:center;box-shadow:4px 4px 0 var(--ink)}
+.vif-display .vifnum{font-family:var(--mono);font-size:3em;font-weight:800;line-height:1}
+.vif-zone-track{position:relative;height:14px;border-radius:8px;margin:16px 0 8px;background:linear-gradient(90deg,#16a34a 0%,#16a34a 25%,#d97706 25%,#d97706 50%,#dc2626 50%,#dc2626 100%)}
+.vif-zone-marker{position:absolute;top:-7px;width:4px;height:28px;background:var(--ink);border-radius:2px;transition:left .2s}
+.vif-zone-labels{display:flex;justify-content:space-between;font-family:var(--mono);font-size:.62em;color:var(--muted)}
+.vif-verdict{margin-top:14px;padding:12px 14px;border-radius:10px;font-size:.86em;line-height:1.6;text-align:left}
+.verdict-ok{background:#f0fdf4;color:#166534;border-left:4px solid #16a34a}
+.verdict-warn{background:#fff7ed;color:#92400e;border-left:4px solid #d97706}
+.verdict-bad{background:#fee2e2;color:#991b1b;border-left:4px solid #dc2626}
+.world-split{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:18px 0}
+.world-card{border:2px solid var(--ink);border-radius:16px;padding:18px;box-shadow:4px 4px 0 var(--ink)}
+.world-card h4{font-size:1.05em;font-weight:800;margin-bottom:8px}
+.world-card .wtag{font-family:var(--mono);font-size:.65em;letter-spacing:.1em;text-transform:uppercase;padding:3px 10px;border-radius:100px;display:inline-block;margin-bottom:8px}
+.world-card ul{padding-left:18px;font-size:.87em;line-height:1.75;color:#444}
+@media(max-width:640px){
+  .confusion-wrap,.roc-wrap,.vif-wrap,.world-split,.conf-row{grid-template-columns:1fr}
+  .conf-row{grid-template-columns:90px 1fr 1fr}
+}
+</style>
+</head>
+<body>
+<canvas id="particles"></canvas>
+
+<div id="scoreboard">
+  <div class="label">Your Score</div>
+  <div class="big-score" id="sc-pts">0</div>
+  <div style="color:#888;font-size:.68em;margin-top:1px">/ 225 pts</div>
+  <div class="prog-bar"><div class="prog-fill" id="sc-prog" style="width:0%"></div></div>
+  <div class="badges-row">
+    <div class="badge" id="b1" title="Confusion Matrix Rookie">🧩</div>
+    <div class="badge" id="b2" title="Sensitivity Sleuth">🚨</div>
+    <div class="badge" id="b3" title="ROC Ranger">📈</div>
+    <div class="badge" id="b4" title="VIF Vigilante">🧮</div>
+    <div class="badge" id="b5" title="Metrics Maven">🎓</div>
+    <div class="badge" id="b6" title="Diagnostics Champion">🏆</div>
+  </div>
+</div>
+
+<div class="page-wrap">
+<div style="display:flex;align-items:center;justify-content:space-between;padding:18px 0 22px;border-bottom:2px solid var(--ink);margin-bottom:0">
+  <div id="logo-placeholder">
+    <img src="data:image/png;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCADNAbMDASIAAhEBAxEB/8QAHAABAAIDAQEBAAAAAAAAAAAAAAYHAwQFAggB/8QASBAAAQQBAgQCBgcFBgUBCQAAAQACAwQFBhEHEiExE0EUIlFhcYEIIzJSkaGxFRY2QsEkM2Jyc7I0gpPR4VUYJkNEVmNkdJL/xAAbAQEAAgMBAQAAAAAAAAAAAAAAAgMBBAUGB//EADYRAAICAQICCAUEAgAHAAAAAAABAgMEESESMQUTFDJBYXGxUYGRocEVItHhM/AGNEJSU3Lx/9oADAMBAAIRAxEAPwD4yREQBERAEREAREQBERAEREAREQBERAEREAREQBEXqJj5ZGxxtL3uOzWgbklAGNc94Yxpc49AANyV+Oa5ri1wLSOhBHUL6J4ZcM6WkdH2deavrtksQwGatVf2bsNwT71QOTndkcxZsRRnexO5zGAdtz0AVk65QScvEpqvha5KO+m3zNRoLnBrQST0AHmv2Rj43lkjHMc07FrhsQvojhVwroac0zPrTWsLTIyBz69WUdG9OhcD577bKhc7dkzGdtXhHs+zKXBjevfyCTrlBJy8RVfC2UlDfT3NBoLiAAST2AW9bw+VqVWWrOPtQwP7PfEQPxX0PwE4LxRxQ6k1XXD5HbOr1HjcD2FwXT4xPhh1A+nJXjkpvaGvhc0cpGy6OH0Tbkxb10+Bzb+maa7uqW/xfwPlZZGQyvjdIyJ7mN+04NJA+Kk2t9LHEu9PoF0uOkPQ+cR+65b/AAlvVG37eKvV47EdyItZG8dCQCSPnstF0Tjb1U9nyOn1sXX1kd0QZZGwyuidK2NxY07OcB0ClevdKHEyuv4/mkx8jj8Yjv8AZPuWThXbrfteXF3445atqM7MeNwX9APy3WHRKNvVz2ZlWxlDjjuiGIpdrrShxTv2hjw6ShIfnEfYVEVG2qVU3Ca0aMwnGyKlF7MIiKsmEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBfQn0Z+Fvpcker89W+oad6cLx9s+T1X/ArQUutdVxidjhjahD7D/I+xv5L7QjZVxeM5ImNhrVo+jQNg1oC6fR+IrH1k+SOD010i6I9TV3pfYo36XOqW1cJU03XkLZp3CSUA/wAnUbKO/Ro4YenTs1ZnK+9eM/2SJ46OcNwSQtWvhZ+LPGa3YnLn4inLs53kWA9gV9P069bHUI4IGNiggYAAOgAAV1FParndPuo08vJ/T8WONX32t/mUp9LbU4oaZradgftJdPO7lPZrSOiif0a+FrshYi1Zna/9ljO9SJ4+2ehDvgsD8bY4tcbrEgc84mlIN3dwA3bdvz2X1BQqV6NOGnUibFBCwMYwDoAFmintd7tl3UYy8n9OxI48O+1v5amUANAa0AADYAeSofjf/FB+H9FfKobjf/FB+H9F6XC/yHnMbvkFhkj8OSvYjEteUcsjD5j/ALqu9RYuxpXPQ26bi6uXeJXk933T71P0u0ocxipcVZ23cCYHn+R+x2Kq6a6NWTX1sF+5fc9J0bmumfBLuv7G2bFexC2XlE1K5HzPaeoO/f5hVpqLFTaYz0Fuvu6sXiWu/wBoGx2PvCl2iZJjireFtDlnx0p5Qe5aSV0rVODLY6XFWujJOsbvNj+m3yXPtxl0lhRuh347Pz0Nuu54WS6pdx/k2hZhtU453sbLVvQgyR+XUdfnuqw1rp9+Ev8APEfEpTEuhkHYdT6vxCmeijPHj7uAtt2tUH843+6fYupPUr5bHS4q3sGyD6p5/wDhv8ilmMuksKN0f8kdn56GYXvCyXW+5L7alMItrK0Z8dkJqdhpbJG4g7+fvWqvKneCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiALPRq2LtyKpVidLNK4NYxo3JKwK9foqaI/aebdqi9DvWpn+zE9jJ2P6qyqt2zUF4lGTfHHqlZLki9eD+jq+jNHVqDWA2ZB4k8m3VxPXY/Dda/GvOy4nSL6tMg3b721omDuec8v8AVTvt7lWzqf718UjZkaH0MIDEWnsZjyuafkF6O+PVUqqHN7Hh8Szr8mWTdyju/wAI63CDSEOkdJV6xYPS5miSw7brzEDcLDxu1C7A6GtCvIW3bY8GsB3LiQpyqvy9J2s+KkNeUNkxODa2Y+YfI4OG3y2WL49VSqq+b2/kYk+05byLuUd3+EdLgho5mk9IxeNGBfufW2Xee5U+QAAADoAi2qalVBQXgc/KyJZFsrJeIVDcb/4oPw/or5VDcb/4oPw/ot/D/wAhnG75AEBIO4RF1zoGHJBtbMVNQxt3a/atcaB02PQOK27UZhsOb7DuF+1/Dka+rP1hmHK4ez2FCx4pxskcXzV/qpne0gDY/MFcfHr7JmSrXdnuvVc0dG2faMZTfejs/Q18iwR3qmfjGxi+puNA+1GQfWPwWeyzwrDg3oN92n3eS/azo93wzjmglaWSD2ghZJ45BWHi/wB5C8xkf4NzyH5hZqr7JmOK7tm69VzMWT7RjKT70PYjHEbFftDFszEDB49fZljbu9vQAqt1ddR7GyFkrQ6KQcjwR5FVVqzEOwuZlqdTF9qJ5/maR3XnencHqLusiv2y9zs9FZXW18Eua9jkoiLhHVCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgM9GtLduQ1IGl0szwxgHmSvu/hdp2HTGisfjI2cjxGHy/5yBuvlz6NOlzn+IENqaMmtQHjF23TmBGwX2V5bLtdE07ux+h5X/iPK0UaF6v8GhqC6zH4maw87bDlHxJ2H6rQ0PiX4vCxiwAbk3r2H+bne38Nl7zEf7RytekNnwRHnsN+W7fzC7YAA2HZdKK47XL4bL8nAnLqsdVrnLd+nh/JoahvHG4a1dazxHxROc1g7uIHZc/QuFbh8OQSXzWZX2JHHvu9xdt8t9llyzTey9WkCQ2Bwnedujh1GxXaA2GwWYrjtcvhsvyYnLqsdVrnLd+ngERFsGmFQ3G/wDig/D+ivlUNxv/AIoPw/otrD/yGxjd8gCIi650AulADar7F7Wjl5Hjbq53q8p/ULmraxkvhWm77bO9Xr5de61sup2Q1jzW69UX49nBPR8nszVIIOxXUqbWISepkc3w3knsBuWn89lr5WEx2ebps/r0XnGzCKxyuJ5H+qVXkQ7RSpw5rdev+7EqZdTa4y5PZms9pY8tPcHZcbiNQ9P07DkW9ZqZ8NwH3D5qS5eLw7POG7B/X5rDVYywyalKAY7MZjO/luOhVPSFKzcN6c9NUW4lrxsla+jKTRbWWpvoZKxTkHrQyFv4Faq+eHsAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIikvDHT0+p9bY7FQM5g6UPk/yNO5WUm3ojEpKKbZ9Q/Rj0wMDw/jvStHj5IickjqGkDYfkrNymQqY2m+3dnZDCwbuc47BYJ5sfp/B88rmV6dSL4AABfP8AHqvIcVuKdbFUw4afpSc8zAf7xvUbnbuCvRytWJXGqO8jw0aJdJXzvntBePkvA+hMdFC4uuxjd04BLj5gdl7yd+rj6xntTMiZvsC47bnyCxZK9SweIfatythrwM3JcdgAF8/4vVeQ4q8VYKcDpIsHQd4waD0eWkEb+1TuyFQlBbyZTiYTy5Stk9IR8fTwPoHFRxuabbS5xmHMC7uAfJeszk6OIoSXshYZBBGN3OcdgvGVyFLB4mW7dlZDXgZzOcTsAAvjzjRxPyGs8pJVqyPgxUTiGRg7eJt03O3cFRycqOLDhXeJ4HR0+kLXJ7QX+6Fmah+khDWycsOJxLbNZh2bJISC5c7/ANpi7/8AT8B/5yvnlFxXnZD/AOo9WuiMNLTq0fQb/pMZE/Z0/XHxeVE9R8WINQ2/TMjiS2b2RyEBVQizDpDJg9YzZOPReJHlWiwTrnF/+mzf9X/wn78Yv/02b/q/+FXyK39WzP8AyMn+n43/AGItnA5zE5smCuXVrY7RyO6P+B9q3ntdG8tcCHAqmopHxSNkjeWPad2uB2IKs3R+om52FtC84NyEbfq5D0Eo6dD1+0u10V03JyVWQ+fJ/wAnMz+i0l1lK+RKXb3abfsNezoNz1K5zmuY8tcNnArJHG+WGxSDjG+aMta7fYtdsdj+K5enMyMrJLib5bHlKznMB7CYNJHt79F1p5scXIVNi0jLk/wc+OM76XZDdrmiQO57tJh3aHRnl6n7RXOIcx2x3DgshhNiCei97oy8bsIOxDwQQfxC5Wl81+2GOx98eFlYBt16eKB8+6SzY4uT1Fi0jLdP8BYzvp62G7XNHD4q48GevmomBsdgeG/b743/AKKDK4cvRGTwVzHSMc6YNMkDfY9oKqB7XMe5jhs5p2I9hXkul8Xs2TJLk90eh6Ov66hN81seURFyzeCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAL6U+iNpdtele1bdi5N/q673fdG/MV87YehYymUrY+rGZJrEgYxo7ndfTXGDUcHDThpj9G4V4jvTQcpLSN2Du4n47lbWJpGTslyj7+BzukeKyCohzn9l4shH0juJ8ucyUmnMRMW0K7uWV7T/AHjh7/Yp79FTTLMTpSfUVpnhzWyQC77g6gr5p0riZs9qSjiog5z7U7WE9+hPUr6V46asj0JoGnpPEva25NAISWnYxt5di78QrqLdbJX2eHv4GtmUKNMMOnbi9lzZX/0iuJ0mfyUmn8RMRj4HbSvadvEcO4+RVjfRZ02MPo2TN22Na+4fEY53kzb/AML5n0nirOoNT08fE10sliYc/mSN9yV9M8btWV9AaDraZxDhHbmhEbAP5WdnH80x7NbJZFnh7+BjNoUaYYVO3F7LmyufpIcSpM7lH6dxcxFCu7aVzT/eOH9FSi/Xuc95e4kuJ3JPmvxaVlkrJOUubOrRRCitVwWyCIigXBERAEREAWStPLWsMnheWSRuDmuHkQsaIC4dPZaPP4lt2PZt2AAWGDuf8SifEis+hnoMzR5omTgODm9PrATuuBpTMy4PLx22buiPqzR/fb7FZesMdFl9KzmB3iNib6VW5eu467hdzr+24ThLv17rzXj9Dl9V2XJ4o92e3zPOnMyzO45l1mzbkBAnYPM/eAUT4iVpcXqGDMVHlhtAStLenK4AAhcDTOWmwuXitxnZoPLK37zNxuFZuq8dFm9GvkpgPDGC1Xce/Lt6wWHe83D4Jd+G681/QVXZsnij3Z+560zm483RZfi2Zdg2FiMezr63zUB4i4tuO1HI+EH0eyPGYdunrdwubpvLzYXKx3IhzNB2kjJ6PaehBVkcQMfFmdHMyVN3iNrfXREDvG47EfIqE73mYmku/X91/RONXZsjWPdn9n/ZUiIi450QiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiL0xrnvaxgJc47ADzQFu/Row1Rubvayy27KOEh8UOI6Fx3H5KCcSNT29W6tuZe0/cPeWxAdgwdB+SsTiHcbonhTitEUph6beb6VeIHUxyAEA/NU3XhksWI4Im80kjgxo9pJ2Ctm9IqCNeuPFN2P0Xp/ZdX0YcJBWkymuMk1voeNhc1hd98AHoq04jams6s1bcy873Fj3kQtP8rN+gVpcUbjNEcJMLois3wb96Jtm6WnqD2IKoyNjpJGsYCXOOwAWbHpFQI0x4pytfjsvRfyXd9F/C1q82T1pkvq6+Oj2jc7sSQQVWvEzVNnV2rbeVmc7w3P2hYT0a33fgrO4oXxofhTidCUpm+mWmeNeLe/K7Zw/VUWlktIqtfP1MUQ4pyufjsvRfyERFSbYREQBERAEREAREQBWbwhzYmY7BWSC5m764P8wO/M1VktrE3ZsdkYLtd5bJE8OBCux7nTYporurVkHFnQ1tinYbUtumdi3m52Efdd1CmnB3NslbJgbjgQd3wbnvuNnMHyXrirXizWmsZqmlGAwt5ZuvUb7Ab/PcKucTenxuRgvV3cssLw9pVqn2a/ijy90/6K+HrqtJc/ydHXGIdhdTW6ZZyx85fF72EnZTXgvmY7Hi6ZvEPZK0mDnPQA/ab/Ve+LVavmdOY3VNEmVxAjmIHQD1j+R3CrXGXJaGQguwOLZIZA8bH2HfZYcuz3ax5e6f9GUuur0fP8o2tU4qTC5+5jJDuYH7AjzBG4/IrmKz+LNVmb09itZU4mNbLEGW+X+V522B/AhVgqLIqMmlyLYSco6sIiKBIIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCmXCLFR3tWR3rTQaWMb6XZ5h0LGnsoarAqWoNPcLHmCdjcnlpeVwB9bwCNtvxCyiMuWhHtf52XUWqbeQe8uj5jHCD5RgnlH4Lt8FcLFlNXstXBtToRusvefs8zRzNBPv2UFU/hyUOnuFhqVZWuuZuQPkLT60TWO22+YWU99WYkv26I4fEjUsuq9X3sw8uEU0hMTCfsN9i7PBHDw39YR5K81pxuL2sW+btydv1KgasSrka+neFEkNWVn7SzL3Q2AD1EGwI/NE9XqzEo6R4Y+hG+IWfsak1XcyVh/MObwovcxvRv5KPoii3qTSSWiCIiGQiIgCIiAIiIAiIgCIiAsXhZahy2LyOkr27o52GaIk9i0A7D57FV/brzVLMlawwxyxu5XNPcFbOCvyYzL1rsbi3wpGudt5t3G4Uh4osqz5mLNVJA5mTj8dzR/Ie235Kxy4oLyIJaS9Tu8J77cthsloy3OGMsxH0XcfzHfm/oVXWRrPp37FSTfmhkcw/I7LPgslYxGXrZGq7llgfzNP5H8ipNxWjp2crBnMcY/Rb0Q6N784HrE/NZlLigtea9glwyfmdfhLZgzGFy2jL23hzxuswEnr4jW7Bo+arq9VmpXJqlhhZNC8se0+RC29NZOTDZ6lk49968zXkDzAPUKUcZKtX94YcxUkY5mUgbaeGn7L3dSFFvWPoZ5MgyIigSCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAvTnvcAHOcQ0bAE9gvKIAv0ucQGlxIHYE9l+IgC9Oc5wAc4kAbDc9l5RAEREAREQBERAEREAREQBERAEREAXt8kj2ta97nBo2aCewXhEAXt0sjo2xukcWM+y0noPgvCIAvck0soaJJXvDRs0OcTsPcvCIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiICYcM6GKyNi5WvxwyzkMMDJCQT9rm22I9y6+tsXpzHYLrBDBel2dA1jnbkb9SdyVwuFm3741t/uO/RdPjEALOKI867v6LpQlHsUnwrVNLXTffVmlKL7Sv3PTTXTwIEisbA6PwlvBw3pLMsr3jd4jc31D7Ntit2vw/w0Dd7V0ve9x5WOkDOm/TuO6pjgXygppbPx1Ra8qpScdd15MqxFZVzh1XmuRilbdEzf65sndo9o2HVb37h4AMMLLEkzmj1nNlaXD5bLP6dkcXC1o/Vb+nxI9sp4eLUqdF2tV4Q4TLCt4hkgkaHxye1pJH49FNqmhcFLj68ws2JfFaPXjLSAT5bbKurEttsdcV+5eBZZkV1wU5PZlXorYi0Np6vtXfaE0zh/PM1rvkNlF9baPOHh9NpPklrb7PDh6zD179O3Tuszw7YQc2tlz0aenqYjk1ylwp7kPRS3Q2j5M8HWrMjoKbTtzNHrPPu6KWDRumpnOpxStMre5ZMC/wDDlWK8S2yKkuT5atLX01MzyIQejKmRdvWGAlwOQEJf4kEg5on+0e/3ruaI0SMrVbkMjI+Ku4/Vtb3dt333HQKEaLJ2dWluSlbCMONvYhCK2n6N03ca+vXexsjfOGYOd+Gyg2qNLW8Legg5mztsf3PLvufiNlK3FsqjxPl8U9fYjXfCb4Vz+hHkVn4bQOPqUxYzE3NLtu5heGxt925HdZchoHFZCt4uKnEchOzeR/Own3kDcKxYF7Wum/w1Wv05kXlVJ8/n4fU4/CnI4mCd9G5Cw2rEgbC97OYD3bLb4v1YI61OdsMUcznuY4xt2BA38lG8HQmxevqdCxymSG01ruU7j2qVcZf+Dp/6z/1KshviTTS2a9fEhLbIi0+aZWSKxtLaKxt/A07tl1kzWAXENIAaASPMe5cLP6Zjj1THh8RMbBk28weTtvuR8Vr2YttcIzktpci2N8JycU91zIsitWHQ2BxtZjshaEkjh18SQMG/u6dQuVq3Q8FbHPyGKlc8Rt53xlwI5fa0gdVOWFdGLbXLnutV8uZGOTXJpa8/p9Sv0Uy4fabxucrWpLk72yxOAbE1wBcNu/VSSPh9hX7zts2CzbpGS0dfZvslWDdbDjgtvVCzKqrlwye5VKDqdgpHrvDVMNkYoajn8r4g4teQS07keXwXP0tTF/UFKsfsulaXfAEbrXnXKE3B80XRmpRUlyJborRMNirHkMwHOZKOaKuDsXN6esT5BSP0vRlEOpvnxsZadi0Nc/b4ndaXErLyY3ENq1R4T7ZLWub/ACxt2GwVVEkncncrpXzhhy6qEU2ube+/kaVUZZK6yUmk+SW2xaeZ0ZiMrSFnDmOGV25Y5jy6OT3dT0Va5WhZxl6SlbYGTRn1gDut/T2pMnhA9lSQGJ/UxvG43+a9RMyOrdRknZ08xBefJrRsN1qXzqt0cI6S8UuXyNiqM69VKWq+5xEVrwaJ0/j6zHXZxI5w+1NIGAn3DbfZc/Uegq5pOt4aZz3hpd4fMHNcP8JA6n3KUsG6Kba5c1qtfpzMRyq21vz+n1K4RS/QOnMdmfShfsOjlhdytia4Au/FSWLh7hZniwL00UAHVryG9fiRso1Yd1sOsitvVGZ5NcJcEnuVWitDJaAxstZ3oEz2zbHwiHhzHn2EgdFXEdKZ+TFAD60y+Ft799lC/GsoaU1z5eJKq6FuvC+RrIrUqaJweOpsdkpmvlPRxkkDW83sHTr3XP1XoSvDjpcjip/VjjMr43O3aWgbnlIHVWSwboxb05b6arVfLmQWVW3pr/H1K7RWfh9DYO5jK0/pU0rpgA5zHN2a72bbKJ4XCUrOr5MRbtGKBjnN8TcDcghVzxrIKMpLaXInG6EnJLw5kcU54TXMbFkJqdyJjp7AAhc9vMARvv0XvW2k8bicNJbqPn8SKRrSHkEEHf2BR/Qf8W4//U/oVJ1WY1yU1utPMipwvrbi9voSbjFUrwOx00UMcUkrX8/INgdiozp3TGSzdeWxVa0QxbgucdtztvsFMeMjWPkw7Hnla5zw4+wcwUl0rj6uLxEEGMkFmGd/O95ePtEbEdB0W88NX5s61slqayyHVjRm93sUhPGYZnxO7scQVY+j8VpWxpIT3jCZuV3judIQ5p68uwWhr7TuFxz689W/zy2LPLKzna4MBBO/l5rty8PcO6qX17lk7xGRrw4Fjth8Fq0Y9inJKKlot919eZfbbBxjq2tWVXKGiVwZ9kE7fBeVJtB4SjmsrNVuTOZyMJY1pALjuB5qXt4d4eWXxPTLEMTOjw/YdfjtsoVYd1sHZBapehKzJrrlwSe5VSK1LmgMRNAW1J3seejHtkD2k+w7Doqzu1Jqt6SnKwiVj+Qj3qF+NZRpxrny8fYlVdC3Xh8DXRWPprh/BJQZby0z2ve0PETSAGt/xEjot+XRGnrDTJDYI8Pq5sMrX7/krYYF80mlz5bpP6FcsuqLe/LyZVKLqaqp18fnrNSqXmGPl5ebv1aCfzKLWshKuThLmti+ElOKkuTOrws/jKt/ld+i6vGP/iMT/wDru/osHCOg6bLz5Frnk0w0cjW783Pzee/T7K7vFDCvt4iHKSS+j+hs5ORzft7kdjv7l0YUz7BKWm2qfyWqNOVse1JeX8HI4Sj6rMf6cf6lRvWc80uprxkkc4smc1u/kATsrB0Bp6XHYaS3HMLRvxt9VjdhHtv3O/fquJrHSDhnq8jr7WHJWHeo9mxj33PXr1WbqprBrfm/vpoYrsj2qa8l9tSSNmmGga9kSOExx3V/n3aFXWgZJG6xxxa4gul2d7xsVa4w037Eiwm7+WOv4Hjcg69Qd9t+3T2qF6L0o6HVc8jbzZTi5hu1jOsnTy69O6szKLeOlab6Jc/EjjWw4bH5sycXo2tr0nBoBEj2/Ldy6XCJoOmbJ37Wh/tCz8R8LLkMBJdkc6v6Hzy7ObuH9+m+/Q9VrcJHFumLBDS4m2BsPgFcq5LpN6+OvsypzTwdvDT3RWeRkkdkZpHPJfz782/VWlBbmyHDqWa31e+jIHE+fLzAFadjhqyS+bDsg8ROdzGLwfW29m/MsmvszTxWDdhqbozNLH4JjadzGzY9/eVq0UzxYzlbsmmvVsvtsje4Rr3aafodzSsUEOlaUL5Gw1zXcZJC7l23J3O659XA6Jo3YrtfLQ+NE8Pb/ah3HtWlw9y1PK4EYO25omiaWBjnbGVhO/T3hYJOGTHTl7MlIyMnfwzBu4D2b8yvaldVW6oKWi080/qVJquyanJrV6+p44q3cbbxtVle3XnnExP1TgdmnddnXFh+N0g6OoOQOYyLdvk3YkqB67w2Nw1uGGhaEriz61hO5a5TfTmQpar05+z7T2mz4fhyxA7O6b7Ob1VNdkrbLYy0UpLTy122+ZbOCrhW47xTKpqWrFSy2zWmdFM07h7T1ClujslfzmsqEuUtPsOh3LObbp0K7+L4eVKV8Wbls2YWet4fh8gHs3O/ZR/UGUxWL1lXvYZoc2A7zcjvUefPl9y1ZY9mPpKzbfl4/QuV0LdVD4czb4u3bBvVqPMfAEYl29riXblRLD5rKYhzzjrklfn+0G9irSzGGx2ssfDZqWm7jq2Zg5i3v6rhv5ErWxmkcLp+nPYy87Jht/eyDkaB7AN+pWzk4ttl0rYv9r3112Kab4QrVbW620IFpq1Pb1pQtWZHSzSWml7j3J3Vt53DY7NGJuQa8mGVzo2NeBz9+nvUB0FgYMpl35elM6GGnOHMrkcz3Dp57hSDibFbZjIMlFLJUlrTFzeuxdvv2IUsSPBi2WSjxLVeJjIfFfCEXo9GYeKOXt4/HV8dQrmvVlZsZWdB/kC4fCJg/bNucdZGVyG/NzVJtP5ejq/DSUr0bTY5dpogdi4/fZ1XCp1odC6tgbZtCatbiLHnl5TGCR1PU9ks4VfDJT1hqvl5aeQhq6pU6aS0+vmSvP4bS+TttkzGSjissYGmM2A3l6exZq8+m8VifQK+WqvrRseOV0wc482/T8SuXqTR1bUVhl+vc8Fz2jeVjOdkg8j0PRcXKaFxuJwlmxdyX1wbvE9zeQE+zbckq67rqpTsjWtHrv8AFP5ldfVzUYOb1Wm3p8jgaH5TrSAs+z4pLfhzLv8AFmeaFuMiikcxha6TYH+bcdVq8LMIbduTLNsD+ySBvhBu7n9jv36KRa+09Llcc26+b0Y0oXHle3cP8++/uWtTTN4M2uWq+2pbZZFZUU/g/voVRPNLO/nmkc92225K6uirTampqUr+xla38SAuMvTHOY9r2nZzTuD7CuYno9Tea1WhY/FunNJRqWg31KznRv8Advy7Ktlauk9QUM9jhjci6MWSwRvZK7YTjYDcHfoVrXeG1eSy59a3PXi36Ruh5z+PN1XWyMaeZPr6N9ea8UzQpujjx6q3bTk/iiA4fE38tOYaFd0zgNzt5Ke8LsVJUmyBtxuhtxvbC5ru4aS0ldqIYTRmNO7/AAydnFhd9bMR5bb9AofpvVYdq+zdybvDr3vVdy9Aw7t5XfLZV1VwxLq3ZLfXdfD+yU5yyK5qC2028zm8RrU9jVl2OV5LIX8kbT/KNh0Up4PWrElK7Wc8mKB7HRj2FxO/4rpak0PBqG2MlVvNgdI0F7w3nbJ7wQei2KdXGaHwb3WJw5+/MSfVdO4b7ADfyV1GPZRkddZ3Vq9fj/OpXbdC2nq4d5+Hw/8AhBZK8VfiWyKL7IvMPT3vC7HFiSRtHGxNeRG4PLmjsTuFpaGw8uoM1PmzZ5XV7IlMQbu5/XfbupJr7T82SwzbUk3ovoMbjyvbuH77Hod+/RV01TeFbJLZtfbXUnZOKyYJ/B/fQ5HCaaV1S9CXksjfG5g9hJduotkrHoGtLFoN3EV1z9vg/dWDoPTs2LxbrUUvpXpjWP2Y3YM236b79T1XGzuAx2K1XBdzNoOqXZHvcwjlMe5369fel9U1h1N/F/fTQVWReTYvJfYkLxp3WNGNr52ucDu1gkDZYydtxse/ZcLUuJ1BgcFPDjsnJPjNi2WEj1o2kdd/cujkNEUMp4N3A3mVABv4kW7mv7bEHfcLf1K9uF0ZYq5G6Z5n1nQse/7UriDt079FfZXKyMp3LRpd5PZ/zqVwmoOMa3qte6/A43Bof2C717zx/oVBdRDbUtsf/fP6qW8IcjXhfboSSNZNK5r4eY7BxG/RdjJ8Po7+ZlyXpb68T3h74nR9vb63MtfqZ5GLDq9+FvXy1LesjVfLj2100PGuh/7jf8tf/aoNoHrq7H/6n9CrP1JhnZPAzUo5BFC1jHRy9HN2YPPY+ahXDDBOt5mW82x1oPH1bW7l++49vTsp51M3kQit9VH7Iji2RVMm/Bv3Olxr7Yv4SfqFv8JAP3WsHf8A+Yf/ALAsnEzDS5PFMuvkNY0muPK9u4fuR579CtXg/ZgkwtmgHj0hsxfyeZaQBuFbKLh0i+Lx10+aehWpKWGtPDT3K0yH/HT/AOof1VwcOWD9xYjv3ZMopqnQM+OidkDkYnxyTEBpYQRv19qnmnsTNh8HFjG+JZbyuBlawAet7BuqOj8a1Xyi1uk/uti3Luh1SafivcpvTI31PRH/AOS39VYnGJz48BXa15DXWTzAefQri4XSLq+tzV9OD3VOWfYR+s/7J5dt+h6+3yUr4gYebMYCQyOdU9ELp/XbuH7A9O/RKKLOy27fD7cxbbDr69/9ZHODT3EZGMuJYAxwHsO5WhqiCM8WPCIHIbUW4/8A5Uj4Y4aShiH5GKQ2TbG3Ixu3Jyk9zuuJxMpSY3UlfUAlPNPKHiFzdi0s5fPfqFiyqawYSa21b+T0ELIvKkl8Edfi3dmgwdetCeRk8hMm3nt0AUN4bkjVUIBIBjk39/qFWDOzH62082NkzQ87P9Xq6F+3Xcb9QtPAaG/YNo5F930l7WODGhnJtuCD3PXotiyiy7KjdDeLa+XLb5FUbY1UOuW0lqQHXP8AFNz/AJP9jUTXO/703N/8H+xqLnZ//NWf+z9zdxf8EPRexyq9mzX5vR7EsPN9rkeW7/HZeprtydnJNbnlb918hI/Na6LULzYhvXYWckNyxGwfytkIC8y2rUz2vlszSOb2LnkkLCiA2/2lkdtv2hb/AOs7/usUVq1FI6SOzMx7vtOa8gn5rCiA2X3b048KS5Yka7pyulJB/NW9oLEz4XT7YLXrSWJRMOQEhoI2VMDodwu/W1lqavCyGHLzNYwbNHK07D5hbeFfCi3jmtTXyapWw4YvQ29ZVc7p+4yCbJ2HRzgvj5Z3dlF5HvkcXve57j3LjuVuZjL5LLzNmyVuSy9o2aXbdB8lorWm4uT4eRdFNLfmeo3vjeHxvcxw7Fp2IW47MZZ0fhnJWy32eM7/ALrRRRJHp73yOLnvc5x7kncr9hllhfzxSPjcPNriCvCIDdmy2TmZyS5C09vbYynZaSIgM9W5bqHetamhP+B5H6L1bvXbf/E255vc+QkLWRAZYLFiuSYJ5Yie5Y8t/Rep7ludvLPanlaPJ8hcPzWBEB7hllheHwyPjcOzmuIK/Zppp3880r5He17iT+axogNurkshVby171iJvsbIQPwWOzbtWTvYszTf53l36rAiAy17Nivv4FiWLfvyPLd/wWSW/elYWSXLD2nuHSuI/VayIAiIgP1rnNcHNJaR2IPULejzOWjj5GZK2G+zxStBEBknnmnfzzzSSu9r3En81jREBuVcpkqreWvfsxN7crZCB+Cw2bVm07ms2JZj7XvLv1WFEBlgsWK5JgnliJ7ljy39F7lvXZWFktyxI092ulJH6rXRAbMV69EwMiuWI2js1srgP1WOexPYIM88spHm95d+qxIgNunkshTHLVu2IR7GSED8FitW7Vp3NZsSzH2veXfqsKID0xzmODmOLXDsQditl+SyL2cjr9pzfYZnEfqtREBsC9dEfhC5Y5NtuXxDtt8N14gs2K7i6CeWInuWPLd/wWJEBsTXrszCya5Ykae7XSEhY6889eTxIJpIn/eY4g/ksaIDZtZC/aAFm5YmA7B8hIX6MlkWgAX7QA7ATO/7rVRAZm27TZzO2zMJT3eJDzH5r3JkL8jCyS7Ze09w6VxB/NayIDYhu3IGckNuxE37rJCB+SOmntzxts2ZZAXAbveXbAn3rXRAWnDoep6DXnxuUtwSujaS+I7tcfkupgNOTY6V9q7k7Np5byh0znBkY2O53PuVS4/K5HHnelbkg/ylZcjncvkI/Du35pmexx6LfryaK2pKv9y89tfjp/ZqzptlrFz2flubGuLda9qq9ZqHeBzmtYfbytDf1CLiotKc3OTlLmzYjFRSivA//9k=" style="max-height:60px;width:auto;object-fit:contain;transition:all .2s" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform=''" alt="Impeccker Consulting">
+  </div>
+  <div style="font-family:var(--mono);font-size:.72em;color:var(--muted);text-align:right">
+    <div style="font-weight:700;color:var(--ink)">Session 2 · Diagnostics Add-On</div>
+    <div>Machine Learning for<br>Data-Driven Decision Making</div>
+  </div>
+</div>
+
+<div class="hero">
+  <div class="kicker">Bonus Session · Model Health Checks</div>
+  <h1>Judging Your Model:<br><span>Sensitivity, Specificity, ROC-AUC &amp; VIF</span></h1>
+  <div class="sub">Five terms MBAs hear in every analytics meeting — and almost never used correctly. This is a toolkit, not one algorithm. Play with the sliders, watch the numbers move, and you'll never confuse them again.</div>
+  <div class="session-pills">
+    <div class="pill">2.1 Classification &#10003;</div>
+    <div class="pill">2.2 Regression &#10003;</div>
+    <div class="pill">2.3 Clustering &#10003;</div>
+    <div class="pill" style="background:var(--ink);color:white;border-color:var(--ink)">2.6 Model Diagnostics &#8592; You are here</div>
+  </div>
+</div>
+
+<div class="mod-nav">
+  <div class="mod-tab active" onclick="showModule(0)"><span class="num">&#9312;</span>Two Different Worlds</div>
+  <div class="mod-tab" onclick="showModule(1)"><span class="num">&#9313;</span>Sensitivity &amp; Specificity</div>
+  <div class="mod-tab" onclick="showModule(2)"><span class="num">&#9314;</span>ROC &amp; AUC</div>
+  <div class="mod-tab" onclick="showModule(3)"><span class="num">&#9315;</span>VIF</div>
+  <div class="mod-tab" onclick="showModule(4)"><span class="num">&#127942;</span>Final Challenge</div>
+</div>
+
+<!-- MODULE 0 — TWO DIFFERENT WORLDS -->
+<div class="module active" id="mod0">
+  <div class="sec-title">Before We Start: These Are NOT One Algorithm</div>
+  <p class="sec-sub">Today we're covering five terms in one sitting because they all answer the same underlying question — <strong>"Can I trust this model?"</strong> — but they come from two completely different toolkits. Don't merge them into a single recipe.</p>
+
+  <div style="background:white;border:2px solid var(--ink);border-radius:16px;padding:22px;margin:20px 0;box-shadow:4px 4px 0 var(--ink)">
+    <div style="font-size:1.4em;margin-bottom:10px">🏦 Start Here: The Bajaj Finserv Credit Desk</div>
+    <p style="font-size:.93em;color:#333;line-height:1.8;margin-bottom:14px">A credit risk team built <strong>two different models</strong> this quarter: (1) a <strong>classification model</strong> that predicts whether a loan applicant will default — Yes/No, and (2) a <strong>regression model</strong> that predicts the exact loan amount a customer can safely be offered, using income, existing EMIs, credit history length, etc. as predictors. Both models need a health check before going live — but the health checks are <strong>completely different tools</strong>, because the questions being asked are different.</p>
+    <div class="world-split">
+      <div class="world-card" style="border-top:5px solid var(--c1)">
+        <div class="wtag" style="background:#f5f0ff;color:var(--accent)">World 1 — Classification</div>
+        <h4>⚖️ Sensitivity, Specificity, ROC, AUC</h4>
+        <ul>
+          <li>Used <strong>after</strong> a classifier makes Yes/No predictions</li>
+          <li>Ask: "Of the people we said would default, how many actually did — and did we wrongly flag good customers?"</li>
+          <li>Apply to logistic regression, decision trees, random forest, XGBoost — <em>any</em> classifier</li>
+          <li>Built entirely from one thing: the <strong>Confusion Matrix</strong></li>
+        </ul>
+      </div>
+      <div class="world-card" style="border-top:5px solid var(--c4)">
+        <div class="wtag" style="background:#fef3c7;color:#92400e">World 2 — Regression</div>
+        <h4>🧮 VIF (Variance Inflation Factor)</h4>
+        <ul>
+          <li>Used <strong>before/while</strong> building a regression model, on the predictors themselves</li>
+          <li>Ask: "Are my independent variables secretly measuring the same thing?"</li>
+          <li>Applies to linear regression, logistic regression coefficients — anywhere you interpret coefficients</li>
+          <li>Built from <strong>R² between predictors</strong>, not from predictions at all</li>
+        </ul>
+      </div>
+    </div>
+    <div class="warn-strip">💡 <strong>The one-line rule:</strong> If the metric is about how well predictions matched actual Yes/No outcomes → it's a <strong>classification evaluation</strong> metric. If it's about your input variables fighting each other for credit → it's <strong>VIF</strong>, a regression diagnostic. They will never appear in the same formula.</div>
+  </div>
+
+  <div class="divider"><span>the foundation: the confusion matrix</span></div>
+  <p style="font-size:.93em;color:#444;margin-bottom:16px;line-height:1.7">Sensitivity, Specificity, ROC and AUC are <em>all</em> built from one simple table. Master this table first and the rest is just arithmetic on it.</p>
+
+  <div class="theory-slide">
+    <div class="ts-tag">Theory — The Confusion Matrix</div>
+    <h3>Every classifier decision falls into exactly one of 4 buckets</h3>
+    <p>Take our loan-default classifier. For every applicant, there is a <strong>ground truth</strong> (did they actually default?) and a <strong>model prediction</strong> (did we predict default?). Cross these two, and you get four outcomes:</p>
+    <div class="theory-bullets">
+      <div class="t-bullet"><strong>True Positive (TP)</strong>Model said "will default", and they actually defaulted. A correctly caught risk.</div>
+      <div class="t-bullet"><strong>True Negative (TN)</strong>Model said "safe", and they actually stayed safe. A correctly cleared customer.</div>
+      <div class="t-bullet"><strong>False Positive (FP)</strong>Model said "will default", but they were actually safe. A good customer wrongly denied — a "false alarm".</div>
+      <div class="t-bullet"><strong>False Negative (FN)</strong>Model said "safe", but they actually defaulted. A risky customer we missed — the costly kind of mistake.</div>
+    </div>
+  </div>
+
+  <div class="analogy-box">
+    <div class="ana-side ana-left">
+      <h5>🎯 The Everyday Analogy</h5>
+      <p>Think of a smoke detector. TP = it beeps, there's a real fire. TN = it stays silent, no fire — correctly quiet. FP = it beeps because you burnt toast — a false alarm. FN = there's a real fire and it stays silent — the dangerous failure. Every classifier, in every industry, reduces to this same 2×2 table.</p>
+    </div>
+    <div class="ana-right">
+      <h5>📋 Why This Matters for MBAs</h5>
+      <p>"Accuracy" alone hides the story. A model that is 95% accurate at predicting rare fraud could simply be predicting "no fraud" every time — and missing every actual fraud case (100% False Negatives on the 5% that matters). Sensitivity, Specificity, ROC and AUC exist because <strong>accuracy lies when classes are imbalanced</strong> — and loan defaults, fraud, and disease are almost always imbalanced.</p>
+    </div>
+  </div>
+
+  <div class="quiz-block">
+    <h4>✓ Quick Check — Module 0</h4>
+    <div class="q-prompt">A bank's fraud model is 98% accurate — but it turns out 98% of transactions are genuinely non-fraudulent, and the model simply predicts "no fraud" every single time. What is happening in confusion-matrix terms?</div>
+    <div class="quiz-opt" onclick="checkQ('q0a',this,false)"><div class="marker">A</div>High True Negatives and high True Positives — the model is genuinely excellent</div>
+    <div class="quiz-opt" onclick="checkQ('q0a',this,true)"><div class="marker">B</div>High True Negatives, but Sensitivity ≈ 0 — every actual fraud case is a False Negative</div>
+    <div class="quiz-opt" onclick="checkQ('q0a',this,false)"><div class="marker">C</div>The model has high VIF and needs its predictors decorrelated</div>
+    <div class="quiz-opt" onclick="checkQ('q0a',this,false)"><div class="marker">D</div>This is impossible — accuracy and sensitivity always move together</div>
+    <div class="q-feedback" id="q0a-fb"></div>
+  </div>
+
+  <div class="mod-nav-btns">
+    <div></div>
+    <button class="btn" onclick="showModule(1)">&#9313; Sensitivity &amp; Specificity &#8594;</button>
+  </div>
+</div>
+
+<!-- MODULE 1 — SENSITIVITY & SPECIFICITY -->
+<div class="module" id="mod1">
+  <div class="sec-title">Sensitivity &amp; Specificity</div>
+  <p class="sec-sub">Two sides of the same coin — how good is the model at catching the positives, versus how good is it at leaving the negatives alone?</p>
+
+  <div class="story-block">
+    <div class="story-icon">🛃</div>
+    <div class="story-body">
+      <h3>The Airport Security Analogy</h3>
+      <p>A metal detector has a sensitivity dial. Turn it up and it catches almost every weapon (few threats slip through) — but it also beeps at belt buckles, coins, and watches (many innocent people get stopped). Turn it down and innocent people breeze through — but a few real threats might slip past too.</p>
+      <p><strong>Sensitivity</strong> = "Of all the real threats, how many did we catch?" <strong>Specificity</strong> = "Of all the innocent passengers, how many did we correctly let through without a beep?" You almost always trade one for the other.</p>
+    </div>
+  </div>
+
+  <div class="math-story">
+    <h4>The Formulas — Decoded</h4>
+    <div class="formula-display">Sensitivity (Recall / TPR) = TP / (TP + FN)</div>
+    <div class="formula-parts">
+      <div class="formula-part"><div class="fp-sym">TP + FN</div><div class="fp-desc"><strong>All actual positives</strong> — everyone who genuinely defaulted, regardless of what the model said.</div></div>
+      <div class="formula-part"><div class="fp-sym">Meaning</div><div class="fp-desc">"Of everyone who actually defaulted, what % did we correctly flag?" High sensitivity = few risky customers slip through <strong>undetected</strong>.</div></div>
+    </div>
+    <div class="formula-display" style="margin-top:16px">Specificity (TNR) = TN / (TN + FP)</div>
+    <div class="formula-parts">
+      <div class="formula-part"><div class="fp-sym">TN + FP</div><div class="fp-desc"><strong>All actual negatives</strong> — everyone who genuinely stayed safe, regardless of what the model said.</div></div>
+      <div class="formula-part"><div class="fp-sym">Meaning</div><div class="fp-desc">"Of everyone who was actually safe, what % did we correctly clear?" High specificity = few good customers get <strong>wrongly denied</strong>.</div></div>
+    </div>
+  </div>
+
+  <div class="divider"><span>live playground — move the threshold</span></div>
+  <div class="interactive">
+    <h4>🎚️ Bajaj Finserv Loan-Default Classifier <span class="tag">LIVE</span></h4>
+    <p style="font-size:.86em;color:#555;margin-bottom:10px">The model outputs a <strong>default-risk score (0 to 1)</strong> for 20 real applicants. You choose the cut-off: anyone scoring <em>at or above</em> the threshold gets flagged "will default". Drag the slider and watch every number update.</p>
+    <div class="slider-wrap">
+      <div class="slider-label"><span>Decision Threshold</span><span class="slider-val" id="thVal">0.50</span></div>
+      <input type="range" id="thSlider" min="0" max="1" step="0.01" value="0.5" oninput="updateThreshold(this.value)">
+    </div>
+
+    <div class="confusion-wrap">
+      <div>
+        <div class="conf-matrix">
+          <div class="conf-row">
+            <div class="conf-cell conf-head"></div>
+            <div class="conf-cell conf-head">Predicted: Default</div>
+            <div class="conf-cell conf-head">Predicted: Safe</div>
+          </div>
+          <div class="conf-row">
+            <div class="conf-cell conf-label">Actual: Default</div>
+            <div class="conf-cell conf-tp"><span class="cnum" id="tpNum">0</span><span class="clabel">True Positive</span></div>
+            <div class="conf-cell conf-fn"><span class="cnum" id="fnNum">0</span><span class="clabel">False Negative</span></div>
+          </div>
+          <div class="conf-row">
+            <div class="conf-cell conf-label">Actual: Safe</div>
+            <div class="conf-cell conf-fp"><span class="cnum" id="fpNum">0</span><span class="clabel">False Positive</span></div>
+            <div class="conf-cell conf-tn"><span class="cnum" id="tnNum">0</span><span class="clabel">True Negative</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="metric-cards">
+        <div class="metric-card" style="border-color:#16a34a">
+          <div class="mval" id="sensVal" style="color:#16a34a">0%</div>
+          <div class="mlabel">Sensitivity</div>
+          <div class="mform">TP / (TP+FN)</div>
+        </div>
+        <div class="metric-card" style="border-color:#2563eb">
+          <div class="mval" id="specVal" style="color:#2563eb">0%</div>
+          <div class="mlabel">Specificity</div>
+          <div class="mform">TN / (TN+FP)</div>
+        </div>
+        <div class="metric-card" style="border-color:var(--ink)">
+          <div class="mval" id="precVal" style="color:var(--ink)">0%</div>
+          <div class="mlabel">Precision</div>
+          <div class="mform">TP / (TP+FP)</div>
+        </div>
+        <div class="metric-card" style="border-color:var(--gold)">
+          <div class="mval" id="accVal" style="color:var(--gold)">0%</div>
+          <div class="mlabel">Accuracy</div>
+          <div class="mform">(TP+TN) / 20</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="patient-strip" id="patientStrip"></div>
+    <div class="legend-row">
+      <div class="legend-item"><span class="legend-dot" style="border-color:#16a34a;background:#dcfce7"></span>True Positive — caught the risk</div>
+      <div class="legend-item"><span class="legend-dot" style="border-color:#2563eb;background:#dbeafe"></span>True Negative — correctly cleared</div>
+      <div class="legend-item"><span class="legend-dot" style="border-color:#d97706;background:#fef3c7"></span>False Positive — good customer denied</div>
+      <div class="legend-item"><span class="legend-dot" style="border-color:#dc2626;background:#fee2e2"></span>False Negative — risk missed</div>
+    </div>
+    <div class="info-strip" id="threshInsight" style="margin-top:12px">Slide the threshold and watch the trade-off appear here.</div>
+  </div>
+
+  <div class="quiz-block">
+    <h4>✓ Quick Check — Sensitivity vs Specificity</h4>
+    <div class="q-prompt">Set the threshold near <strong>0.10</strong> (very low). What happens, and why might a bank still choose this for a first-pass fraud screen?</div>
+    <div class="quiz-opt" onclick="checkQ('q1a',this,true)"><div class="marker">A</div>Sensitivity rises toward 100% (almost no risky customer is missed), but Specificity falls — many safe customers get flagged for manual review</div>
+    <div class="quiz-opt" onclick="checkQ('q1a',this,false)"><div class="marker">B</div>Both Sensitivity and Specificity rise together — lowering the threshold always improves everything</div>
+    <div class="quiz-opt" onclick="checkQ('q1a',this,false)"><div class="marker">C</div>Specificity rises because fewer people are labelled "safe"</div>
+    <div class="quiz-opt" onclick="checkQ('q1a',this,false)"><div class="marker">D</div>The threshold has no effect on Sensitivity or Specificity, only on Accuracy</div>
+    <div class="q-feedback" id="q1a-fb"></div>
+  </div>
+
+  <div class="divider"><span>go deeper</span></div>
+  <div class="challenge-toggle">
+    <div class="ch-header" onclick="toggleCh('bt_1')">
+      <div class="ch-left"><div class="ch-icon">🩺</div><div><div class="ch-title">Boardroom Challenge: Cancer Screening Trade-off</div><div class="ch-sub">Why hospitals deliberately choose LOW thresholds</div></div></div>
+      <div style="display:flex;align-items:center;gap:10px"><span class="ch-badge med">+15 pts</span><span class="ch-arrow" id="bt_1-arrow">▼</span></div>
+    </div>
+    <div class="ch-body" id="bt_1-body">
+      <p style="font-size:.9em;color:#444;line-height:1.75;margin-bottom:14px">Apollo Hospitals runs an AI model that screens mammograms for possible tumours. A missed tumour (False Negative) can cost a life. A false alarm (False Positive) costs an extra biopsy — unpleasant, expensive, but not fatal. The radiology head insists: <strong>"I would rather over-flag ten healthy patients than miss one real tumour."</strong></p>
+      <div class="quiz-block" style="margin:0">
+        <div class="q-prompt">Which metric should the hospital prioritise maximising, even if it costs some Specificity?</div>
+        <div class="quiz-opt" onclick="checkQ('bt_1',this,true)"><div class="marker">A</div>Sensitivity — because the cost of a False Negative (missed cancer) vastly exceeds the cost of a False Positive (extra biopsy)</div>
+        <div class="quiz-opt" onclick="checkQ('bt_1',this,false)"><div class="marker">B</div>Specificity — hospitals should minimise unnecessary biopsies above all else</div>
+        <div class="quiz-opt" onclick="checkQ('bt_1',this,false)"><div class="marker">C</div>Accuracy — it is the single number that matters in healthcare</div>
+        <div class="q-feedback" id="bt_1-fb"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mod-nav-btns">
+    <button class="btn btn-ghost" onclick="showModule(0)">&#8592; Two Different Worlds</button>
+    <button class="btn" onclick="showModule(2)">&#9314; ROC &amp; AUC &#8594;</button>
+  </div>
+</div>
+
+<!-- MODULE 2 — ROC & AUC -->
+<div class="module" id="mod2">
+  <div class="sec-title">ROC Curve &amp; AUC</div>
+  <p class="sec-sub">Sensitivity and Specificity give you one snapshot at one threshold. ROC and AUC give you the <em>entire movie</em> — how the model performs across every possible threshold at once.</p>
+
+  <div class="story-block">
+    <div class="story-icon">🎬</div>
+    <div class="story-body">
+      <h3>The Report Card That Ignores the Threshold</h3>
+      <p>Instead of picking one threshold and freezing the confusion matrix, the <strong>ROC (Receiver Operating Characteristic) curve</strong> sweeps the threshold from 1 down to 0 and plots two numbers at every step: the <strong>True Positive Rate</strong> (Sensitivity — how many risks we catch) on the Y-axis against the <strong>False Positive Rate</strong> (1 − Specificity — how many good customers we wrongly flag) on the X-axis.</p>
+      <p>A model that separates defaulters from safe customers perfectly will hug the top-left corner (catch everyone, flag no one wrongly). A model that's no better than a coin flip traces the diagonal line. <strong>AUC (Area Under the Curve)</strong> compresses this entire curve into one number between 0.5 and 1.</p>
+    </div>
+  </div>
+
+  <div class="math-story">
+    <h4>What AUC Actually Means</h4>
+    <div class="formula-display">AUC = P( score of a random defaulter &gt; score of a random safe customer )</div>
+    <div class="formula-parts">
+      <div class="formula-part"><div class="fp-sym">AUC = 1.0</div><div class="fp-desc">Perfect separation. Every defaulter scores higher than every safe customer — no overlap at all.</div></div>
+      <div class="formula-part"><div class="fp-sym">AUC = 0.5</div><div class="fp-desc">The diagonal line. The model is guessing — pick a random defaulter and a random safe customer, it's a coin flip which one scores higher.</div></div>
+      <div class="formula-part"><div class="fp-sym">AUC &lt; 0.5</div><div class="fp-desc">Worse than random — the model's ranking is backwards (rare, but check your labels if you see it!).</div></div>
+      <div class="formula-part"><div class="fp-sym">Why it's useful</div><div class="fp-desc">AUC judges the model's <strong>ranking ability</strong>, independent of any one threshold decision — perfect for comparing two models before deciding where to set the cut-off.</div></div>
+    </div>
+  </div>
+
+  <div class="divider"><span>live playground — same loan data, full curve</span></div>
+  <div class="interactive">
+    <h4>📈 The ROC Curve for Our 20 Applicants <span class="tag">LIVE</span></h4>
+    <p style="font-size:.86em;color:#555;margin-bottom:10px">This is the exact same 20 applicants from Module 1 — but now every possible threshold is swept at once. Drag the slider to see where <em>your</em> chosen threshold sits on the curve, and how Sensitivity/FPR trade off as you move along it.</p>
+    <div class="roc-wrap">
+      <div class="chart-box"><canvas id="rocChart" height="260"></canvas></div>
+      <div>
+        <div class="auc-badge">
+          <div class="aucval" id="aucVal">0.00</div>
+          <div class="auclabel">Area Under Curve</div>
+        </div>
+        <div class="slider-wrap" style="margin-top:16px">
+          <div class="slider-label"><span>Threshold on the curve</span><span class="slider-val" id="rocThVal">0.50</span></div>
+          <input type="range" id="rocThSlider" min="0" max="1" step="0.01" value="0.5" oninput="updateRocMarker(this.value)">
+        </div>
+        <div class="metric-cards" style="grid-template-columns:1fr 1fr">
+          <div class="metric-card" style="border-color:#16a34a;padding:10px">
+            <div class="mval" id="rocSensVal" style="color:#16a34a;font-size:1.4em">0%</div>
+            <div class="mlabel">TPR (Sensitivity)</div>
+          </div>
+          <div class="metric-card" style="border-color:#e84c3d;padding:10px">
+            <div class="mval" id="rocFprVal" style="color:#e84c3d;font-size:1.4em">0%</div>
+            <div class="mlabel">FPR (1&minus;Specificity)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="info-strip" style="margin-top:12px">Notice: the curve itself never changes — only your marker slides along it. AUC = 0.5 would be the dashed diagonal. Our model's curve bulges well above it, meaning it ranks true defaulters higher than safe customers most of the time.</div>
+  </div>
+
+  <div class="quiz-block">
+    <h4>✓ Quick Check — Reading AUC</h4>
+    <div class="q-prompt">Model A (predicting loan default) has AUC = 0.92. Model B has AUC = 0.61. HR wants to deploy whichever model is cheaper to run, regardless of AUC. What should you tell them?</div>
+    <div class="quiz-opt" onclick="checkQ('q2a',this,true)"><div class="marker">A</div>AUC 0.61 is barely better than a coin flip (0.5) at ranking risky vs safe customers — cost savings won't matter if the model can't reliably separate the two groups</div>
+    <div class="quiz-opt" onclick="checkQ('q2a',this,false)"><div class="marker">B</div>AUC 0.61 is a strong score — both models are safe to deploy</div>
+    <div class="quiz-opt" onclick="checkQ('q2a',this,false)"><div class="marker">C</div>AUC doesn't matter once you fix a threshold, so this comparison is meaningless</div>
+    <div class="quiz-opt" onclick="checkQ('q2a',this,false)"><div class="marker">D</div>Model B is better because lower AUC means fewer false alarms</div>
+    <div class="q-feedback" id="q2a-fb"></div>
+  </div>
+
+  <div class="divider"><span>go deeper</span></div>
+  <div class="challenge-toggle">
+    <div class="ch-header" onclick="toggleCh('bt_2')">
+      <div class="ch-left"><div class="ch-icon">⚔️</div><div><div class="ch-title">Boardroom Challenge: Comparing Two Vendor Models</div><div class="ch-sub">When accuracy lies, AUC tells the truth</div></div></div>
+      <div style="display:flex;align-items:center;gap:10px"><span class="ch-badge med">+15 pts</span><span class="ch-arrow" id="bt_2-arrow">▼</span></div>
+    </div>
+    <div class="ch-body" id="bt_2-body">
+      <p style="font-size:.9em;color:#444;line-height:1.75;margin-bottom:14px">Two analytics vendors pitch fraud-detection models to your bank. Vendor X reports 99% accuracy on a dataset where only 1% of transactions are fraudulent. Vendor Y reports 94% accuracy but shows an ROC curve with AUC = 0.89, while Vendor X's AUC is 0.55.</p>
+      <div class="quiz-block" style="margin:0">
+        <div class="q-prompt">Which vendor's model is actually better at distinguishing fraud from non-fraud, and why?</div>
+        <div class="quiz-opt" onclick="checkQ('bt_2',this,true)"><div class="marker">A</div>Vendor Y — its AUC of 0.89 shows real ranking ability, while Vendor X's 99% accuracy is likely just predicting "no fraud" every time (AUC near 0.5 confirms this)</div>
+        <div class="quiz-opt" onclick="checkQ('bt_2',this,false)"><div class="marker">B</div>Vendor X — 99% accuracy is objectively the highest number, so it wins</div>
+        <div class="quiz-opt" onclick="checkQ('bt_2',this,false)"><div class="marker">C</div>They are equivalent — accuracy and AUC always agree</div>
+        <div class="q-feedback" id="bt_2-fb"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mod-nav-btns">
+    <button class="btn btn-ghost" onclick="showModule(1)">&#8592; Sensitivity &amp; Specificity</button>
+    <button class="btn" onclick="showModule(3)">&#9315; VIF &#8594;</button>
+  </div>
+</div>
+
+<!-- MODULE 3 — VIF -->
+<div class="module" id="mod3">
+  <div class="sec-title">VIF — Variance Inflation Factor</div>
+  <p class="sec-sub">A completely different world: this one lives inside <em>regression</em>, and it doesn't look at predictions at all — it looks at whether your <strong>independent variables are secretly the same variable in disguise</strong>.</p>
+
+  <div class="story-block">
+    <div class="story-icon">👯</div>
+    <div class="story-body">
+      <h3>The Identical Twins Analogy</h3>
+      <p>Imagine asking two identical twins, separately, "how much did the house sell for?" and expecting each answer to tell you something different about the outcome. You can't — they'll give you almost the same information. Regression has the same problem: if two predictors (say, <strong>Built-up Area in sq. ft.</strong> and <strong>Number of Rooms</strong>) move together almost perfectly, the model cannot tell which one is "really" driving price. It starts splitting credit between them unstably — sometimes even assigning a <em>negative</em> coefficient to a variable that obviously should be positive.</p>
+      <p>This is <strong>multicollinearity</strong>, and <strong>VIF</strong> is how we measure how badly two (or more) predictors are impersonating each other.</p>
+    </div>
+  </div>
+
+  <div class="math-story">
+    <h4>The Formula — Decoded</h4>
+    <div class="formula-display">VIF_j = 1 / (1 &minus; R_j&sup2;)</div>
+    <div class="formula-parts">
+      <div class="formula-part"><div class="fp-sym">R_j&sup2;</div><div class="fp-desc">Regress predictor <em>j</em> on <strong>all the other predictors</strong> (not on the outcome!). R_j&sup2; is how well the other predictors explain this one.</div></div>
+      <div class="formula-part"><div class="fp-sym">Intuition</div><div class="fp-desc">If R_j&sup2; is high (other predictors explain this variable well), the denominator shrinks toward zero and VIF explodes — this variable carries almost no unique information.</div></div>
+      <div class="formula-part"><div class="fp-sym">VIF = 1</div><div class="fp-desc">Zero correlation with other predictors — completely unique information. Ideal, but rare in real business data.</div></div>
+    </div>
+  </div>
+
+  <div class="divider"><span>live playground — correlate two predictors</span></div>
+  <div class="interactive">
+    <h4>🏠 Housing Price Model: Area vs. Rooms <span class="tag">LIVE</span></h4>
+    <p style="font-size:.86em;color:#555;margin-bottom:10px">A regression predicts <strong>House Price</strong> using, among others, <strong>Built-up Area (sq.ft.)</strong> and <strong>Number of Rooms</strong>. Drag the slider to control how strongly these two predictors move together in your data, and watch VIF respond.</p>
+    <div class="slider-wrap">
+      <div class="slider-label"><span>Correlation between Area &amp; Rooms (r)</span><span class="slider-val" id="corrVal">0.00</span></div>
+      <input type="range" id="corrSlider" min="0" max="0.98" step="0.02" value="0" oninput="updateVIF(this.value)">
+    </div>
+    <div class="vif-wrap">
+      <div class="chart-box"><canvas id="vifScatter" height="260"></canvas></div>
+      <div class="vif-display">
+        <div class="vifnum" id="vifVal">1.00</div>
+        <div style="font-size:.72em;color:var(--muted);text-transform:uppercase;letter-spacing:.08em">VIF for both predictors</div>
+        <div class="vif-zone-track"><div class="vif-zone-marker" id="vifMarker" style="left:0%"></div></div>
+        <div class="vif-zone-labels"><span>1 (Low)</span><span>5</span><span>10</span><span>20+ (Severe)</span></div>
+        <div class="vif-verdict verdict-ok" id="vifVerdict">No meaningful overlap — each predictor contributes unique information. Coefficients are stable and trustworthy.</div>
+      </div>
+    </div>
+    <div class="info-strip" style="margin-top:12px">Common rule of thumb used in industry: <strong>VIF &lt; 5</strong> = comfortable, <strong>5–10</strong> = investigate/monitor, <strong>&gt; 10</strong> = drop, combine, or regularise (Ridge regression) — the coefficient on this variable can no longer be trusted at face value.</div>
+  </div>
+
+  <div class="quiz-block">
+    <h4>✓ Quick Check — Reading VIF</h4>
+    <div class="q-prompt">Drag the correlation slider to around <strong>0.95</strong>. The regression coefficient on "Number of Rooms" suddenly flips from positive to negative, even though logically more rooms should never lower a house's price. What is the most likely cause?</div>
+    <div class="quiz-opt" onclick="checkQ('q3a',this,true)"><div class="marker">A</div>Severe multicollinearity (high VIF) — Area and Rooms are so correlated that the model can't split credit between them reliably, so coefficients become unstable and can flip sign</div>
+    <div class="quiz-opt" onclick="checkQ('q3a',this,false)"><div class="marker">B</div>The model is broken and needs to be rebuilt from scratch with a different algorithm</div>
+    <div class="quiz-opt" onclick="checkQ('q3a',this,false)"><div class="marker">C</div>This means "Number of Rooms" is a bad predictor and should never be used in any model</div>
+    <div class="quiz-opt" onclick="checkQ('q3a',this,false)"><div class="marker">D</div>Low Sensitivity is causing this — the classifier threshold should be adjusted</div>
+    <div class="q-feedback" id="q3a-fb"></div>
+  </div>
+
+  <div class="divider"><span>go deeper</span></div>
+  <div class="challenge-toggle">
+    <div class="ch-header" onclick="toggleCh('bt_3')">
+      <div class="ch-left"><div class="ch-icon">🏗️</div><div><div class="ch-title">Boardroom Challenge: The HR Analytics Trap</div><div class="ch-sub">Why "more features" isn't always "more insight"</div></div></div>
+      <div style="display:flex;align-items:center;gap:10px"><span class="ch-badge med">+15 pts</span><span class="ch-arrow" id="bt_3-arrow">▼</span></div>
+    </div>
+    <div class="ch-body" id="bt_3-body">
+      <p style="font-size:.9em;color:#444;line-height:1.75;margin-bottom:14px">An HR analytics team builds a regression to predict "Employee Attrition Risk Score" using <strong>Years of Experience</strong>, <strong>Age</strong>, and <strong>Years Since Last Promotion</strong> as predictors. Age and Years of Experience have a VIF of 14 each. The CHRO wants to know: "Which one — Age or Experience — is really driving attrition?"</p>
+      <div class="quiz-block" style="margin:0">
+        <div class="q-prompt">What is the honest answer to give the CHRO?</div>
+        <div class="quiz-opt" onclick="checkQ('bt_3',this,true)"><div class="marker">A</div>With VIF = 14, the model cannot reliably separate the individual effect of Age from Experience — the honest move is to drop one, combine them, or interpret them jointly rather than trust either coefficient alone</div>
+        <div class="quiz-opt" onclick="checkQ('bt_3',this,false)"><div class="marker">B</div>Whichever variable has the larger coefficient is definitely the real driver</div>
+        <div class="quiz-opt" onclick="checkQ('bt_3',this,false)"><div class="marker">C</div>VIF only matters for classification models, so this can be ignored in HR regression</div>
+        <div class="q-feedback" id="bt_3-fb"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mod-nav-btns">
+    <button class="btn btn-ghost" onclick="showModule(2)">&#8592; ROC &amp; AUC</button>
+    <button class="btn" onclick="showModule(4)">&#127942; Final Challenge &#8594;</button>
+  </div>
+</div>
+
+<!-- MODULE 4 — FINAL CHALLENGE -->
+<div class="module" id="mod4">
+  <div class="sec-title">Final Challenge: Put It All Together</div>
+  <p class="sec-sub">One reference table, four mixed scenarios. If you can place each scenario in the right box, you've internalised the toolkit.</p>
+
+  <div class="divider"><span>the definitive reference table</span></div>
+  <table class="cmp-table">
+    <thead><tr><th>Term</th><th>Belongs To</th><th>Formula</th><th>Answers The Question</th><th>Danger Sign</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Sensitivity</strong></td><td>Classification eval</td><td>TP / (TP+FN)</td><td>Of actual positives, how many did we catch?</td><td>Low → missing risky/positive cases</td></tr>
+      <tr><td><strong>Specificity</strong></td><td>Classification eval</td><td>TN / (TN+FP)</td><td>Of actual negatives, how many did we correctly clear?</td><td>Low → too many false alarms</td></tr>
+      <tr><td><strong>ROC Curve</strong></td><td>Classification eval</td><td>TPR vs FPR, all thresholds</td><td>How does the trade-off behave across every cut-off?</td><td>Hugs the diagonal → weak ranking ability</td></tr>
+      <tr><td><strong>AUC</strong></td><td>Classification eval</td><td>Area under ROC curve</td><td>Overall, how well does the model rank positives above negatives?</td><td>Close to 0.5 → near-random model</td></tr>
+      <tr><td><strong>VIF</strong></td><td>Regression diagnostic</td><td>1 / (1&minus;R_j&sup2;)</td><td>Are my predictors secretly measuring the same thing?</td><td>&gt;10 → unstable, untrustworthy coefficients</td></tr>
+    </tbody>
+  </table>
+
+  <div class="divider"><span>mixed scenarios</span></div>
+
+  <div class="quiz-block">
+    <h4>Scenario 1 — Airport Cargo Scanning</h4>
+    <div class="q-prompt">A cargo-scanning AI at Mumbai Port flags containers for physical inspection. Customs wants almost zero smuggled contraband to pass through undetected, even if it means many innocent containers get opened for inspection. Which metric should be maximised as the top priority?</div>
+    <div class="quiz-opt" onclick="checkQ('s1',this,true)"><div class="marker">A</div>Sensitivity — catching nearly every real contraband case matters more than the inconvenience of extra inspections</div>
+    <div class="quiz-opt" onclick="checkQ('s1',this,false)"><div class="marker">B</div>VIF — because the scanner uses multiple sensor readings as predictors</div>
+    <div class="quiz-opt" onclick="checkQ('s1',this,false)"><div class="marker">C</div>Specificity — minimising inspections is always the priority for customs</div>
+    <div class="q-feedback" id="s1-fb"></div>
+  </div>
+
+  <div class="quiz-block">
+    <h4>Scenario 2 — Comparing Two Churn Models</h4>
+    <div class="q-prompt">A telecom's Model 1 has AUC = 0.58; Model 2 has AUC = 0.84. Before picking any specific threshold for who gets a retention call, which conclusion is justified purely from these two AUC numbers?</div>
+    <div class="quiz-opt" onclick="checkQ('s2',this,true)"><div class="marker">A</div>Model 2 ranks likely churners above non-churners far more reliably across all thresholds — it's the stronger model before any threshold is even chosen</div>
+    <div class="quiz-opt" onclick="checkQ('s2',this,false)"><div class="marker">B</div>Both models are equally good since AUC doesn't reflect ranking quality</div>
+    <div class="quiz-opt" onclick="checkQ('s2',this,false)"><div class="marker">C</div>Model 1 must have lower VIF, so it should still be preferred</div>
+    <div class="q-feedback" id="s2-fb"></div>
+  </div>
+
+  <div class="quiz-block">
+    <h4>Scenario 3 — Real Estate Regression Gone Wrong</h4>
+    <div class="q-prompt">A regression predicting resale flat prices in Bengaluru uses both "Carpet Area (sq.ft.)" and "Carpet Area (sq.m.)" as separate predictors by mistake. What will happen, and what tool catches it?</div>
+    <div class="quiz-opt" onclick="checkQ('s3',this,true)"><div class="marker">A</div>VIF for both variables will be extremely high (near-infinite) — they carry identical information, so the regression cannot split credit between them; one should be dropped</div>
+    <div class="quiz-opt" onclick="checkQ('s3',this,false)"><div class="marker">B</div>Sensitivity will drop sharply because the classifier can't separate the two units</div>
+    <div class="quiz-opt" onclick="checkQ('s3',this,false)"><div class="marker">C</div>Nothing happens — regression easily handles duplicated information without any issue</div>
+    <div class="q-feedback" id="s3-fb"></div>
+  </div>
+
+  <div class="quiz-block">
+    <h4>Scenario 4 — The CEO's One Question</h4>
+    <div class="q-prompt">Your CEO, reading a vendor's one-page model summary, asks: "This page shows AUC = 0.91 for the credit-default model, and VIF values under 3 for the income-prediction model used to feed it. Are these two numbers checking the same thing?"</div>
+    <div class="quiz-opt" onclick="checkQ('s4',this,true)"><div class="marker">A</div>No — AUC judges how well the default classifier separates defaulters from non-defaulters across thresholds; VIF checks whether the income model's own predictors are dangerously correlated. Different models, different toolkits</div>
+    <div class="quiz-opt" onclick="checkQ('s4',this,false)"><div class="marker">B</div>Yes — both numbers ultimately measure model accuracy, so they're interchangeable</div>
+    <div class="quiz-opt" onclick="checkQ('s4',this,false)"><div class="marker">C</div>Yes — a high AUC always implies low VIF, so checking one is redundant</div>
+    <div class="q-feedback" id="s4-fb"></div>
+  </div>
+
+  <div class="divider"><span>you're done!</span></div>
+  <div id="completionCheck" style="text-align:center;padding:20px">
+    <button class="btn" onclick="checkCompletion()" style="font-size:1em;padding:14px 32px">🏁 See My Final Score</button>
+  </div>
+
+  <div class="trophy-screen" id="trophyScreen" style="display:none">
+    <div class="big-trophy">🏆</div>
+    <h2>Diagnostics Toolkit — Mastered!</h2>
+    <p style="color:#555;font-size:.95em;max-width:480px;margin:0 auto 6px">You now know when to reach for a confusion matrix, when to sweep the whole ROC curve, and when to check your regression predictors for multicollinearity — and, most importantly, why these are never "one algorithm."</p>
+    <span id="finalScore">0 / 225 pts</span>
+    <div class="final-breakdown" id="breakdownCards"></div>
+  </div>
+
+  <div class="mod-nav-btns">
+    <button class="btn btn-ghost" onclick="showModule(3)">&#8592; VIF</button>
+    <div></div>
+  </div>
+</div>
+
+</div><!-- /page-wrap -->
+
+<script>
+// ─── SCORE SYSTEM ────────────────────────────────────────────
+let totalPts = 0;
+const maxPts = 225;
+const answeredQs = new Set();
+
+function addPts(n) {
+  totalPts = Math.min(maxPts, totalPts + n);
+  document.getElementById('sc-pts').textContent = totalPts;
+  document.getElementById('sc-prog').style.width = (totalPts / maxPts * 100) + '%';
+}
+
+function checkQ(id, el, correct) {
+  if (answeredQs.has(id)) return;
+  answeredQs.add(id);
+  const fb = document.getElementById(id + '-fb');
+  document.querySelectorAll('[onclick*="' + id + '"]').forEach(o => o.style.pointerEvents = 'none');
+  if (correct) {
+    el.classList.add('correct');
+    const pts = id.startsWith('bt_') ? 15 : id.startsWith('s') ? 20 : 25;
+    addPts(pts);
+    if (fb) { fb.className = 'q-feedback ok'; fb.style.display = 'block'; fb.innerHTML = '✅ <strong>Correct! +' + pts + ' pts</strong> — ' + getFeedback(id, true); }
+    if (answeredQs.size === 1) document.getElementById('b1').classList.add('earned');
+    if (answeredQs.size === 3) document.getElementById('b2').classList.add('earned');
+    if (answeredQs.size === 5) document.getElementById('b3').classList.add('earned');
+    if (answeredQs.size === 7) document.getElementById('b4').classList.add('earned');
+    if (answeredQs.size === 9) document.getElementById('b5').classList.add('earned');
+  } else {
+    el.classList.add('incorrect');
+    if (fb) { fb.className = 'q-feedback no'; fb.style.display = 'block'; fb.innerHTML = '❌ <strong>Not quite.</strong> — ' + getFeedback(id, false); }
+  }
+}
+
+function getFeedback(id, correct) {
+  const map = {
+    'q0a': { ok: 'The model has learned to predict the majority class only. Sensitivity (catching real fraud) is near zero even though Accuracy looks perfect — this is exactly why Accuracy is dangerous on imbalanced data.', no: 'Look at what "always predict no-fraud" does to actual fraud cases: every single one becomes a False Negative. Accuracy hides this completely.' },
+    'q1a': { ok: 'Lowering the threshold makes the model flag more people as "default" — so it catches nearly every real defaulter (Sensitivity up) but also wrongly flags more safe customers (Specificity down). This trade-off is universal.', no: 'Try it on the slider: drag threshold to 0.10 and watch the confusion matrix. Sensitivity and Specificity move in opposite directions as the threshold changes — they are rarely both maximised at once.' },
+    'q2a': { ok: 'AUC of 0.61 is only slightly better than a coin flip (0.5) at separating risky from safe customers. No amount of cost savings fixes a model that can barely tell the two groups apart.', no: 'Remember: 0.5 AUC = random guessing, 1.0 = perfect. 0.61 sits only a little above random — this model has very weak ranking ability regardless of what threshold you eventually pick.' },
+    'q3a': { ok: 'When two predictors are highly correlated, the regression cannot cleanly attribute effect to one or the other — coefficients become unstable and can even flip sign. This is the textbook symptom of high VIF.', no: 'A coefficient flipping sign for a logically-positive variable is a classic multicollinearity symptom — check VIF, not the classifier threshold (VIF is a regression concept, unrelated to Sensitivity).' },
+    'bt_1': { ok: 'In healthcare screening, a False Negative (missed cancer) is catastrophic while a False Positive (extra biopsy) is merely costly and uncomfortable. Hospitals deliberately push Sensitivity up, accepting lower Specificity.', no: 'Compare the cost of the two errors: missing a real tumour vs. one unnecessary biopsy. When False Negatives are far more dangerous than False Positives, Sensitivity is prioritised — even at the cost of Specificity.' },
+    'bt_2': { ok: "Vendor X's AUC of 0.55 reveals it barely separates fraud from non-fraud — its 99% accuracy is an illusion created by the 99:1 class imbalance. Vendor Y's 0.89 AUC shows genuine ranking skill despite lower raw accuracy.", no: "On imbalanced data (1% fraud), a model can hit 99% accuracy by never predicting fraud at all. AUC exposes this because it's built from Sensitivity and Specificity together, not raw accuracy." },
+    'q_unused': { ok: '', no: '' },
+    'bt_3': { ok: 'A VIF of 14 means Age and Experience are almost interchangeable in this dataset — the model literally cannot tell you which one "really" drives attrition. The professional answer is to combine, drop one, or caveat both coefficients heavily.', no: 'A larger coefficient does NOT mean "more real effect" when VIF is high — with severely correlated predictors, coefficient size and even sign become unreliable. That is precisely what high VIF warns you about.' },
+    's1': { ok: 'When missing contraband is far more costly than an extra inspection, Sensitivity is the priority — catch nearly everything real, and accept more false alarms as the price.', no: 'Weigh the two error costs: smuggled contraband slipping through vs. an innocent container being opened. The costlier error to avoid is the False Negative — so Sensitivity leads.' },
+    's2': { ok: 'AUC compares ranking ability across every threshold simultaneously — 0.84 vs 0.58 is a decisive, threshold-independent signal that Model 2 separates churners from non-churners far better.', no: 'AUC is specifically designed to compare models before any threshold decision is made. A gap of 0.58 vs 0.84 is a large, meaningful difference in ranking quality — it is not something VIF (a regression concept) would tell you.' },
+    's3': { ok: 'Sq.ft. and sq.m. of the same area are perfectly (or near-perfectly) correlated — R² between them approaches 1, so VIF explodes toward infinity. The regression cannot split credit between duplicate information; drop one.', no: 'Two columns measuring literally the same physical quantity in different units will have a correlation near 1 — that is a VIF problem (regression predictors fighting each other), not a Sensitivity/classification issue.' },
+    's4': { ok: 'AUC belongs to the classification-evaluation world (judging Yes/No predictions across thresholds); VIF belongs to the regression-diagnostic world (judging whether predictors overlap). They check completely different things on different models.', no: "Re-read what each formula uses: AUC is built from TP/FP/TN/FN of a classifier's predictions. VIF is built from R² between independent variables in a regression — no predictions involved at all. They cannot substitute for each other." }
+  };
+  const f = map[id];
+  return f ? (correct ? f.ok : f.no) : '';
+}
+
+// ─── MODULE NAVIGATION ────────────────────────────────────────
+function showModule(idx) {
+  document.querySelectorAll('.module').forEach(m => m.classList.remove('active'));
+  document.querySelectorAll('.mod-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('mod' + idx).classList.add('active');
+  document.querySelectorAll('.mod-tab')[idx].classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (idx === 2) setTimeout(initRocChart, 150);
+  if (idx === 3) setTimeout(initVifChart, 150);
+}
+
+// ─── TOGGLES ──────────────────────────────────────────────────
+function toggleCh(id) {
+  const body = document.getElementById(id + '-body');
+  const arrow = document.getElementById(id + '-arrow');
+  body.classList.toggle('open');
+  if (arrow) arrow.classList.toggle('open');
+}
+
+// ─── PATIENT / APPLICANT DATA (shared by Sensitivity & ROC modules) ──
+const patients = [
+  { name: 'A. Sharma', score: 0.05, actual: 0 },
+  { name: 'R. Iyer',   score: 0.08, actual: 0 },
+  { name: 'P. Nair',   score: 0.12, actual: 0 },
+  { name: 'S. Gupta',  score: 0.15, actual: 0 },
+  { name: 'M. Khan',   score: 0.18, actual: 0 },
+  { name: 'K. Rao',    score: 0.22, actual: 0 },
+  { name: 'V. Joshi',  score: 0.28, actual: 0 },
+  { name: 'D. Verma',  score: 0.35, actual: 0 },
+  { name: 'N. Pillai', score: 0.42, actual: 0 },
+  { name: 'A. Bose',   score: 0.55, actual: 0 },
+  { name: 'T. Reddy',  score: 0.30, actual: 1 },
+  { name: 'H. Singh',  score: 0.40, actual: 1 },
+  { name: 'L. Menon',  score: 0.48, actual: 1 },
+  { name: 'C. Das',    score: 0.52, actual: 1 },
+  { name: 'B. Chawla', score: 0.60, actual: 1 },
+  { name: 'F. Ali',    score: 0.68, actual: 1 },
+  { name: 'G. Mehta',  score: 0.75, actual: 1 },
+  { name: 'I. Kapoor', score: 0.82, actual: 1 },
+  { name: 'J. Sen',    score: 0.90, actual: 1 },
+  { name: 'O. Dutta',  score: 0.95, actual: 1 }
+];
+const P_TOTAL = patients.filter(p => p.actual === 1).length;
+const N_TOTAL = patients.filter(p => p.actual === 0).length;
+
+function computeConfusion(threshold) {
+  let tp = 0, tn = 0, fp = 0, fn = 0;
+  patients.forEach(p => {
+    const pred = p.score >= threshold ? 1 : 0;
+    if (pred === 1 && p.actual === 1) tp++;
+    else if (pred === 0 && p.actual === 0) tn++;
+    else if (pred === 1 && p.actual === 0) fp++;
+    else fn++;
+  });
+  return { tp, tn, fp, fn };
+}
+
+function updateThreshold(val) {
+  const th = parseFloat(val);
+  document.getElementById('thVal').textContent = th.toFixed(2);
+  const { tp, tn, fp, fn } = computeConfusion(th);
+  document.getElementById('tpNum').textContent = tp;
+  document.getElementById('tnNum').textContent = tn;
+  document.getElementById('fpNum').textContent = fp;
+  document.getElementById('fnNum').textContent = fn;
+  const sens = tp + fn > 0 ? tp / (tp + fn) : 0;
+  const spec = tn + fp > 0 ? tn / (tn + fp) : 0;
+  const prec = tp + fp > 0 ? tp / (tp + fp) : 0;
+  const acc = (tp + tn) / patients.length;
+  document.getElementById('sensVal').textContent = Math.round(sens * 100) + '%';
+  document.getElementById('specVal').textContent = Math.round(spec * 100) + '%';
+  document.getElementById('precVal').textContent = Math.round(prec * 100) + '%';
+  document.getElementById('accVal').textContent = Math.round(acc * 100) + '%';
+  renderPatientStrip(th);
+  const insight = document.getElementById('threshInsight');
+  if (insight) {
+    if (th <= 0.20) insight.innerHTML = '🔎 <strong>Low threshold zone:</strong> Sensitivity is near its max — almost no real defaulter is missed — but Specificity has dropped, meaning several genuinely safe customers are being wrongly flagged.';
+    else if (th >= 0.65) insight.innerHTML = '🛡️ <strong>High threshold zone:</strong> Specificity is near its max — very few safe customers are wrongly flagged — but Sensitivity has dropped, meaning some real defaulters are now slipping through as False Negatives.';
+    else insight.innerHTML = '⚖️ <strong>Balanced zone:</strong> Sensitivity and Specificity are both moderate. The "right" threshold isn\'t a math answer — it depends on whether a missed defaulter or a wrongly-denied good customer costs the business more.';
+  }
+}
+
+function renderPatientStrip(th) {
+  const strip = document.getElementById('patientStrip');
+  if (!strip) return;
+  const sorted = [...patients].sort((a, b) => a.score - b.score);
+  strip.innerHTML = sorted.map(p => {
+    const pred = p.score >= th ? 1 : 0;
+    let cls, tag;
+    if (pred === 1 && p.actual === 1) { cls = 'chip-tp'; tag = 'TP'; }
+    else if (pred === 0 && p.actual === 0) { cls = 'chip-tn'; tag = 'TN'; }
+    else if (pred === 1 && p.actual === 0) { cls = 'chip-fp'; tag = 'FP'; }
+    else { cls = 'chip-fn'; tag = 'FN'; }
+    return `<div class="p-chip ${cls}"><span class="pscore">${p.score.toFixed(2)}</span>${tag}</div>`;
+  }).join('');
+}
+
+// ─── ROC / AUC ──────────────────────────────────────────────
+let rocChart = null;
+
+function computeRocPoints() {
+  const thresholds = Array.from(new Set(patients.map(p => p.score))).sort((a, b) => b - a);
+  thresholds.unshift(1.01);
+  thresholds.push(-0.01);
+  const pts = thresholds.map(t => {
+    const { tp, fp } = computeConfusion(t);
+    return { x: fp / N_TOTAL, y: tp / P_TOTAL };
+  });
+  pts.sort((a, b) => (a.x - b.x) || (a.y - b.y));
+  return pts;
+}
+
+function computeAUC(pts) {
+  let auc = 0;
+  for (let i = 1; i < pts.length; i++) {
+    const width = pts[i].x - pts[i - 1].x;
+    const avgH = (pts[i].y + pts[i - 1].y) / 2;
+    auc += width * avgH;
+  }
+  return auc;
+}
+
+function initRocChart() {
+  const canvas = document.getElementById('rocChart');
+  if (!canvas) return;
+  if (rocChart) { rocChart.destroy(); rocChart = null; }
+  const pts = computeRocPoints();
+  const auc = computeAUC(pts);
+  document.getElementById('aucVal').textContent = auc.toFixed(2);
+  rocChart = new Chart(canvas, {
+    type: 'scatter',
+    data: {
+      datasets: [
+        { label: 'ROC Curve (our model)', data: pts, showLine: true, borderColor: '#7c3aed', backgroundColor: 'rgba(124,58,237,.15)', borderWidth: 2.5, fill: true, pointRadius: 3, tension: 0 },
+        { label: 'Random guessing (AUC=0.5)', data: [{ x: 0, y: 0 }, { x: 1, y: 1 }], showLine: true, borderColor: '#999', borderDash: [6, 6], borderWidth: 1.5, pointRadius: 0, fill: false },
+        { label: 'Your threshold', data: [{ x: 0, y: 0 }], backgroundColor: '#e84c3d', borderColor: '#e84c3d', pointRadius: 7, showLine: false }
+      ]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        x: { title: { display: true, text: 'False Positive Rate (1 − Specificity)' }, min: 0, max: 1 },
+        y: { title: { display: true, text: 'True Positive Rate (Sensitivity)' }, min: 0, max: 1 }
+      },
+      plugins: { legend: { display: true, labels: { boxWidth: 12, font: { size: 10 } } } }
+    }
+  });
+  updateRocMarker(document.getElementById('rocThSlider').value);
+}
+
+function updateRocMarker(val) {
+  const th = parseFloat(val);
+  document.getElementById('rocThVal').textContent = th.toFixed(2);
+  const { tp, fp } = computeConfusion(th);
+  const tpr = tp / P_TOTAL, fpr = fp / N_TOTAL;
+  document.getElementById('rocSensVal').textContent = Math.round(tpr * 100) + '%';
+  document.getElementById('rocFprVal').textContent = Math.round(fpr * 100) + '%';
+  if (rocChart) {
+    rocChart.data.datasets[2].data = [{ x: fpr, y: tpr }];
+    rocChart.update();
+  }
+}
+
+// ─── VIF ──────────────────────────────────────────────────────
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+const rng = mulberry32(42);
+function randn() {
+  let u = 0, v = 0;
+  while (u === 0) u = rng();
+  while (v === 0) v = rng();
+  return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+}
+const VIF_N = 40;
+const vz1 = [], vz2 = [];
+for (let i = 0; i < VIF_N; i++) { vz1.push(randn()); vz2.push(randn()); }
+
+function correlation(xs, ys) {
+  const n = xs.length;
+  const mx = xs.reduce((a, b) => a + b, 0) / n;
+  const my = ys.reduce((a, b) => a + b, 0) / n;
+  let num = 0, dx = 0, dy = 0;
+  for (let i = 0; i < n; i++) { num += (xs[i] - mx) * (ys[i] - my); dx += (xs[i] - mx) ** 2; dy += (ys[i] - my) ** 2; }
+  return num / Math.sqrt(dx * dy);
+}
+
+let vifChart = null;
+function initVifChart() {
+  const canvas = document.getElementById('vifScatter');
+  if (!canvas) return;
+  if (vifChart) { vifChart.destroy(); vifChart = null; }
+  vifChart = new Chart(canvas, {
+    type: 'scatter',
+    data: { datasets: [{ label: 'Flats', data: [], backgroundColor: '#7c3aed', pointRadius: 5 }] },
+    options: {
+      responsive: true,
+      scales: {
+        x: { title: { display: true, text: 'Built-up Area (sq.ft.)' } },
+        y: { title: { display: true, text: 'Number of Rooms' } }
+      },
+      plugins: { legend: { display: false } }
+    }
+  });
+  updateVIF(document.getElementById('corrSlider').value);
+}
+
+function updateVIF(val) {
+  const r = parseFloat(val);
+  document.getElementById('corrVal').textContent = r.toFixed(2);
+  const areaPts = [], roomPts = [], chartPts = [];
+  for (let i = 0; i < VIF_N; i++) {
+    const a = vz1[i];
+    const b = r * vz1[i] + Math.sqrt(1 - r * r) * vz2[i];
+    const area = 1500 + 300 * a;
+    const rooms = 3.5 + 0.9 * b;
+    areaPts.push(area); roomPts.push(rooms);
+    chartPts.push({ x: Math.round(area), y: Math.round(rooms * 10) / 10 });
+  }
+  const rxy = correlation(areaPts, roomPts);
+  const r2 = Math.min(rxy * rxy, 0.995);
+  const vif = 1 / (1 - r2);
+  const vifDisplay = vif >= 50 ? '50+' : vif.toFixed(2);
+  const vifEl = document.getElementById('vifVal');
+  vifEl.textContent = vifDisplay;
+  let pos, verdictClass, verdictHtml, vifColor;
+  if (vif < 5) {
+    pos = ((vif - 1) / 4) * 25;
+    verdictClass = 'verdict-ok'; vifColor = '#16a34a';
+    verdictHtml = '✅ <strong>Low (VIF &lt; 5):</strong> Area and Rooms carry mostly independent information. Coefficients on both are stable and can be interpreted with confidence.';
+  } else if (vif < 10) {
+    pos = 25 + ((vif - 5) / 5) * 25;
+    verdictClass = 'verdict-warn'; vifColor = '#d97706';
+    verdictHtml = '⚠️ <strong>Moderate (5 ≤ VIF &lt; 10):</strong> Noticeable overlap. Coefficients are starting to wobble — worth monitoring, consider combining or dropping one variable if this persists.';
+  } else {
+    pos = 50 + Math.min((vif - 10) / 15, 1) * 50;
+    verdictClass = 'verdict-bad'; vifColor = '#dc2626';
+    verdictHtml = '🚨 <strong>Severe (VIF ≥ 10):</strong> Area and Rooms are nearly interchangeable. Individual coefficients are unreliable and can even flip sign — drop one, combine them, or use Ridge regression.';
+  }
+  vifEl.style.color = vifColor;
+  document.getElementById('vifMarker').style.left = Math.min(Math.max(pos, 0), 100) + '%';
+  const verdictEl = document.getElementById('vifVerdict');
+  verdictEl.className = 'vif-verdict ' + verdictClass;
+  verdictEl.innerHTML = verdictHtml;
+  if (vifChart) { vifChart.data.datasets[0].data = chartPts; vifChart.update(); }
+}
+
+// ─── COMPLETION / TROPHY ────────────────────────────────────
+function checkCompletion() {
+  document.getElementById('completionCheck').style.display = 'none';
+  document.getElementById('trophyScreen').style.display = 'block';
+  document.getElementById('finalScore').textContent = totalPts + ' / ' + maxPts + ' pts';
+  const modules = [
+    { icon: '🧩', label: 'Confusion Matrix' },
+    { icon: '🚨', label: 'Sensitivity/Specificity' },
+    { icon: '📈', label: 'ROC & AUC' },
+    { icon: '🧮', label: 'VIF' }
+  ];
+  document.getElementById('breakdownCards').innerHTML =
+    modules.map(m => `<div class="fb-card"><div class="icon">${m.icon}</div><div class="label">${m.label}</div></div>`).join('') +
+    `<div class="fb-card"><div class="icon" style="font-family:var(--mono);font-size:1.2em">${totalPts}</div><div class="label">Total Score</div></div>`;
+  if (totalPts >= 180) document.getElementById('b6').classList.add('earned');
+  celebrate();
+}
+
+function celebrate() {
+  const e = ['🎊', '⭐', '✨', '🌟', '🎉', '💡', '🏆', '📊', '🔥'];
+  for (let i = 0; i < 18; i++) {
+    setTimeout(() => {
+      const el = document.createElement('div');
+      el.className = 'confetti-piece';
+      el.innerHTML = e[Math.floor(Math.random() * e.length)];
+      el.style.left = Math.random() * 100 + 'vw';
+      el.style.animationDuration = (1.4 + Math.random() * 1.6) + 's';
+      el.style.fontSize = (0.9 + Math.random() * 0.9) + 'em';
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 3000);
+    }, i * 80);
+  }
+}
+
+// ─── PARTICLES ────────────────────────────────────────────────
+function renderParticles() {
+  const c = document.getElementById('particles');
+  c.width = window.innerWidth; c.height = window.innerHeight;
+  const ctx = c.getContext('2d');
+  const clrs = ['#7c3aed', '#2563eb', '#16a34a', '#d97706'];
+  const dots = Array.from({ length: 30 }, () => ({
+    x: Math.random() * c.width, y: Math.random() * c.height,
+    vx: (Math.random() - .5) * .25, vy: (Math.random() - .5) * .25,
+    r: .7 + Math.random() * 1.4,
+    col: clrs[Math.floor(Math.random() * clrs.length)]
+  }));
+  (function draw() {
+    ctx.clearRect(0, 0, c.width, c.height);
+    dots.forEach(d => {
+      d.x += d.vx; d.y += d.vy;
+      if (d.x < 0) d.x = c.width; if (d.x > c.width) d.x = 0;
+      if (d.y < 0) d.y = c.height; if (d.y > c.height) d.y = 0;
+      ctx.beginPath(); ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+      ctx.fillStyle = d.col; ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  })();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  renderParticles();
+  updateThreshold(0.5);
+});
+</script>
+</body>
+</html>

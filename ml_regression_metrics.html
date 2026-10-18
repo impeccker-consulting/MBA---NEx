@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Regression Diagnostics: MAE, RMSE, R-Squared &amp; Adjusted R-Squared | Impeccker Consulting</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Bricolage+Grotesque:wght@300;400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0d0d0d;--paper:#faf8f3;--cream:#f2ede3;
+  --accent:#7c3aed;--accent2:#2563eb;--accent3:#16a34a;
+  --gold:#d97706;--red:#e84c3d;--teal:#0d9488;
+  --muted:#6b6b6b;--border:#d4cfc4;--card:#fff;
+  --mono:"Space Mono",monospace;--sans:"Bricolage Grotesque",sans-serif;
+  --c1:#7c3aed;--c2:#2563eb;--c3:#16a34a;--c4:#d97706;--c5:#e84c3d;--c6:#0d9488
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--sans);background:var(--paper);color:var(--ink);min-height:100vh;overflow-x:hidden}
+#particles{position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.15}
+#scoreboard{position:fixed;top:16px;right:16px;background:var(--ink);color:var(--paper);border-radius:16px;padding:16px 20px;z-index:999;min-width:190px;box-shadow:4px 4px 0 var(--accent);font-family:var(--mono);font-size:.76em}
+#scoreboard .label{color:#888;font-size:.72em;letter-spacing:.1em;text-transform:uppercase}
+#scoreboard .big-score{font-size:1.9em;font-weight:700;color:var(--accent);line-height:1}
+.badges-row{display:flex;gap:5px;flex-wrap:wrap;margin-top:9px}
+.badge{width:30px;height:30px;border-radius:50%;background:#333;border:2px solid #555;display:flex;align-items:center;justify-content:center;font-size:.85em;transition:all .3s;filter:grayscale(1)}
+.badge.earned{filter:none;border-color:var(--gold);background:#222;transform:scale(1.15)}
+.prog-bar{height:4px;background:#333;border-radius:4px;margin-top:9px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--gold));transition:width .5s;border-radius:4px}
+.page-wrap{max-width:960px;margin:0 auto;padding:20px 20px 80px;position:relative;z-index:1}
+.hero{text-align:center;padding:44px 20px 32px;border-bottom:2px solid var(--ink);margin-bottom:36px}
+.hero .kicker{font-family:var(--mono);font-size:.72em;letter-spacing:.15em;color:var(--accent);text-transform:uppercase;margin-bottom:10px}
+.hero h1{font-size:clamp(1.9em,5vw,3.3em);font-weight:800;line-height:1.05;letter-spacing:-.02em}
+.hero h1 span{color:var(--accent)}
+.hero .sub{font-size:1em;color:var(--muted);margin-top:12px;max-width:540px;margin-inline:auto;line-height:1.65}
+.session-pills{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:18px}
+.pill{font-family:var(--mono);font-size:.72em;border:1.5px solid var(--border);border-radius:100px;padding:4px 13px;color:var(--muted)}
+.mod-nav{display:flex;border:2px solid var(--ink);border-radius:12px;overflow:hidden;margin-bottom:32px;flex-wrap:wrap}
+.mod-tab{flex:1;min-width:80px;padding:12px 5px;text-align:center;font-weight:600;font-size:.78em;cursor:pointer;border-right:2px solid var(--ink);background:white;transition:all .2s;line-height:1.3}
+.mod-tab:last-child{border-right:none}
+.mod-tab:hover{background:var(--cream)}
+.mod-tab.active{background:var(--ink);color:white}
+.mod-tab .num{font-family:var(--mono);font-size:1.1em;display:block}
+.module{display:none;animation:fadeSlide .3s ease}
+.module.active{display:block}
+@keyframes fadeSlide{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.sec-title{font-size:1.8em;font-weight:800;letter-spacing:-.02em;border-left:6px solid var(--accent);padding-left:14px;margin-bottom:5px}
+.sec-sub{color:var(--muted);margin-bottom:24px;font-size:.97em}
+.theory-slide{background:linear-gradient(135deg,#1e1b4b 0%,#1e3a5f 100%);color:white;border-radius:18px;padding:28px 32px;margin:20px 0;position:relative;overflow:hidden;border:2px solid #3730a3}
+.theory-slide .ts-tag{font-family:var(--mono);font-size:.65em;letter-spacing:.15em;color:#a5b4fc;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.theory-slide .ts-tag::before{content:"";width:30px;height:2px;background:#a5b4fc;display:block}
+.theory-slide h3{font-size:1.3em;font-weight:800;margin-bottom:14px;color:white}
+.theory-slide p{color:#c7d2fe;line-height:1.75;margin-bottom:12px;font-size:.94em}
+.theory-slide p:last-child{margin-bottom:0}
+.theory-slide strong{color:white}
+.theory-bullets{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.t-bullet{background:rgba(255,255,255,.07);border-radius:10px;padding:12px 14px;border-left:3px solid #818cf8;font-size:.88em;line-height:1.6;color:#c7d2fe}
+.t-bullet strong{color:#a5b4fc;display:block;margin-bottom:4px;font-size:.85em;text-transform:uppercase;letter-spacing:.06em}
+.story-block{display:grid;grid-template-columns:64px 1fr;gap:16px;background:var(--card);border:2px solid var(--ink);border-radius:16px;padding:22px;margin-bottom:18px;box-shadow:4px 4px 0 var(--ink)}
+.story-icon{font-size:2.6em;display:flex;align-items:flex-start;justify-content:center;padding-top:2px}
+.story-body h3{font-size:1.15em;font-weight:800;margin-bottom:7px}
+.story-body p{color:#444;line-height:1.72;margin-bottom:9px;font-size:.95em}
+.story-body p:last-child{margin-bottom:0}
+.math-story{background:var(--ink);color:var(--paper);border-radius:16px;padding:24px;margin:20px 0;position:relative;overflow:hidden}
+.math-story::before{content:"ALGORITHM DECODED";position:absolute;top:13px;right:18px;font-family:var(--mono);font-size:.6em;color:var(--accent);letter-spacing:.1em}
+.math-story h4{font-size:1em;color:var(--gold);margin-bottom:11px;font-weight:700}
+.formula-display{background:#1a1a1a;border-radius:10px;padding:13px 16px;font-family:var(--mono);font-size:1em;color:#7dd3fc;margin:11px 0;border-left:3px solid var(--accent)}
+.formula-parts{display:grid;gap:9px;margin-top:12px}
+.formula-part{display:flex;gap:11px;align-items:flex-start;background:#1a1a1a;border-radius:8px;padding:10px 12px}
+.fp-sym{font-family:var(--mono);color:#7dd3fc;min-width:90px;font-weight:700;font-size:.88em;padding-top:1px}
+.fp-desc{color:#ccc;font-size:.86em;line-height:1.65}
+.fp-desc strong{color:var(--paper)}
+.interactive{background:var(--cream);border:2px dashed var(--border);border-radius:16px;padding:24px;margin:20px 0}
+.interactive h4{font-size:1em;font-weight:700;margin-bottom:12px}
+.interactive h4 .tag{display:inline-block;background:var(--accent);color:white;font-size:.6em;padding:2px 9px;border-radius:100px;vertical-align:middle;margin-left:7px;font-family:var(--mono)}
+.slider-wrap{margin:12px 0}
+.slider-label{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-weight:600;font-size:.86em}
+.slider-val{font-family:var(--mono);background:var(--ink);color:var(--paper);padding:2px 9px;border-radius:6px;font-size:.81em}
+input[type=range]{width:100%;-webkit-appearance:none;height:6px;background:var(--border);border-radius:6px;outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--ink);cursor:pointer;border:3px solid white;box-shadow:0 0 0 2px var(--ink);transition:transform .2s}
+input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
+.btn{display:inline-flex;align-items:center;gap:6px;font-family:var(--sans);font-weight:700;font-size:.9em;padding:10px 20px;border:2px solid var(--ink);border-radius:10px;cursor:pointer;transition:all .2s;background:var(--ink);color:white}
+.btn:hover{transform:translateY(-2px);box-shadow:3px 3px 0 var(--accent)}
+.btn:active{transform:translateY(0);box-shadow:none}
+.btn-ghost{background:transparent;color:var(--ink)}
+.btn-ghost:hover{background:var(--cream);box-shadow:3px 3px 0 var(--ink)}
+.chart-box{background:white;border:2px solid var(--border);border-radius:12px;padding:12px;margin:12px 0}
+.quiz-block{background:#f5f0ff;border:2px solid var(--accent);border-radius:16px;padding:20px;margin:20px 0}
+.quiz-block h4{font-weight:700;margin-bottom:4px;color:#4c1d95}
+.quiz-block .q-prompt{font-size:.93em;color:var(--ink);margin:9px 0 13px;line-height:1.65}
+.quiz-opt{background:white;border:2px solid var(--border);border-radius:10px;padding:12px 15px;margin:6px 0;cursor:pointer;transition:all .2s;font-size:.91em;display:flex;align-items:flex-start;gap:10px;line-height:1.5}
+.quiz-opt:hover{border-color:var(--accent);background:#f5f0ff}
+.quiz-opt.correct{background:#dcfce7;border-color:var(--accent3)}
+.quiz-opt.incorrect{background:#fee2e2;border-color:var(--red)}
+.quiz-opt .marker{width:23px;height:23px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:.71em;flex-shrink:0;margin-top:1px}
+.q-feedback{margin-top:10px;padding:11px 14px;border-radius:10px;font-size:.88em;line-height:1.6;display:none}
+.q-feedback.ok{background:#dcfce7;color:#166534;border-left:4px solid var(--accent3)}
+.q-feedback.no{background:#fee2e2;color:#991b1b;border-left:4px solid var(--red)}
+.info-strip{background:#eff6ff;border-left:4px solid var(--accent2);padding:12px 15px;border-radius:6px;margin:11px 0;font-size:.9em;line-height:1.72}
+.warn-strip{background:#fff7ed;border-left:4px solid var(--gold);padding:12px 15px;border-radius:6px;margin:11px 0;font-size:.9em;line-height:1.72}
+.success-strip{background:#f0fdf4;border-left:4px solid var(--accent3);padding:12px 15px;border-radius:6px;margin:11px 0;font-size:.9em;line-height:1.72}
+.purple-strip{background:#f5f3ff;border-left:4px solid var(--accent);padding:12px 15px;border-radius:6px;margin:11px 0;font-size:.9em;line-height:1.72}
+.challenge-toggle{border:2px solid var(--ink);border-radius:14px;margin:12px 0;overflow:hidden;box-shadow:3px 3px 0 var(--ink);transition:box-shadow .2s}
+.challenge-toggle:hover{box-shadow:5px 5px 0 var(--accent)}
+.ch-header{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;cursor:pointer;background:white;user-select:none}
+.ch-header:hover{background:var(--cream)}
+.ch-left{display:flex;align-items:center;gap:13px}
+.ch-icon{font-size:1.8em}
+.ch-title{font-weight:800;font-size:1em}
+.ch-sub{color:var(--muted);font-size:.81em;margin-top:2px}
+.ch-badge{font-family:var(--mono);font-size:.65em;padding:3px 10px;border-radius:100px;border:1.5px solid}
+.ch-badge.hard{border-color:var(--red);color:var(--red)}
+.ch-badge.med{border-color:var(--gold);color:var(--gold)}
+.ch-arrow{font-size:1.1em;transition:transform .3s}
+.ch-arrow.open{transform:rotate(180deg)}
+.ch-body{display:none;padding:20px;border-top:2px solid var(--border);background:var(--cream)}
+.ch-body.open{display:block}
+.cmp-table{width:100%;border-collapse:collapse;margin:16px 0;border-radius:12px;overflow:hidden;border:2px solid var(--ink)}
+.cmp-table th{background:var(--ink);color:var(--paper);padding:12px 14px;text-align:left;font-family:var(--mono);font-size:.76em}
+.cmp-table td{padding:10px 14px;border-bottom:1px solid var(--border);font-size:.86em}
+.cmp-table tr:last-child td{border-bottom:none}
+.cmp-table tr:nth-child(even) td{background:var(--cream)}
+.divider{display:flex;align-items:center;gap:12px;margin:24px 0}
+.divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--border)}
+.divider span{font-family:var(--mono);font-size:.7em;color:var(--muted);letter-spacing:.1em;text-transform:uppercase}
+.mod-nav-btns{display:flex;justify-content:space-between;margin-top:40px;padding-top:20px;border-top:2px solid var(--border)}
+.clust-tab-bar{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0 10px}
+.clust-tab{font-family:var(--mono);font-size:.72em;padding:6px 14px;border:2px solid var(--border);border-radius:8px;background:white;cursor:pointer;transition:all .2s;font-weight:600}
+.clust-tab:hover{border-color:var(--ink);background:var(--cream)}
+.clust-tab.active{background:var(--ink);color:white;border-color:var(--ink)}
+.clust-panel{display:none}.clust-panel.active{display:block;animation:fadeSlide .3s ease}
+.flow-diagram{background:#0f172a;border-radius:14px;padding:20px;margin:16px 0;border:2px solid #1e293b;overflow-x:auto}
+.flow-row{display:flex;align-items:center;gap:0;min-width:560px}
+.flow-node{background:#1e293b;border:2px solid #334155;border-radius:10px;padding:10px 12px;text-align:center;font-size:.78em;min-width:90px;flex-shrink:0}
+.flow-node .fn-icon{font-size:1.3em;margin-bottom:3px}
+.flow-node .fn-label{font-weight:700;color:#e2e8f0;font-size:.82em}
+.flow-node .fn-sub{color:#94a3b8;font-size:.72em;margin-top:2px;line-height:1.3}
+.flow-node.active-node{background:#2d1b69;border-color:var(--accent)}
+.flow-node.result-node{background:#14532d;border-color:#16a34a}
+.flow-arrow{color:#475569;font-size:1.3em;padding:0 3px;flex-shrink:0}
+.dataset-box{background:var(--ink);color:var(--paper);border-radius:16px;padding:22px 26px;margin:20px 0;position:relative;overflow:hidden}
+.dataset-box::before{content:"LIVE DATASET";position:absolute;top:13px;right:18px;font-family:var(--mono);font-size:.6em;color:var(--gold);letter-spacing:.12em}
+.dataset-box h4{font-size:1em;color:var(--gold);margin-bottom:8px;font-weight:700}
+.ds-context{color:#bbb;font-size:.88em;line-height:1.7;margin-bottom:14px}
+.data-table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:.76em;margin-bottom:10px}
+.data-table th{background:#1f1f1f;color:var(--gold);padding:9px 11px;text-align:left;border-bottom:1px solid #333;white-space:nowrap}
+.data-table td{padding:8px 11px;border-bottom:1px solid #222;color:#ddd}
+.data-table td.hi{color:#7dd3fc;font-weight:700}
+.data-table td.c1{color:#c4b5fd;font-weight:700}
+.data-table td.c2{color:#93c5fd;font-weight:700}
+.data-table td.c3{color:#86efac;font-weight:700}
+.data-table td.c4{color:#fde68a;font-weight:700}
+.data-table td.c5{color:#fca5a5;font-weight:700}
+.analogy-box{display:grid;grid-template-columns:1fr 1fr;border:2px solid var(--ink);border-radius:14px;overflow:hidden;margin:16px 0}
+.ana-side{padding:18px}
+.ana-side:first-child{border-right:2px solid var(--ink)}
+.ana-side h5{font-weight:700;font-size:.81em;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+.ana-side p{font-size:.86em;line-height:1.72;color:#444}
+.ana-left{background:#fef9c3}
+.ana-right{background:#dbeafe}
+.clust-type-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin:20px 0}
+.clust-card{border:2px solid var(--ink);border-radius:14px;padding:18px;background:white;box-shadow:3px 3px 0 var(--ink);cursor:pointer;transition:all .22s;position:relative;overflow:hidden}
+.clust-card:hover{transform:translateY(-3px);box-shadow:5px 5px 0 var(--ink)}
+.clust-card.selected{background:var(--ink);color:white}
+.clust-card .cc-icon{font-size:2em;margin-bottom:8px}
+.clust-card .cc-tag{font-family:var(--mono);font-size:.62em;letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px}
+.clust-card .cc-name{font-weight:800;font-size:1em;margin-bottom:6px}
+.clust-card .cc-desc{font-size:.82em;line-height:1.6;color:#555}
+.clust-card.selected .cc-desc{color:#aaa}
+.clust-detail{background:var(--ink);color:white;border-radius:16px;padding:24px;margin-top:16px;display:none;animation:fadeSlide .3s ease}
+.clust-detail.show{display:block}
+.step-timeline{border-left:3px solid var(--accent);padding-left:20px;margin:16px 0}
+.step-item{margin-bottom:18px;position:relative}
+.step-item::before{content:"";position:absolute;left:-26px;top:6px;width:12px;height:12px;border-radius:50%;background:var(--accent)}
+.step-num{font-family:var(--mono);font-size:.68em;color:var(--accent);font-weight:700;letter-spacing:.1em;margin-bottom:3px}
+.step-title{font-weight:700;margin-bottom:4px;font-size:.97em}
+.step-desc{font-size:.86em;color:#555;line-height:1.65}
+.trophy-screen{text-align:center;padding:52px 20px}
+.trophy-screen .big-trophy{font-size:4.5em;margin-bottom:16px;animation:bounce 1s infinite alternate}
+@keyframes bounce{from{transform:translateY(0)}to{transform:translateY(-13px)}}
+.trophy-screen h2{font-size:2.2em;font-weight:800;margin-bottom:10px}
+#finalScore{font-family:var(--mono);font-size:2.6em;font-weight:700;color:var(--accent);margin:20px 0;display:block}
+.final-breakdown{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;max-width:580px;margin:20px auto}
+.fb-card{background:white;border:2px solid var(--border);border-radius:10px;padding:13px;text-align:center}
+.fb-card .icon{font-size:1.8em}
+.fb-card .label{font-size:.76em;color:var(--muted);margin-top:4px}
+.confetti-piece{position:fixed;pointer-events:none;z-index:9999;font-size:1.1em;animation:fall linear forwards}
+@keyframes fall{0%{transform:translateY(-20px) rotate(0deg);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}
+.cluster-visual{border:2px solid var(--border);border-radius:12px;overflow:hidden;background:white;margin:16px 0}
+.cluster-visual-title{background:var(--ink);color:var(--paper);font-family:var(--mono);font-size:.7em;padding:8px 14px;letter-spacing:.08em}
+/* Elbow chart styles */
+.elbow-wrap{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+/* Comparison grid */
+.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}
+.compare-card{border:2px solid var(--border);border-radius:12px;padding:16px}
+.compare-card h5{font-weight:800;margin-bottom:8px;font-size:.95em}
+.compare-card p{font-size:.84em;color:#555;line-height:1.65}
+/* Use case strip */
+.use-case-strip{background:linear-gradient(135deg,#1e1b4b,#0f172a);border-radius:14px;padding:20px;margin:16px 0;border:1px solid #3730a3}
+.uc-tag{font-family:var(--mono);font-size:.65em;color:#a5b4fc;letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px}
+.uc-title{font-size:1.05em;font-weight:800;color:white;margin-bottom:10px}
+.uc-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.uc-item{background:rgba(255,255,255,.06);border-radius:8px;padding:11px;border-left:3px solid #818cf8}
+.uc-item .uc-org{font-family:var(--mono);font-size:.68em;color:#a5b4fc;margin-bottom:4px;font-weight:700}
+.uc-item .uc-desc{font-size:.83em;color:#c7d2fe;line-height:1.65}
+/* cluster colour chips */
+.chip{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:middle}
+@media(max-width:640px){
+  #scoreboard{top:auto;bottom:12px;right:12px;min-width:150px}
+  .analogy-box,.theory-bullets,.elbow-wrap,.compare-grid,.uc-grid{grid-template-columns:1fr}
+  .ana-side:first-child{border-right:none;border-bottom:2px solid var(--ink)}
+  .story-block{grid-template-columns:1fr}
+  .story-icon{display:none}
+  .clust-type-grid{grid-template-columns:1fr 1fr}
+}
+.metric-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+.metric-card{border:2px solid var(--ink);border-radius:12px;padding:14px;text-align:center;box-shadow:3px 3px 0 var(--ink)}
+.metric-card .mval{font-family:var(--mono);font-size:1.9em;font-weight:800}
+.metric-card .mlabel{font-size:.72em;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:2px}
+.metric-card .mform{font-family:var(--mono);font-size:.68em;color:#888;margin-top:6px}
+.mae-wrap{display:grid;grid-template-columns:1.2fr 1fr;gap:18px;align-items:start}
+.compare-model-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0}
+.compare-model-card{border:2px solid var(--ink);border-radius:14px;padding:16px;background:white}
+.compare-model-card h5{font-weight:800;font-size:.95em;margin-bottom:8px}
+.compare-model-card .errs{font-family:var(--mono);font-size:.74em;color:#555;line-height:1.6;margin-bottom:10px;word-break:break-word}
+.compare-model-card .mrow{display:flex;justify-content:space-between;font-family:var(--mono);font-size:.85em;padding:4px 0;border-top:1px solid var(--border)}
+.compare-model-card .mrow strong{color:var(--ink)}
+.rsq-wrap{display:grid;grid-template-columns:1.2fr 1fr;gap:18px;align-items:start}
+.rsq-display{border:3px solid var(--ink);border-radius:16px;padding:20px;text-align:center;box-shadow:4px 4px 0 var(--ink)}
+.rsq-display .rsqnum{font-family:var(--mono);font-size:2.6em;font-weight:800;line-height:1}
+.rsq-breakdown{margin-top:14px;text-align:left;font-family:var(--mono);font-size:.78em;color:#555;line-height:1.9}
+.rsq-breakdown strong{color:var(--ink)}
+.zone-strip{margin-top:12px;padding:11px 14px;border-radius:10px;font-size:.85em;line-height:1.6;text-align:left}
+.zone-good{background:#f0fdf4;color:#166534;border-left:4px solid #16a34a}
+.zone-mid{background:#fff7ed;color:#92400e;border-left:4px solid #d97706}
+.zone-bad{background:#fee2e2;color:#991b1b;border-left:4px solid #dc2626}
+.adjr-wrap{display:grid;grid-template-columns:1.2fr 1fr;gap:18px;align-items:start}
+.adjr-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.adjr-card{border:2px solid var(--ink);border-radius:12px;padding:12px;text-align:center}
+.adjr-card .aval{font-family:var(--mono);font-size:1.6em;font-weight:800}
+.adjr-card .alabel{font-size:.68em;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.k-info{font-family:var(--mono);font-size:.78em;color:#555;text-align:center;margin-top:8px}
+@media(max-width:640px){
+  .mae-wrap,.rsq-wrap,.adjr-wrap,.compare-model-grid,.adjr-cards{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<canvas id="particles"></canvas>
+
+<div id="scoreboard">
+  <div class="label">Your Score</div>
+  <div class="big-score" id="sc-pts">0</div>
+  <div style="color:#888;font-size:.68em;margin-top:1px">/ 225 pts</div>
+  <div class="prog-bar"><div class="prog-fill" id="sc-prog" style="width:0%"></div></div>
+  <div class="badges-row">
+    <div class="badge" id="b1" title="Residual Rookie">📏</div>
+    <div class="badge" id="b2" title="MAE/RMSE Master">📊</div>
+    <div class="badge" id="b3" title="R-Squared Ranger">🎯</div>
+    <div class="badge" id="b4" title="Adjusted R-Squared Ace">⚖️</div>
+    <div class="badge" id="b5" title="Metrics Maven">🎓</div>
+    <div class="badge" id="b6" title="Regression Diagnostics Champion">🏆</div>
+  </div>
+</div>
+
+<div class="page-wrap">
+<div style="display:flex;align-items:center;justify-content:space-between;padding:18px 0 22px;border-bottom:2px solid var(--ink);margin-bottom:0">
+  <div id="logo-placeholder">
+    <img src="data:image/png;base64,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" style="max-height:60px;width:auto;object-fit:contain;transition:all .2s" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform=''" alt="Impeccker Consulting">
+  </div>
+  <div style="font-family:var(--mono);font-size:.72em;color:var(--muted);text-align:right">
+    <div style="font-weight:700;color:var(--ink)">Session 2 · Diagnostics Add-On</div>
+    <div>Machine Learning for<br>Data-Driven Decision Making</div>
+  </div>
+</div>
+
+<div class="hero">
+  <div class="kicker">Bonus Session · Regression Model Health Checks</div>
+  <h1>How Good Is Your Number?<br><span>MAE, RMSE, R&sup2; &amp; Adjusted R&sup2;</span></h1>
+  <div class="sub">Four ways to grade a regression model — and four different stories they each tell. Drag the sliders, break a model on purpose, and learn exactly which metric to trust and when.</div>
+  <div class="session-pills">
+    <div class="pill">2.1 Classification &#10003;</div>
+    <div class="pill">2.2 Regression &#10003;</div>
+    <div class="pill">2.6 Classification Diagnostics &#10003;</div>
+    <div class="pill" style="background:var(--ink);color:white;border-color:var(--ink)">2.7 Regression Diagnostics &#8592; You are here</div>
+  </div>
+</div>
+
+<div class="mod-nav">
+  <div class="mod-tab active" onclick="showModule(0)"><span class="num">&#9312;</span>The Residual</div>
+  <div class="mod-tab" onclick="showModule(1)"><span class="num">&#9313;</span>MAE &amp; RMSE</div>
+  <div class="mod-tab" onclick="showModule(2)"><span class="num">&#9314;</span>R&sup2;</div>
+  <div class="mod-tab" onclick="showModule(3)"><span class="num">&#9315;</span>Adjusted R&sup2;</div>
+  <div class="mod-tab" onclick="showModule(4)"><span class="num">&#127942;</span>Final Challenge</div>
+</div>
+
+<!-- MODULE 0 — THE RESIDUAL -->
+<div class="module active" id="mod0">
+  <div class="sec-title">The Foundation: Every Metric Starts With a Residual</div>
+  <p class="sec-sub">Unlike our last session (which spanned two unrelated worlds), <strong>all four of today's metrics live in the same world</strong> — judging how well a regression model's predicted numbers match the actual numbers. They're four different lenses on the same underlying quantity: the <strong>residual</strong>.</p>
+
+  <div style="background:white;border:2px solid var(--ink);border-radius:16px;padding:22px;margin:20px 0;box-shadow:4px 4px 0 var(--ink)">
+    <div style="font-size:1.4em;margin-bottom:10px">🏠 Start Here: The MagicBricks Price Predictor</div>
+    <p style="font-size:.93em;color:#333;line-height:1.8;margin-bottom:14px">MagicBricks built a regression model to predict a flat's resale price from area, location score, age, and floor number. For every flat in the test set, we know the <strong>actual</strong> price and the model's <strong>predicted</strong> price. The gap between them is the residual: <strong>Residual = Actual &minus; Predicted.</strong> A residual of +8 lakh means the model under-predicted by ₹8 lakh. A residual of &minus;3 lakh means it over-predicted by ₹3 lakh.</p>
+    <div class="warn-strip">⚠️ <strong>Why not just average the residuals?</strong> Because positive and negative errors cancel out! A model that's off by +20 lakh on one flat and &minus;20 lakh on another has a beautiful "average error" of ₹0 — while being wildly wrong on every single prediction. This is exactly why MAE, RMSE, R² and Adjusted R² all exist: to measure error size <em>without</em> the errors cancelling each other.</div>
+  </div>
+
+  <div class="theory-slide">
+    <div class="ts-tag">Theory — The Big Picture</div>
+    <h3>Four Metrics, Four Different Questions</h3>
+    <p>Every one of today's metrics is computed from the same set of residuals — they just process them differently, which means each answers a slightly different business question.</p>
+    <div class="theory-bullets">
+      <div class="t-bullet"><strong>MAE — "On average, how far off am I, in the original units?"</strong>Takes the absolute value of every residual and averages it. Treats a ₹10 lakh miss as exactly twice as bad as a ₹5 lakh miss — no more, no less.</div>
+      <div class="t-bullet"><strong>RMSE — "How far off am I, punishing big misses extra hard?"</strong>Squares every residual before averaging, then square-roots back to original units. A ₹10 lakh miss counts 4× as much as a ₹5 lakh miss (because 10²=100 vs 5²=25) — outliers dominate.</div>
+      <div class="t-bullet"><strong>R&sup2; — "What fraction of the variation in price did my model actually explain?"</strong>A unit-free score from (usually) 0 to 1, comparing your model against the laziest possible model: always predicting the average price.</div>
+      <div class="t-bullet"><strong>Adjusted R&sup2; — "...and did I earn that R&sup2;, or just buy it with extra variables?"</strong>Same idea as R², but penalises you for every additional predictor you throw in — because R² alone can never decrease no matter how useless a new variable is.</div>
+    </div>
+  </div>
+
+  <div class="quiz-block">
+    <h4>✓ Quick Check — Module 0</h4>
+    <div class="q-prompt">A junior analyst reports: "Our pricing model has an average residual of ₹0.2 lakh — nearly perfect!" On inspection, individual residuals range from &minus;45 lakh to +48 lakh across different flats. What's going on?</div>
+    <div class="quiz-opt" onclick="checkQ('q0a',this,false)"><div class="marker">A</div>The model genuinely is nearly perfect — a near-zero average residual is all that matters</div>
+    <div class="quiz-opt" onclick="checkQ('q0a',this,true)"><div class="marker">B</div>Large positive and negative residuals are cancelling each other out in the simple average, hiding genuinely huge individual errors — this is exactly why we use MAE/RMSE instead of the raw average</div>
+    <div class="quiz-opt" onclick="checkQ('q0a',this,false)"><div class="marker">C</div>This means R&sup2; must also be close to 1</div>
+    <div class="quiz-opt" onclick="checkQ('q0a',this,false)"><div class="marker">D</div>The analyst should report Adjusted R&sup2; instead, which would fix this issue</div>
+    <div class="q-feedback" id="q0a-fb"></div>
+  </div>
+
+  <div class="mod-nav-btns">
+    <div></div>
+    <button class="btn" onclick="showModule(1)">&#9313; MAE &amp; RMSE &#8594;</button>
+  </div>
+</div>
+
+<!-- MODULE 1 — MAE & RMSE -->
+<div class="module" id="mod1">
+  <div class="sec-title">MAE &amp; RMSE — Two Ways to Average the Damage</div>
+  <p class="sec-sub">Both measure "typical error size" in the original units (₹ lakh, kg, days...) — but they disagree sharply on how much one giant mistake should count.</p>
+
+  <div class="story-block">
+    <div class="story-icon">🎯</div>
+    <div class="story-body">
+      <h3>The Dartboard Analogy</h3>
+      <p>Two players throw 10 darts each at a target. Player A lands consistently 5cm from the bullseye every time. Player B lands right on the bullseye 9 times — but once flings a dart 50cm off, hitting the wall. Both players have thrown roughly the same "average" miss if you're generous about it — but Player B has one throw that would embarrass anyone watching.</p>
+      <p><strong>MAE</strong> treats every centimetre of miss equally — it would call these two players similar. <strong>RMSE</strong> squares the misses first, so Player B's one disastrous throw dominates the score — RMSE would flag Player B as clearly worse, and rightly so if that one wild throw matters (e.g. it broke a window).</p>
+    </div>
+  </div>
+
+  <div class="math-story">
+    <h4>The Formulas — Decoded</h4>
+    <div class="formula-display">MAE = (1/n) &Sigma; |Actual&#8288; &minus; Predicted|</div>
+    <div class="formula-parts">
+      <div class="formula-part"><div class="fp-sym">Meaning</div><div class="fp-desc">Average of the <strong>absolute</strong> residuals. Every error contributes proportionally to its size — a ₹10L error counts exactly 2× a ₹5L error, no more.</div></div>
+      <div class="formula-part"><div class="fp-sym">Robust to outliers</div><div class="fp-desc">One freak bad prediction barely moves MAE, because it's only counted once, at its own size.</div></div>
+    </div>
+    <div class="formula-display" style="margin-top:16px">RMSE = &radic;( (1/n) &Sigma; (Actual &minus; Predicted)&sup2; )</div>
+    <div class="formula-parts">
+      <div class="formula-part"><div class="fp-sym">Meaning</div><div class="fp-desc">Square every residual (this removes signs AND punishes big errors extra), average, then square-root to bring units back to normal (₹ lakh, not ₹ lakh²).</div></div>
+      <div class="formula-part"><div class="fp-sym">Sensitive to outliers</div><div class="fp-desc">A single huge miss gets squared, dominating the sum. RMSE is always &ge; MAE — and the gap between them tells you how "spiky" your errors are.</div></div>
+    </div>
+  </div>
+
+  <div class="divider"><span>live playground — create an outlier prediction</span></div>
+  <div class="interactive">
+    <h4>🏗️ MagicBricks Price Model: 10 Test Flats <span class="tag">LIVE</span></h4>
+    <p style="font-size:.86em;color:#555;margin-bottom:10px">Nine flats already have small, everyday prediction errors. Drag the slider to control how badly the model misses on the <strong>10th flat</strong> — a large industrial-area flat the model has never seen anything like before.</p>
+    <div class="slider-wrap">
+      <div class="slider-label"><span>Error on Flat #10 (₹ lakh)</span><span class="slider-val" id="outlierVal">5</span></div>
+      <input type="range" id="outlierSlider" min="0" max="50" step="1" value="5" oninput="updateMAE(this.value)">
+    </div>
+    <div class="mae-wrap">
+      <div class="chart-box"><canvas id="maeChart" height="240"></canvas></div>
+      <div>
+        <div class="metric-cards">
+          <div class="metric-card" style="border-color:#2563eb">
+            <div class="mval" id="maeVal" style="color:#2563eb">0.0</div>
+            <div class="mlabel">MAE (₹ lakh)</div>
+            <div class="mform">mean(|residual|)</div>
+          </div>
+          <div class="metric-card" style="border-color:#e84c3d">
+            <div class="mval" id="rmseVal" style="color:#e84c3d">0.0</div>
+            <div class="mlabel">RMSE (₹ lakh)</div>
+            <div class="mform">&radic;mean(residual&sup2;)</div>
+          </div>
+        </div>
+        <div class="k-info" id="ratioInfo">RMSE / MAE ratio: 1.00×</div>
+        <div class="info-strip" id="maeInsight" style="margin-top:12px">Move the slider and watch RMSE pull away from MAE as the outlier grows.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"><span>the classic trap — same mae, wildly different rmse</span></div>
+  <div class="compare-model-grid">
+    <div class="compare-model-card" style="box-shadow:3px 3px 0 var(--c2)">
+      <h5>📦 Model A — Consistent Errors</h5>
+      <div class="errs">Errors on 10 flats (₹ lakh): 5, 5, 5, 5, 5, 5, 5, 5, 5, 5</div>
+      <div class="mrow"><span>MAE</span><strong>5.00</strong></div>
+      <div class="mrow"><span>RMSE</span><strong>5.00</strong></div>
+      <div class="mrow"><span>RMSE ÷ MAE</span><strong>1.00×</strong></div>
+    </div>
+    <div class="compare-model-card" style="box-shadow:3px 3px 0 var(--c5)">
+      <h5>💥 Model B — One Disaster</h5>
+      <div class="errs">Errors on 10 flats (₹ lakh): 0, 0, 0, 0, 0, 0, 0, 0, 0, 50</div>
+      <div class="mrow"><span>MAE</span><strong>5.00</strong></div>
+      <div class="mrow"><span>RMSE</span><strong>15.81</strong></div>
+      <div class="mrow"><span>RMSE ÷ MAE</span><strong>3.16×</strong></div>
+    </div>
+  </div>
+  <div class="success-strip">💡 <strong>Both models score an identical MAE of 5.</strong> If you only reported MAE, they'd look equally good. RMSE instantly exposes that Model B is hiding one catastrophic miss — the kind that could sink a single high-value deal even if the model looks fine "on average."</div>
+
+  <div class="quiz-block">
+    <h4>✓ Quick Check — Choosing Between MAE and RMSE</h4>
+    <div class="q-prompt">An insurance company is building a model to predict claim amounts. A few rare claims are enormous (hospitalisation, total-loss accidents) and getting those badly wrong could bankrupt a reserve fund. Which metric should weigh most heavily in model selection?</div>
+    <div class="quiz-opt" onclick="checkQ('q1a',this,true)"><div class="marker">A</div>RMSE — because it punishes the rare, very large misses much more heavily, which matters when big errors are disproportionately costly</div>
+    <div class="quiz-opt" onclick="checkQ('q1a',this,false)"><div class="marker">B</div>MAE — because it's simpler to explain to non-technical stakeholders, and that's all that matters here</div>
+    <div class="quiz-opt" onclick="checkQ('q1a',this,false)"><div class="marker">C</div>Neither — R&sup2; is always the correct metric regardless of business context</div>
+    <div class="quiz-opt" onclick="checkQ('q1a',this,false)"><div class="marker">D</div>It makes no difference — MAE and RMSE always rank models identically</div>
+    <div class="q-feedback" id="q1a-fb"></div>
+  </div>
+
+  <div class="divider"><span>go deeper</span></div>
+  <div class="challenge-toggle">
+    <div class="ch-header" onclick="toggleCh('bt_1')">
+      <div class="ch-left"><div class="ch-icon">🚚</div><div><div class="ch-title">Boardroom Challenge: Delivery Time Prediction</div><div class="ch-sub">When "typical" performance is all that matters</div></div></div>
+      <div style="display:flex;align-items:center;gap:10px"><span class="ch-badge med">+15 pts</span><span class="ch-arrow" id="bt_1-arrow">▼</span></div>
+    </div>
+    <div class="ch-body" id="bt_1-body">
+      <p style="font-size:.9em;color:#444;line-height:1.75;margin-bottom:14px">Swiggy's ETA model predicts delivery time for every single order — millions per day. A few orders are wildly delayed due to one-off events (a strike, a flood) that no model could predict, and these show up as huge, rare residuals. The product team only cares about the everyday customer experience: "is the app's ETA usually close to correct?"</p>
+      <div class="quiz-block" style="margin:0">
+        <div class="q-prompt">Which metric better reflects "typical, everyday" ETA performance, without a handful of freak events dominating the score?</div>
+        <div class="quiz-opt" onclick="checkQ('bt_1',this,true)"><div class="marker">A</div>MAE — it isn't distorted by rare extreme delays, giving a fairer picture of the everyday customer experience</div>
+        <div class="quiz-opt" onclick="checkQ('bt_1',this,false)"><div class="marker">B</div>RMSE — squaring errors always gives the most business-relevant answer</div>
+        <div class="quiz-opt" onclick="checkQ('bt_1',this,false)"><div class="marker">C</div>Both are identical in this situation, so it doesn't matter which is used</div>
+        <div class="q-feedback" id="bt_1-fb"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mod-nav-btns">
+    <button class="btn btn-ghost" onclick="showModule(0)">&#8592; The Residual</button>
+    <button class="btn" onclick="showModule(2)">&#9314; R&sup2; &#8594;</button>
+  </div>
+</div>
+
+<!-- MODULE 2 — R-SQUARED -->
+<div class="module" id="mod2">
+  <div class="sec-title">R&sup2; — The Coefficient of Determination</div>
+  <p class="sec-sub">MAE and RMSE tell you the error size in real units. R&sup2; asks a completely different question: <strong>"Compared to just guessing the average every time, how much better is my model?"</strong></p>
+
+  <div class="story-block">
+    <div class="story-icon">📐</div>
+    <div class="story-body">
+      <h3>The Lazy Benchmark Analogy</h3>
+      <p>Imagine the laziest possible "model": ignore every predictor and just always guess the <strong>average price</strong> for every flat. This lazy model still gets some predictions roughly right by luck — flats really do cluster near the average. R² measures how much of the flat-to-flat price variation your real model explains <em>beyond</em> what this lazy average-guesser already captures for free.</p>
+      <p>R² = 0 means your fancy model is no better than the lazy average-guesser. R² = 1 means your model's predictions land exactly on every actual price — zero unexplained variation left.</p>
+    </div>
+  </div>
+
+  <div class="math-story">
+    <h4>The Formula — Decoded</h4>
+    <div class="formula-display">R&sup2; = 1 &minus; (SS_res / SS_tot)</div>
+    <div class="formula-parts">
+      <div class="formula-part"><div class="fp-sym">SS_res</div><div class="fp-desc">Sum of Squared Residuals — total squared error <strong>your model</strong> makes: &Sigma;(Actual&minus;Predicted)&sup2;.</div></div>
+      <div class="formula-part"><div class="fp-sym">SS_tot</div><div class="fp-desc">Total Sum of Squares — total squared error the <strong>lazy average-guesser</strong> makes: &Sigma;(Actual&minus;Mean)&sup2;.</div></div>
+      <div class="formula-part"><div class="fp-sym">Reading it</div><div class="fp-desc">If your model's errors (SS_res) are tiny compared to the lazy guesser's errors (SS_tot), the ratio is near 0, so R² is near 1 — your model explains almost all the variation.</div></div>
+    </div>
+  </div>
+
+  <div class="divider"><span>live playground — dial up the noise</span></div>
+  <div class="interactive">
+    <h4>📢 Ad Spend vs. Sales Regression <span class="tag">LIVE</span></h4>
+    <p style="font-size:.86em;color:#555;margin-bottom:10px">20 stores, each with a monthly Ad Spend (₹'000) and resulting Sales (units). There IS a genuine underlying relationship — but real-world randomness (local competition, weather, festivals) adds noise on top. Drag the slider to see how R² collapses as noise drowns out the signal.</p>
+    <div class="slider-wrap">
+      <div class="slider-label"><span>Real-World Noise Level</span><span class="slider-val" id="noiseVal">30%</span></div>
+      <input type="range" id="noiseSlider" min="0" max="100" step="5" value="30" oninput="updateRsq(this.value)">
+    </div>
+    <div class="rsq-wrap">
+      <div class="chart-box"><canvas id="rsqChart" height="260"></canvas></div>
+      <div class="rsq-display">
+        <div class="rsqnum" id="rsqVal">0.00</div>
+        <div style="font-size:.72em;color:var(--muted);text-transform:uppercase;letter-spacing:.08em">R&sup2;</div>
+        <div class="rsq-breakdown">
+          <div>SS_res (model error): <strong id="ssResVal">0</strong></div>
+          <div>SS_tot (lazy-guess error): <strong id="ssTotVal">0</strong></div>
+        </div>
+        <div class="zone-strip zone-good" id="rsqZone">Excellent fit — the model explains almost all the variation in Sales.</div>
+      </div>
+    </div>
+    <div class="info-strip" style="margin-top:12px">The dashed line is the regression line the model fits to the noisy points. Watch how, as noise rises, the points scatter further from the line and R² falls toward 0 — even though the <em>true</em> ₹-for-₹ relationship between spend and sales never actually changed.</div>
+  </div>
+
+  <div class="quiz-block">
+    <h4>✓ Quick Check — Reading R&sup2;</h4>
+    <div class="q-prompt">Push the noise slider to 100%. R² drops close to 0, but MAE and RMSE are still positive, finite numbers (not infinite). What does an R² near 0 actually tell you here?</div>
+    <div class="quiz-opt" onclick="checkQ('q2a',this,true)"><div class="marker">A</div>Ad Spend is providing almost no explanatory power over Sales beyond what simply guessing the average Sales value would achieve — even though the model still produces numeric predictions with measurable error</div>
+    <div class="quiz-opt" onclick="checkQ('q2a',this,false)"><div class="marker">B</div>The model's predictions are now completely random numbers with no relationship to Sales at all, in any unit</div>
+    <div class="quiz-opt" onclick="checkQ('q2a',this,false)"><div class="marker">C</div>R² near 0 means MAE and RMSE must also be exactly 0</div>
+    <div class="quiz-opt" onclick="checkQ('q2a',this,false)"><div class="marker">D</div>This is a sign of severe multicollinearity (high VIF) between predictors</div>
+    <div class="q-feedback" id="q2a-fb"></div>
+  </div>
+
+  <div class="divider"><span>go deeper</span></div>
+  <div class="challenge-toggle">
+    <div class="ch-header" onclick="toggleCh('bt_2')">
+      <div class="ch-left"><div class="ch-icon">📉</div><div><div class="ch-title">Boardroom Challenge: Negative R&sup2; on New Data</div><div class="ch-sub">Why R&sup2; can go below zero — and what it means</div></div></div>
+      <div style="display:flex;align-items:center;gap:10px"><span class="ch-badge med">+15 pts</span><span class="ch-arrow" id="bt_2-arrow">▼</span></div>
+    </div>
+    <div class="ch-body" id="bt_2-body">
+      <p style="font-size:.9em;color:#444;line-height:1.75;margin-bottom:14px">A demand-forecasting model shows R² = 0.71 on the training data used to build it — a solid result. Three months later, on fresh data from a new city launch, the same model scores R² = &minus;0.18.</p>
+      <div class="quiz-block" style="margin:0">
+        <div class="q-prompt">A negative R² sounds mathematically odd (since R² is "1 minus a ratio"). What does it actually mean here?</div>
+        <div class="quiz-opt" onclick="checkQ('bt_2',this,true)"><div class="marker">A</div>On this new data, the model's errors (SS_res) are actually LARGER than the errors from simply guessing the average every time — the model is doing worse than the laziest possible baseline, a red flag that it hasn't generalised to the new city</div>
+        <div class="quiz-opt" onclick="checkQ('bt_2',this,false)"><div class="marker">B</div>Negative R² is a calculation error and should never occur in practice</div>
+        <div class="quiz-opt" onclick="checkQ('bt_2',this,false)"><div class="marker">C</div>Negative R² simply means the model needs its threshold adjusted, similar to a classifier</div>
+        <div class="q-feedback" id="bt_2-fb"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mod-nav-btns">
+    <button class="btn btn-ghost" onclick="showModule(1)">&#8592; MAE &amp; RMSE</button>
+    <button class="btn" onclick="showModule(3)">&#9315; Adjusted R&sup2; &#8594;</button>
+  </div>
+</div>
+
+<!-- MODULE 3 — ADJUSTED R-SQUARED -->
+<div class="module" id="mod3">
+  <div class="sec-title">Adjusted R&sup2; — R&sup2; That Can't Be Fooled</div>
+  <p class="sec-sub">R² has a dangerous flaw: it can <strong>never go down</strong> when you add a new predictor — even a completely random, meaningless one. Adjusted R² fixes this by charging rent for every variable you add.</p>
+
+  <div class="story-block">
+    <div class="story-icon">🎰</div>
+    <div class="story-body">
+      <h3>The "Kitchen Sink" Analogy</h3>
+      <p>An overeager analyst adds every column available to a house-price model — including, say, "the last digit of the seller's phone number" and "number of pigeons seen outside on inspection day." These are obviously meaningless. Yet R² will still tick up, even if only by a tiny amount — pure random noise, given enough tries, will always appear to explain <em>something</em> in a finite sample, purely by chance.</p>
+      <p>Adjusted R² penalises the model for every variable added, based on how many degrees of freedom it costs. If a new variable doesn't pull its weight, Adjusted R² actually <strong>falls</strong> — even while plain R² keeps climbing.</p>
+    </div>
+  </div>
+
+  <div class="math-story">
+    <h4>The Formula — Decoded</h4>
+    <div class="formula-display">Adjusted R&sup2; = 1 &minus; [ (1&minus;R&sup2;) &times; (n&minus;1) / (n&minus;k&minus;1) ]</div>
+    <div class="formula-parts">
+      <div class="formula-part"><div class="fp-sym">n</div><div class="fp-desc">Number of observations in your sample (e.g. 30 flats).</div></div>
+      <div class="formula-part"><div class="fp-sym">k</div><div class="fp-desc">Number of predictors currently in the model. As k rises (n fixed), the penalty term (n&minus;1)/(n&minus;k&minus;1) grows — a bigger "tax" on Adjusted R².</div></div>
+      <div class="formula-part"><div class="fp-sym">The trade-off</div><div class="fp-desc">Adding a genuinely useful predictor raises R² by more than enough to cover its tax — Adjusted R² rises too. Adding junk raises R² by only a sliver — not enough to cover the tax — so Adjusted R² falls.</div></div>
+    </div>
+  </div>
+
+  <div class="divider"><span>live playground — add junk predictors</span></div>
+  <div class="interactive">
+    <h4>🧮 30-Flat Price Model: Stuffing in Random Variables <span class="tag">LIVE</span></h4>
+    <p style="font-size:.86em;color:#555;margin-bottom:10px">Start with one genuine predictor (Flat Area). Now use the slider to add "junk" predictors — variables with <strong>zero real relationship</strong> to price (e.g. random noise columns). Watch R² and Adjusted R² pull apart.</p>
+    <div class="slider-wrap">
+      <div class="slider-label"><span>Junk Predictors Added</span><span class="slider-val" id="junkVal">0</span></div>
+      <input type="range" id="junkSlider" min="0" max="10" step="1" value="0" oninput="updateAdjR(this.value)">
+    </div>
+    <div class="adjr-wrap">
+      <div class="chart-box"><canvas id="adjrChart" height="260"></canvas></div>
+      <div>
+        <div class="adjr-cards">
+          <div class="adjr-card" style="border-color:#2563eb">
+            <div class="aval" id="curRsq" style="color:#2563eb">0.580</div>
+            <div class="alabel">R&sup2;</div>
+          </div>
+          <div class="adjr-card" style="border-color:#dc2626">
+            <div class="aval" id="curAdjRsq" style="color:#dc2626">0.565</div>
+            <div class="alabel">Adjusted R&sup2;</div>
+          </div>
+        </div>
+        <div class="k-info" id="kInfo">n = 30 flats &nbsp;|&nbsp; k = 1 predictor (Area only)</div>
+        <div class="zone-strip zone-good" id="adjrZone" style="margin-top:12px">Just Area in the model — both R² and Adjusted R² agree the model is genuinely useful.</div>
+      </div>
+    </div>
+    <div class="info-strip" style="margin-top:12px">Notice: R² (blue line) can only go up or stay flat, ever. Adjusted R² (red line) rises only while new predictors earn their keep — then turns downward once you're just adding noise. The peak of the red line is a good rule-of-thumb for "how many predictors is too many."</div>
+  </div>
+
+  <div class="quiz-block">
+    <h4>✓ Quick Check — Reading Adjusted R&sup2;</h4>
+    <div class="q-prompt">Drag the slider to 10 junk predictors. R² has risen from 0.580 to about 0.677 — looks like an improvement! But Adjusted R² has fallen to roughly 0.480. Which number should guide the decision to keep these 10 extra variables?</div>
+    <div class="quiz-opt" onclick="checkQ('q3a',this,true)"><div class="marker">A</div>Adjusted R² — its drop reveals that the "improvement" in R² is an illusion caused by adding predictors, not by genuinely explaining more of the price variation</div>
+    <div class="quiz-opt" onclick="checkQ('q3a',this,false)"><div class="marker">B</div>R² — a higher number is always better, regardless of how many predictors were needed to get there</div>
+    <div class="quiz-opt" onclick="checkQ('q3a',this,false)"><div class="marker">C</div>Neither — MAE is the only metric that matters when comparing models with different numbers of predictors</div>
+    <div class="quiz-opt" onclick="checkQ('q3a',this,false)"><div class="marker">D</div>They will always agree, so this scenario is not actually possible</div>
+    <div class="q-feedback" id="q3a-fb"></div>
+  </div>
+
+  <div class="divider"><span>go deeper</span></div>
+  <div class="challenge-toggle">
+    <div class="ch-header" onclick="toggleCh('bt_3')">
+      <div class="ch-left"><div class="ch-icon">🆚</div><div><div class="ch-title">Boardroom Challenge: Comparing Two Analyst Proposals</div><div class="ch-sub">More variables isn't automatically a better model</div></div></div>
+      <div style="display:flex;align-items:center;gap:10px"><span class="ch-badge med">+15 pts</span><span class="ch-arrow" id="bt_3-arrow">▼</span></div>
+    </div>
+    <div class="ch-body" id="bt_3-body">
+      <p style="font-size:.9em;color:#444;line-height:1.75;margin-bottom:14px">Two analysts pitch competing salary-prediction models to HR. Analyst 1's model uses 4 predictors and gets R² = 0.71, Adjusted R² = 0.69. Analyst 2's model uses 15 predictors (many overlapping and marginal) and gets R² = 0.74, Adjusted R² = 0.62.</p>
+      <div class="quiz-block" style="margin:0">
+        <div class="q-prompt">Which model should HR actually prefer, and why?</div>
+        <div class="quiz-opt" onclick="checkQ('bt_3',this,true)"><div class="marker">A</div>Analyst 1's model — its higher Adjusted R² shows it explains variation more efficiently; Analyst 2's higher raw R² is partly an artefact of throwing in 11 extra variables, several of which likely aren't pulling their weight</div>
+        <div class="quiz-opt" onclick="checkQ('bt_3',this,false)"><div class="marker">B</div>Analyst 2's model — it has the higher R², and more predictors always means a richer, more complete model</div>
+        <div class="quiz-opt" onclick="checkQ('bt_3',this,false)"><div class="marker">C</div>They are equally good since both R² values are reasonably close to each other</div>
+        <div class="q-feedback" id="bt_3-fb"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mod-nav-btns">
+    <button class="btn btn-ghost" onclick="showModule(2)">&#8592; R&sup2;</button>
+    <button class="btn" onclick="showModule(4)">&#127942; Final Challenge &#8594;</button>
+  </div>
+</div>
+
+<!-- MODULE 4 — FINAL CHALLENGE -->
+<div class="module" id="mod4">
+  <div class="sec-title">Final Challenge: Which Metric, When?</div>
+  <p class="sec-sub">One reference table, four mixed business scenarios. Get comfortable picking the right lens for the right question.</p>
+
+  <div class="divider"><span>the definitive reference table</span></div>
+  <table class="cmp-table">
+    <thead><tr><th>Metric</th><th>Units</th><th>Outlier Sensitivity</th><th>Best For</th><th>Watch Out For</th></tr></thead>
+    <tbody>
+      <tr><td><strong>MAE</strong></td><td>Same as target (₹, kg...)</td><td>Low — treats every error proportionally</td><td>Communicating "typical" error size to non-technical stakeholders; when all errors matter equally</td><td>Can hide a few very costly, large misses</td></tr>
+      <tr><td><strong>RMSE</strong></td><td>Same as target (₹, kg...)</td><td>High — squares errors before averaging</td><td>When large errors are disproportionately costly (safety, finance, insurance)</td><td>One outlier can make a decent model look bad</td></tr>
+      <tr><td><strong>R&sup2;</strong></td><td>Unit-free (0 to 1, roughly)</td><td>Indirect — via squared residuals</td><td>Explaining "how much of the story" your predictors capture; comparing across different target scales</td><td>Never decreases when you add predictors, even useless ones</td></tr>
+      <tr><td><strong>Adjusted R&sup2;</strong></td><td>Unit-free (0 to 1, roughly)</td><td>Indirect — via squared residuals</td><td>Comparing models with different numbers of predictors; guarding against overfitting</td><td>Only relevant when comparing predictor counts — not a replacement for MAE/RMSE</td></tr>
+    </tbody>
+  </table>
+
+  <div class="divider"><span>mixed scenarios</span></div>
+
+  <div class="quiz-block">
+    <h4>Scenario 1 — Presenting to the Board</h4>
+    <div class="q-prompt">You need to tell the Board, in one sentence they'll immediately understand: "Our demand forecast is typically off by about ₹X lakh per store, per month." Which metric directly gives you that sentence?</div>
+    <div class="quiz-opt" onclick="checkQ('s1',this,true)"><div class="marker">A</div>MAE — it's literally "the average size of the miss," in the same currency units the Board already thinks in</div>
+    <div class="quiz-opt" onclick="checkQ('s1',this,false)"><div class="marker">B</div>R² — because 0 to 1 scores are always easier for boards to understand than currency figures</div>
+    <div class="quiz-opt" onclick="checkQ('s1',this,false)"><div class="marker">C</div>Adjusted R² — it accounts for the number of predictors, which is what boards care about most</div>
+    <div class="q-feedback" id="s1-fb"></div>
+  </div>
+
+  <div class="quiz-block">
+    <h4>Scenario 2 — A Rare but Catastrophic Failure Mode</h4>
+    <div class="q-prompt">A structural-engineering firm's model predicts load-bearing capacity. Nearly all predictions are excellent, but on rare unusual designs the model is occasionally wildly wrong — and those rare cases are exactly the ones with the highest safety risk. Which metric should weigh most heavily when selecting between two candidate models?</div>
+    <div class="quiz-opt" onclick="checkQ('s2',this,true)"><div class="marker">A</div>RMSE — its extra sensitivity to large errors makes it the right lens when rare big misses carry outsized real-world risk</div>
+    <div class="quiz-opt" onclick="checkQ('s2',this,false)"><div class="marker">B</div>MAE — since it's robust to outliers, it will correctly hide the effect of these rare failures</div>
+    <div class="quiz-opt" onclick="checkQ('s2',this,false)"><div class="marker">C</div>R² — because unit-free scores are always safer for engineering contexts</div>
+    <div class="q-feedback" id="s2-fb"></div>
+  </div>
+
+  <div class="quiz-block">
+    <h4>Scenario 3 — Two Models, Two Different Cities</h4>
+    <div class="q-prompt">You want to compare how well a "Sales ~ Ad Spend" model explains variation in Mumbai (where sales range ₹1–50 lakh) versus in a small town (where sales range ₹1–5 lakh). RMSE in Mumbai is much larger in absolute terms. Which metric lets you fairly compare "explanatory power" across these very different scales?</div>
+    <div class="quiz-opt" onclick="checkQ('s3',this,true)"><div class="marker">A</div>R² — being unit-free, it measures the proportion of variation explained regardless of whether sales are measured in lakhs or thousands, making cross-scale comparison fair</div>
+    <div class="quiz-opt" onclick="checkQ('s3',this,false)"><div class="marker">B</div>RMSE — larger absolute errors in Mumbai always mean a worse model there</div>
+    <div class="quiz-opt" onclick="checkQ('s3',this,false)"><div class="marker">C</div>MAE — comparing raw ₹ lakh figures across cities of different scale is always a fair comparison</div>
+    <div class="q-feedback" id="s3-fb"></div>
+  </div>
+
+  <div class="quiz-block">
+    <h4>Scenario 4 — The Analyst's Temptation</h4>
+    <div class="q-prompt">An analyst keeps adding more and more predictor variables to a regression, proudly reporting that R² keeps climbing with every addition. Your CFO, who has just sat through Sessions 2.1–2.7, asks the right follow-up question. What should it be?</div>
+    <div class="quiz-opt" onclick="checkQ('s4',this,true)"><div class="marker">A</div>"What happens to Adjusted R² as you add each variable — is it rising too, or is R² climbing only because you're adding noise?"</div>
+    <div class="quiz-opt" onclick="checkQ('s4',this,false)"><div class="marker">B</div>"What is the VIF of the outcome variable?" — VIF applies to the target variable, not the predictors</div>
+    <div class="quiz-opt" onclick="checkQ('s4',this,false)"><div class="marker">C</div>Nothing further to ask — a rising R² is always sufficient proof the model is improving</div>
+    <div class="q-feedback" id="s4-fb"></div>
+  </div>
+
+  <div class="divider"><span>you're done!</span></div>
+  <div id="completionCheck" style="text-align:center;padding:20px">
+    <button class="btn" onclick="checkCompletion()" style="font-size:1em;padding:14px 32px">🏁 See My Final Score</button>
+  </div>
+
+  <div class="trophy-screen" id="trophyScreen" style="display:none">
+    <div class="big-trophy">🏆</div>
+    <h2>Regression Diagnostics — Mastered!</h2>
+    <p style="color:#555;font-size:.95em;max-width:480px;margin:0 auto 6px">You now know when to reach for MAE's plain-spoken average, when RMSE's extra bite on outliers matters, how R² grades your model against the laziest possible guess, and why Adjusted R² is the only one of the four that can catch you cheating with junk variables.</p>
+    <span id="finalScore">0 / 225 pts</span>
+    <div class="final-breakdown" id="breakdownCards"></div>
+  </div>
+
+  <div class="mod-nav-btns">
+    <button class="btn btn-ghost" onclick="showModule(3)">&#8592; Adjusted R&sup2;</button>
+    <div></div>
+  </div>
+</div>
+
+</div><!-- /page-wrap -->
+
+<script>
+// ─── SCORE SYSTEM ────────────────────────────────────────────
+let totalPts = 0;
+const maxPts = 225;
+const answeredQs = new Set();
+
+function addPts(n) {
+  totalPts = Math.min(maxPts, totalPts + n);
+  document.getElementById('sc-pts').textContent = totalPts;
+  document.getElementById('sc-prog').style.width = (totalPts / maxPts * 100) + '%';
+}
+
+function checkQ(id, el, correct) {
+  if (answeredQs.has(id)) return;
+  answeredQs.add(id);
+  const fb = document.getElementById(id + '-fb');
+  document.querySelectorAll('[onclick*="' + id + '"]').forEach(o => o.style.pointerEvents = 'none');
+  if (correct) {
+    el.classList.add('correct');
+    const pts = id.startsWith('bt_') ? 15 : id.startsWith('s') ? 20 : 25;
+    addPts(pts);
+    if (fb) { fb.className = 'q-feedback ok'; fb.style.display = 'block'; fb.innerHTML = '✅ <strong>Correct! +' + pts + ' pts</strong> — ' + getFeedback(id, true); }
+    if (answeredQs.size === 1) document.getElementById('b1').classList.add('earned');
+    if (answeredQs.size === 3) document.getElementById('b2').classList.add('earned');
+    if (answeredQs.size === 5) document.getElementById('b3').classList.add('earned');
+    if (answeredQs.size === 7) document.getElementById('b4').classList.add('earned');
+    if (answeredQs.size === 9) document.getElementById('b5').classList.add('earned');
+  } else {
+    el.classList.add('incorrect');
+    if (fb) { fb.className = 'q-feedback no'; fb.style.display = 'block'; fb.innerHTML = '❌ <strong>Not quite.</strong> — ' + getFeedback(id, false); }
+  }
+}
+
+function getFeedback(id, correct) {
+  const map = {
+    'q0a': { ok: "Positive and negative residuals cancelled out in the simple average — hiding individual errors as large as ₹45-48 lakh. MAE and RMSE avoid this trap by removing the sign before averaging.", no: "Check the residual range: -45 to +48 lakh is NOT nearly perfect. A near-zero simple average just means the errors happened to cancel out — MAE/RMSE would expose the truth immediately." },
+    'q1a': { ok: "RMSE's squaring mechanism punishes rare, very large misses much more than MAE does — exactly the behaviour you want when big errors carry outsized financial risk.", no: "Think about which formula punishes big misses harder: RMSE squares residuals before averaging, so a rare huge claim error dominates the score. That's the right lens when large errors are disproportionately costly." },
+    'q2a': { ok: "R² near 0 means the predictor (Ad Spend) explains almost none of Sales' variation beyond simply guessing the average — but the model still outputs real numbers with real (if large) MAE/RMSE values.", no: "R² near 0 does NOT mean predictions are random noise in absolute terms, nor does it force MAE/RMSE to be zero. It specifically means the model adds little value over guessing the average — that's a distinct claim from 'the numbers are meaningless'." },
+    'bt_1': { ok: "MAE treats every error proportionally without letting rare freak events (strikes, floods) dominate the score — giving a fairer read on the everyday customer experience Swiggy actually cares about here.", no: "RMSE would let a handful of freak, unpredictable delays dominate the metric, making the model look far worse than it typically performs for everyday orders. MAE is the better fit here." },
+    'bt_2': { ok: "A negative R² means the model's own errors (SS_res) exceed even the lazy average-guesser's errors (SS_tot) — the model is actively worse than doing nothing on this new data, a strong overfitting/generalisation red flag.", no: "Negative R² is mathematically valid and meaningful — it happens whenever a model performs worse on new data than simply guessing the average would. It's not a computation bug, and it isn't a threshold issue (that's a classification concept)." },
+    'bt_3': { ok: "Adjusted R² accounts for the 11 extra predictors Analyst 2 added — since it actually falls to 0.62 versus Analyst 1's 0.69, most of that extra R² is likely noise, not real explanatory power.", no: "A higher raw R² is not automatically better — R² always rises (or stays flat) as you add variables, regardless of whether they're useful. Adjusted R² is the fairer comparison since it accounts for predictor count, and it favours Analyst 1 here." },
+    's1': { ok: "MAE is directly interpretable as 'the typical size of the miss' in the same currency the Board already understands — no unit-free score needed for this particular sentence.", no: "The Board wants a rupee figure, not a 0-to-1 score. MAE literally answers 'how many lakh are we typically off by' — that's the metric for this exact sentence." },
+    's2': { ok: "RMSE's extra sensitivity to large errors is exactly right when rare big misses carry outsized safety risk — you want a metric that reacts strongly to those cases, not one that smooths them away.", no: "MAE being 'robust to outliers' is a downside here, not an advantage — you specifically want the rare catastrophic misses to be visible and penalised, which is what RMSE does." },
+    's3': { ok: "R² is unit-free — it reports the proportion of variation explained regardless of whether sales are measured in lakhs or thousands, making it the fair way to compare explanatory power across cities of very different scale.", no: "Comparing raw RMSE or MAE figures (in ₹) across cities with very different sales scales isn't a fair comparison — a bigger city will naturally have bigger absolute errors even with an equally good model. R² sidesteps this by being unit-free." },
+    's4': { ok: "This is exactly the right follow-up: Adjusted R² reveals whether each new variable is earning its keep or whether the rising R² is just an artefact of adding more predictors, however useless.", no: "VIF is a regression diagnostic for predictors fighting each other for correlation — it doesn't apply to 'the outcome variable', and it's not the tool for catching R² inflation from junk predictors. Adjusted R² is." }
+  };
+  const f = map[id];
+  return f ? (correct ? f.ok : f.no) : '';
+}
+
+// ─── MODULE NAVIGATION ────────────────────────────────────────
+function showModule(idx) {
+  document.querySelectorAll('.module').forEach(m => m.classList.remove('active'));
+  document.querySelectorAll('.mod-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('mod' + idx).classList.add('active');
+  document.querySelectorAll('.mod-tab')[idx].classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (idx === 1) setTimeout(initMaeChart, 150);
+  if (idx === 2) setTimeout(initRsqChart, 150);
+  if (idx === 3) setTimeout(initAdjrChart, 150);
+}
+
+// ─── TOGGLES ──────────────────────────────────────────────────
+function toggleCh(id) {
+  const body = document.getElementById(id + '-body');
+  const arrow = document.getElementById(id + '-arrow');
+  body.classList.toggle('open');
+  if (arrow) arrow.classList.toggle('open');
+}
+
+// ─── SEEDED RNG (shared) ───────────────────────────────────────
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function makeRandn(seed) {
+  const rng = mulberry32(seed);
+  return function () {
+    let u = 0, v = 0;
+    while (u === 0) u = rng();
+    while (v === 0) v = rng();
+    return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+  };
+}
+
+// ─── MAE / RMSE MODULE ─────────────────────────────────────────
+const fixedResiduals = [-1.8, 1.2, -0.6, 2.1, -1.4, 0.8, -2.0, 1.5, -0.9];
+let maeChart = null;
+
+function computeMaeRmse(outlier) {
+  const all = fixedResiduals.concat([outlier]);
+  const mae = all.reduce((s, r) => s + Math.abs(r), 0) / all.length;
+  const rmse = Math.sqrt(all.reduce((s, r) => s + r * r, 0) / all.length);
+  return { all, mae, rmse };
+}
+
+function initMaeChart() {
+  const canvas = document.getElementById('maeChart');
+  if (!canvas) return;
+  if (maeChart) { maeChart.destroy(); maeChart = null; }
+  maeChart = new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels: ['F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10 (slider)'],
+      datasets: [{ label: 'Residual (₹ lakh)', data: [], backgroundColor: [] }]
+    },
+    options: {
+      responsive: true,
+      scales: { y: { title: { display: true, text: 'Residual (₹ lakh)' } } },
+      plugins: { legend: { display: false } }
+    }
+  });
+  updateMAE(document.getElementById('outlierSlider').value);
+}
+
+function updateMAE(val) {
+  const outlier = parseFloat(val);
+  document.getElementById('outlierVal').textContent = outlier;
+  const { all, mae, rmse } = computeMaeRmse(outlier);
+  document.getElementById('maeVal').textContent = mae.toFixed(2);
+  document.getElementById('rmseVal').textContent = rmse.toFixed(2);
+  const ratio = mae > 0 ? rmse / mae : 1;
+  document.getElementById('ratioInfo').textContent = 'RMSE / MAE ratio: ' + ratio.toFixed(2) + '×';
+  const insight = document.getElementById('maeInsight');
+  if (outlier <= 8) insight.innerHTML = '😌 <strong>Low outlier zone:</strong> MAE and RMSE are close together — errors are fairly uniform, so both metrics tell roughly the same story.';
+  else if (outlier <= 25) insight.innerHTML = '⚠️ <strong>Growing gap:</strong> RMSE is pulling ahead of MAE — the squaring is starting to punish Flat #10\'s large miss much more heavily.';
+  else insight.innerHTML = '🚨 <strong>Outlier dominates:</strong> RMSE is now far larger than MAE — a single bad prediction is dominating RMSE, while MAE barely notices it. If this outlier matters, trust RMSE here.';
+  if (maeChart) {
+    maeChart.data.datasets[0].data = all.map(r => Math.round(r * 100) / 100);
+    maeChart.data.datasets[0].backgroundColor = all.map((r, i) => i === 9 ? '#e84c3d' : '#2563eb');
+    maeChart.update();
+  }
+}
+
+// ─── R-SQUARED MODULE ───────────────────────────────────────────
+const rsqX = Array.from({ length: 20 }, (_, i) => 10 + i * 5); // ad spend ₹'000
+const rsqRandn = makeRandn(7);
+const rsqNoiseZ = rsqX.map(() => rsqRandn());
+let rsqChart = null;
+
+function computeRsq(noiseLevel) {
+  const noiseSD = (noiseLevel / 100) * 40;
+  const trueSlope = 2.5, trueIntercept = 20;
+  const y = rsqX.map((x, i) => trueSlope * x + trueIntercept + noiseSD * rsqNoiseZ[i]);
+  const n = rsqX.length;
+  const xbar = rsqX.reduce((a, b) => a + b, 0) / n;
+  const ybar = y.reduce((a, b) => a + b, 0) / n;
+  let sxy = 0, sxx = 0;
+  for (let i = 0; i < n; i++) { sxy += (rsqX[i] - xbar) * (y[i] - ybar); sxx += (rsqX[i] - xbar) ** 2; }
+  const slope = sxy / sxx;
+  const intercept = ybar - slope * xbar;
+  const yhat = rsqX.map(x => slope * x + intercept);
+  let ssRes = 0, ssTot = 0;
+  for (let i = 0; i < n; i++) { ssRes += (y[i] - yhat[i]) ** 2; ssTot += (y[i] - ybar) ** 2; }
+  const r2 = 1 - ssRes / ssTot;
+  return { y, yhat, slope, intercept, ssRes, ssTot, r2 };
+}
+
+function initRsqChart() {
+  const canvas = document.getElementById('rsqChart');
+  if (!canvas) return;
+  if (rsqChart) { rsqChart.destroy(); rsqChart = null; }
+  rsqChart = new Chart(canvas, {
+    type: 'scatter',
+    data: {
+      datasets: [
+        { label: 'Stores', data: [], backgroundColor: '#7c3aed', pointRadius: 5 },
+        { label: 'Regression Line', data: [], type: 'line', showLine: true, borderColor: '#e84c3d', borderDash: [6, 4], borderWidth: 2, pointRadius: 0, fill: false }
+      ]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        x: { title: { display: true, text: 'Ad Spend (₹ \'000)' } },
+        y: { title: { display: true, text: 'Sales (units)' } }
+      },
+      plugins: { legend: { display: true, labels: { boxWidth: 12, font: { size: 10 } } } }
+    }
+  });
+  updateRsq(document.getElementById('noiseSlider').value);
+}
+
+function updateRsq(val) {
+  const noiseLevel = parseFloat(val);
+  document.getElementById('noiseVal').textContent = noiseLevel + '%';
+  const { y, yhat, slope, intercept, ssRes, ssTot, r2 } = computeRsq(noiseLevel);
+  document.getElementById('rsqVal').textContent = r2.toFixed(3);
+  document.getElementById('ssResVal').textContent = Math.round(ssRes).toLocaleString();
+  document.getElementById('ssTotVal').textContent = Math.round(ssTot).toLocaleString();
+  const zoneEl = document.getElementById('rsqZone');
+  if (r2 >= 0.7) { zoneEl.className = 'zone-strip zone-good'; zoneEl.innerHTML = '✅ <strong>Strong fit:</strong> Ad Spend explains most of the variation in Sales. The model is capturing the real relationship well.'; }
+  else if (r2 >= 0.35) { zoneEl.className = 'zone-strip zone-mid'; zoneEl.innerHTML = '⚠️ <strong>Moderate fit:</strong> Ad Spend explains some variation, but a lot is still left unexplained — other factors are clearly at play too.'; }
+  else { zoneEl.className = 'zone-strip zone-bad'; zoneEl.innerHTML = '🚨 <strong>Weak fit:</strong> Ad Spend alone explains very little of the Sales variation now — noise is drowning out the underlying signal.'; }
+  const rVal = document.getElementById('rsqVal');
+  rVal.style.color = r2 >= 0.7 ? '#16a34a' : r2 >= 0.35 ? '#d97706' : '#dc2626';
+  if (rsqChart) {
+    rsqChart.data.datasets[0].data = rsqX.map((x, i) => ({ x, y: Math.round(y[i] * 10) / 10 }));
+    const xMin = Math.min(...rsqX), xMax = Math.max(...rsqX);
+    rsqChart.data.datasets[1].data = [{ x: xMin, y: slope * xMin + intercept }, { x: xMax, y: slope * xMax + intercept }];
+    rsqChart.update();
+  }
+}
+
+// ─── ADJUSTED R-SQUARED MODULE ─────────────────────────────────
+const ADJR_N = 30;
+const adjrTable = (() => {
+  const base = 0.58;
+  const rows = [];
+  for (let junk = 0; junk <= 10; junk++) {
+    const r2 = base + 0.10 * (1 - Math.exp(-0.35 * junk));
+    const k = 1 + junk;
+    const denom = ADJR_N - k - 1;
+    const adj = 1 - (1 - r2) * (ADJR_N - 1) / denom;
+    rows.push({ junk, k, r2, adj });
+  }
+  return rows;
+})();
+let adjrChart = null;
+
+function initAdjrChart() {
+  const canvas = document.getElementById('adjrChart');
+  if (!canvas) return;
+  if (adjrChart) { adjrChart.destroy(); adjrChart = null; }
+  adjrChart = new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels: adjrTable.map(r => r.junk),
+      datasets: [
+        { label: 'R²', data: adjrTable.map(r => r.r2), borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,.08)', borderWidth: 2.5, pointRadius: 4, tension: 0.25 },
+        { label: 'Adjusted R²', data: adjrTable.map(r => r.adj), borderColor: '#dc2626', backgroundColor: 'rgba(220,38,38,.08)', borderWidth: 2.5, pointRadius: 4, tension: 0.25 }
+      ]
+    },
+    options: {
+      responsive: true,
+      scales: { x: { title: { display: true, text: 'Junk Predictors Added' } }, y: { title: { display: true, text: 'Score' }, min: 0, max: 0.8 } },
+      plugins: { legend: { display: true, labels: { boxWidth: 12, font: { size: 10 } } } }
+    }
+  });
+  updateAdjR(document.getElementById('junkSlider').value);
+}
+
+function updateAdjR(val) {
+  const junk = parseInt(val, 10);
+  document.getElementById('junkVal').textContent = junk;
+  const row = adjrTable[junk];
+  document.getElementById('curRsq').textContent = row.r2.toFixed(3);
+  document.getElementById('curAdjRsq').textContent = row.adj.toFixed(3);
+  document.getElementById('kInfo').textContent = 'n = ' + ADJR_N + ' flats  |  k = ' + row.k + ' predictor' + (row.k > 1 ? 's' : '') + (junk > 0 ? ' (1 real + ' + junk + ' junk)' : ' (Area only)');
+  const zoneEl = document.getElementById('adjrZone');
+  const peakJunk = adjrTable.reduce((best, r) => r.adj > best.adj ? r : best, adjrTable[0]).junk;
+  if (junk === 0) { zoneEl.className = 'zone-strip zone-good'; zoneEl.innerHTML = '✅ Just Area in the model — both R² and Adjusted R² agree the model is genuinely useful.'; }
+  else if (junk <= peakJunk) { zoneEl.className = 'zone-strip zone-good'; zoneEl.innerHTML = '✅ <strong>Still earning its keep:</strong> Adjusted R² is still rising (or near its peak) — these predictors are pulling enough weight to justify their inclusion so far.'; }
+  else { zoneEl.className = 'zone-strip zone-bad'; zoneEl.innerHTML = '🚨 <strong>Past the peak:</strong> R² keeps climbing, but Adjusted R² is now falling — you have crossed into junk-predictor territory. These variables are adding noise, not insight.'; }
+  if (adjrChart) {
+    adjrChart.data.datasets.forEach(ds => { if (ds._markerIdx !== undefined) return; });
+    adjrChart.update();
+  }
+}
+
+// ─── COMPLETION / TROPHY ────────────────────────────────────
+function checkCompletion() {
+  document.getElementById('completionCheck').style.display = 'none';
+  document.getElementById('trophyScreen').style.display = 'block';
+  document.getElementById('finalScore').textContent = totalPts + ' / ' + maxPts + ' pts';
+  const modules = [
+    { icon: '📏', label: 'Residuals' },
+    { icon: '📊', label: 'MAE & RMSE' },
+    { icon: '🎯', label: 'R²' },
+    { icon: '⚖️', label: 'Adjusted R²' }
+  ];
+  document.getElementById('breakdownCards').innerHTML =
+    modules.map(m => `<div class="fb-card"><div class="icon">${m.icon}</div><div class="label">${m.label}</div></div>`).join('') +
+    `<div class="fb-card"><div class="icon" style="font-family:var(--mono);font-size:1.2em">${totalPts}</div><div class="label">Total Score</div></div>`;
+  if (totalPts >= 180) document.getElementById('b6').classList.add('earned');
+  celebrate();
+}
+
+function celebrate() {
+  const e = ['🎊', '⭐', '✨', '🌟', '🎉', '💡', '🏆', '📊', '🔥'];
+  for (let i = 0; i < 18; i++) {
+    setTimeout(() => {
+      const el = document.createElement('div');
+      el.className = 'confetti-piece';
+      el.innerHTML = e[Math.floor(Math.random() * e.length)];
+      el.style.left = Math.random() * 100 + 'vw';
+      el.style.animationDuration = (1.4 + Math.random() * 1.6) + 's';
+      el.style.fontSize = (0.9 + Math.random() * 0.9) + 'em';
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 3000);
+    }, i * 80);
+  }
+}
+
+// ─── PARTICLES ────────────────────────────────────────────────
+function renderParticles() {
+  const c = document.getElementById('particles');
+  c.width = window.innerWidth; c.height = window.innerHeight;
+  const ctx = c.getContext('2d');
+  const clrs = ['#7c3aed', '#2563eb', '#16a34a', '#d97706'];
+  const dots = Array.from({ length: 30 }, () => ({
+    x: Math.random() * c.width, y: Math.random() * c.height,
+    vx: (Math.random() - .5) * .25, vy: (Math.random() - .5) * .25,
+    r: .7 + Math.random() * 1.4,
+    col: clrs[Math.floor(Math.random() * clrs.length)]
+  }));
+  (function draw() {
+    ctx.clearRect(0, 0, c.width, c.height);
+    dots.forEach(d => {
+      d.x += d.vx; d.y += d.vy;
+      if (d.x < 0) d.x = c.width; if (d.x > c.width) d.x = 0;
+      if (d.y < 0) d.y = c.height; if (d.y > c.height) d.y = 0;
+      ctx.beginPath(); ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+      ctx.fillStyle = d.col; ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  })();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  renderParticles();
+});
+</script>
+</body>
+</html>

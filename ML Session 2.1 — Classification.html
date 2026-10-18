@@ -1,0 +1,1381 @@
+<!DOCTYPE html>
+<!-- saved from url=(0065)file:///C:/Users/DELL/Downloads/ml_session2_1_classification.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ML Session 2.1 — Classification | Impeccker Consulting</title>
+<script src="./ML Session 2.1 — Classification_files/chart.min.js.download"></script>
+<link href="./ML Session 2.1 — Classification_files/css2" rel="stylesheet">
+<style>
+:root{--ink:#0d0d0d;--paper:#faf8f3;--cream:#f2ede3;--accent:#e84c3d;--accent2:#2563eb;--accent3:#16a34a;--gold:#d97706;--purple:#7c3aed;--teal:#0d9488;--muted:#6b6b6b;--border:#d4cfc4;--mono:"Space Mono",monospace;--sans:"Bricolage Grotesque",sans-serif}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--sans);background:var(--paper);color:var(--ink);min-height:100vh;overflow-x:hidden}
+#particles{position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.18}
+#scoreboard{position:fixed;top:16px;right:16px;background:var(--ink);color:var(--paper);border-radius:16px;padding:16px 20px;z-index:999;min-width:190px;box-shadow:4px 4px 0 var(--accent);font-family:var(--mono);font-size:.76em}
+#scoreboard .lbl{color:#888;font-size:.72em;letter-spacing:.1em;text-transform:uppercase}
+.big-score{font-size:1.9em;font-weight:700;color:var(--accent);line-height:1}
+.badges-row{display:flex;gap:5px;flex-wrap:wrap;margin-top:9px}
+.badge{width:30px;height:30px;border-radius:50%;background:#333;border:2px solid #555;display:flex;align-items:center;justify-content:center;font-size:.85em;transition:all .3s;filter:grayscale(1)}
+.badge.earned{filter:none;border-color:var(--gold);transform:scale(1.15)}
+.prog-bar{height:4px;background:#333;border-radius:4px;margin-top:9px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--gold));transition:width .5s;border-radius:4px}
+.page-wrap{max-width:960px;margin:0 auto;padding:20px 20px 80px;position:relative;z-index:1}
+.hero{text-align:center;padding:44px 20px 32px;border-bottom:2px solid var(--ink);margin-bottom:36px}
+.hero .kicker{font-family:var(--mono);font-size:.72em;letter-spacing:.15em;color:var(--accent);text-transform:uppercase;margin-bottom:10px}
+.hero h1{font-size:clamp(1.9em,5vw,3.3em);font-weight:800;line-height:1.05;letter-spacing:-.02em}
+.hero h1 span{color:var(--accent)}
+.hero .sub{font-size:1em;color:var(--muted);margin-top:12px;max-width:540px;margin-inline:auto;line-height:1.65}
+.session-pills{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:18px}
+.pill{font-family:var(--mono);font-size:.72em;border:1.5px solid var(--border);border-radius:100px;padding:4px 13px;color:var(--muted)}
+.mod-nav{display:flex;border:2px solid var(--ink);border-radius:12px;overflow:hidden;margin-bottom:32px}
+.mod-tab{flex:1;padding:12px 5px;text-align:center;font-weight:600;font-size:.78em;cursor:pointer;border-right:2px solid var(--ink);background:white;transition:all .2s;line-height:1.3}
+.mod-tab:last-child{border-right:none}
+.mod-tab:hover{background:var(--cream)}
+.mod-tab.active{background:var(--ink);color:white}
+.mod-tab .num{font-family:var(--mono);font-size:1.1em;display:block}
+.module{display:none;animation:fadeSlide .3s ease}
+.module.active{display:block}
+@keyframes fadeSlide{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.sec-title{font-size:1.8em;font-weight:800;letter-spacing:-.02em;border-left:6px solid var(--accent);padding-left:14px;margin-bottom:5px}
+.sec-sub{color:var(--muted);margin-bottom:24px;font-size:.97em}
+.theory-slide{background:linear-gradient(135deg,#1e1b4b 0%,#1e3a5f 100%);color:white;border-radius:18px;padding:28px 32px;margin:20px 0;border:2px solid #3730a3}
+.ts-tag{font-family:var(--mono);font-size:.65em;letter-spacing:.15em;color:#a5b4fc;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.ts-tag::before{content:"";width:30px;height:2px;background:#a5b4fc;display:block}
+.theory-slide h3{font-size:1.3em;font-weight:800;margin-bottom:14px}
+.theory-slide p{color:#c7d2fe;line-height:1.75;margin-bottom:12px;font-size:.94em}
+.theory-slide strong{color:white}
+.theory-bullets{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.t-bullet{background:rgba(255,255,255,.07);border-radius:10px;padding:12px 14px;border-left:3px solid #818cf8;font-size:.88em;line-height:1.6;color:#c7d2fe}
+.t-bullet strong{color:#a5b4fc;display:block;margin-bottom:4px;font-size:.85em;text-transform:uppercase;letter-spacing:.06em}
+.dataset-box{background:var(--ink);color:var(--paper);border-radius:16px;padding:22px 26px;margin:20px 0;position:relative}
+.dataset-box::before{content:"LIVE DATASET";position:absolute;top:13px;right:18px;font-family:var(--mono);font-size:.6em;color:var(--gold);letter-spacing:.12em}
+.dataset-box h4{font-size:1em;color:var(--gold);margin-bottom:8px;font-weight:700}
+.ds-context{color:#bbb;font-size:.88em;line-height:1.7;margin-bottom:14px}
+.data-table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:.74em;margin-bottom:10px}
+.data-table th{background:#1f1f1f;color:var(--gold);padding:9px 10px;text-align:left;border-bottom:1px solid #333;white-space:nowrap}
+.data-table td{padding:8px 10px;border-bottom:1px solid #222;color:#ddd;cursor:pointer;transition:background .15s}
+.data-table tbody tr:hover td{background:#1a2535}
+.data-table tr.selected td{background:#0a2015!important}
+.data-table td.hi{color:#7dd3fc;font-weight:700}
+.data-table td.bad{color:#fca5a5}
+.data-table td.good{color:#86efac}
+.data-table td.warn{color:#fde68a}
+.ds-actions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 4px}
+.ds-btn{font-family:var(--mono);font-size:.7em;padding:5px 13px;border:1.5px solid #444;border-radius:6px;background:#1a1a1a;color:#aaa;cursor:pointer;transition:all .2s}
+.ds-btn:hover,.ds-btn.active{border-color:var(--gold);color:var(--gold);background:#1f1a00}
+.ds-exp{margin-top:12px;padding:12px 14px;background:#0a1628;border-radius:8px;border:1px solid #1e3a5f;font-size:.84em;color:#93c5fd;line-height:1.7;display:none}
+.ds-note{margin-top:12px;padding:10px 13px;background:#1a1a1a;border-radius:8px;border-left:3px solid var(--accent);font-size:.83em;color:#aaa;line-height:1.6}
+.story-block{display:grid;grid-template-columns:64px 1fr;gap:16px;background:white;border:2px solid var(--ink);border-radius:16px;padding:22px;margin-bottom:18px;box-shadow:4px 4px 0 var(--ink)}
+.story-icon{font-size:2.6em;display:flex;align-items:flex-start;justify-content:center}
+.story-body h3{font-size:1.15em;font-weight:800;margin-bottom:7px}
+.story-body p{color:#444;line-height:1.72;margin-bottom:9px;font-size:.95em}
+.math-box{background:var(--ink);color:var(--paper);border-radius:16px;padding:24px;margin:20px 0;position:relative}
+.math-box::before{content:"FORMULA DECODED";position:absolute;top:13px;right:18px;font-family:var(--mono);font-size:.6em;color:var(--accent);letter-spacing:.1em}
+.math-box h4{font-size:1em;color:var(--gold);margin-bottom:11px;font-weight:700}
+.formula{background:#1a1a1a;border-radius:10px;padding:13px 16px;font-family:var(--mono);font-size:.88em;color:#7dd3fc;margin:11px 0;border-left:3px solid var(--accent);word-break:break-all}
+.fp-grid{display:grid;gap:9px;margin-top:12px}
+.fp{display:flex;gap:11px;align-items:flex-start;background:#1a1a1a;border-radius:8px;padding:10px 12px}
+.fp-sym{font-family:var(--mono);color:#7dd3fc;min-width:90px;font-weight:700;font-size:.82em;flex-shrink:0;padding-top:1px}
+.fp-desc{color:#ccc;font-size:.85em;line-height:1.65}
+.fp-desc strong{color:white}
+.interactive{background:var(--cream);border:2px dashed var(--border);border-radius:16px;padding:24px;margin:20px 0}
+.interactive h4{font-size:1em;font-weight:700;margin-bottom:12px}
+.itag{display:inline-block;background:var(--accent);color:white;font-size:.6em;padding:2px 9px;border-radius:100px;vertical-align:middle;margin-left:7px;font-family:var(--mono)}
+.slw{margin:12px 0}
+.slw .sll{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-weight:600;font-size:.86em}
+.slv{font-family:var(--mono);background:var(--ink);color:var(--paper);padding:2px 9px;border-radius:6px;font-size:.81em}
+input[type=range]{width:100%;-webkit-appearance:none;height:6px;background:var(--border);border-radius:6px;outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--ink);cursor:pointer;border:3px solid white;box-shadow:0 0 0 2px var(--ink)}
+.btn{display:inline-flex;align-items:center;gap:6px;font-family:var(--sans);font-weight:700;font-size:.9em;padding:10px 20px;border:2px solid var(--ink);border-radius:10px;cursor:pointer;transition:all .2s;background:var(--ink);color:white}
+.btn:hover{transform:translateY(-2px);box-shadow:3px 3px 0 var(--accent)}
+.btn-ghost{background:transparent;color:var(--ink)}
+.btn-ghost:hover{background:var(--cream);box-shadow:3px 3px 0 var(--ink)}
+.btn-ok{background:var(--accent3);border-color:var(--accent3)}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}
+.quiz{background:#fff9e6;border:2px solid var(--gold);border-radius:16px;padding:20px;margin:20px 0}
+.quiz h4{font-weight:700;margin-bottom:4px;color:#92400e}
+.quiz .qp{font-size:.93em;color:var(--ink);margin:9px 0 13px;line-height:1.65}
+.qopt{background:white;border:2px solid var(--border);border-radius:10px;padding:12px 15px;margin:6px 0;cursor:pointer;transition:all .2s;font-size:.91em;display:flex;align-items:flex-start;gap:10px;line-height:1.5}
+.qopt:hover{border-color:var(--accent2);background:#eff6ff}
+.qopt.correct{background:#dcfce7;border-color:var(--accent3)}
+.qopt.incorrect{background:#fee2e2;border-color:var(--accent)}
+.qopt .mk{width:23px;height:23px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:.71em;flex-shrink:0;margin-top:1px}
+.qfb{margin-top:10px;padding:11px 14px;border-radius:10px;font-size:.88em;line-height:1.6;display:none}
+.qfb.ok{background:#dcfce7;color:#166534;border-left:4px solid var(--accent3)}
+.qfb.no{background:#fee2e2;color:#991b1b;border-left:4px solid var(--accent)}
+.challenge{border:2px solid var(--ink);border-radius:14px;margin:12px 0;overflow:hidden;box-shadow:3px 3px 0 var(--ink)}
+.ch-head{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;cursor:pointer;background:white;user-select:none}
+.ch-head:hover{background:var(--cream)}
+.ch-left{display:flex;align-items:center;gap:13px}
+.ch-ico{font-size:1.8em}
+.ch-title{font-weight:800;font-size:1em}
+.ch-sub{color:var(--muted);font-size:.81em;margin-top:2px}
+.ch-badge{font-family:var(--mono);font-size:.65em;padding:3px 10px;border-radius:100px;border:1.5px solid}
+.ch-badge.hard{border-color:var(--accent);color:var(--accent)}
+.ch-badge.med{border-color:var(--gold);color:var(--gold)}
+.ch-arr{font-size:1.1em;transition:transform .3s}
+.ch-arr.open{transform:rotate(180deg)}
+.ch-body{display:none;padding:20px;border-top:2px solid var(--border);background:var(--cream)}
+.ch-body.open{display:block}
+.divider{display:flex;align-items:center;gap:12px;margin:24px 0}
+.divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--border)}
+.divider span{font-family:var(--mono);font-size:.7em;color:var(--muted);letter-spacing:.1em;text-transform:uppercase}
+.nav-btns{display:flex;justify-content:space-between;margin-top:40px;padding-top:20px;border-top:2px solid var(--border)}
+.analogy{display:grid;grid-template-columns:1fr 1fr;border:2px solid var(--ink);border-radius:14px;overflow:hidden;margin:16px 0}
+.ana-side{padding:18px}
+.ana-side:first-child{border-right:2px solid var(--ink)}
+.ana-side h5{font-weight:700;font-size:.81em;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+.ana-side p{font-size:.86em;line-height:1.72;color:#444}
+.ana-l{background:#fef9c3}
+.ana-r{background:#dbeafe}
+.clf-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:14px;margin:16px 0}
+.clf-card{border:2px solid var(--border);border-radius:14px;padding:16px;background:white;transition:all .25s;cursor:pointer;position:relative;overflow:hidden}
+.clf-card::after{content:"";position:absolute;bottom:0;left:0;right:0;height:4px}
+.c-lr::after{background:var(--accent2)}.c-dt::after{background:var(--accent3)}.c-rf::after{background:var(--gold)}
+.c-svm::after{background:var(--purple)}.c-knn::after{background:var(--accent)}.c-nb::after{background:var(--teal)}.c-xgb::after{background:#0f172a}
+.clf-card:hover{transform:translateY(-3px);box-shadow:5px 5px 0 var(--ink);border-color:var(--ink)}
+.clf-icon{font-size:2em;margin-bottom:8px}
+.clf-name{font-weight:800;font-size:.93em;margin-bottom:4px}
+.clf-tag{font-family:var(--mono);font-size:.63em;color:var(--muted);margin-bottom:8px}
+.clf-desc{font-size:.82em;color:#555;line-height:1.6}
+.dataflow{background:#0f172a;border-radius:16px;padding:20px;margin:20px 0;overflow-x:auto}
+.df-lbl{font-family:var(--mono);font-size:.62em;color:#64748b;letter-spacing:.12em;text-transform:uppercase;margin-bottom:14px}
+.df-row{display:flex;align-items:center;gap:0;flex-wrap:nowrap;min-width:max-content}
+.df-box{background:#1e293b;border:1.5px solid #334155;border-radius:10px;padding:9px 12px;font-family:var(--mono);font-size:.7em;color:#94a3b8;white-space:nowrap;text-align:center;min-width:90px}
+.df-box.a{background:#1e3a5f;border-color:#3b82f6;color:#93c5fd}
+.df-box.out{background:#14532d;border-color:#16a34a;color:#86efac}
+.df-box.inp{background:#1c1917;border-color:var(--gold);color:var(--gold)}
+.df-arr{color:#475569;font-size:1.2em;padding:0 5px;flex-shrink:0}
+.tree-viz{background:#f8fafc;border:2px solid var(--border);border-radius:14px;padding:20px;margin:14px 0}
+.tn{display:inline-block;padding:10px 14px;border-radius:10px;font-size:.78em;font-weight:700;text-align:center;border:2px solid var(--ink);margin:4px;cursor:pointer;transition:all .2s;font-family:var(--mono);line-height:1.4}
+.tn.q{background:#dbeafe;border-color:var(--accent2)}
+.tn.lyes{background:#fee2e2;border-color:var(--accent)}
+.tn.lno{background:#dcfce7;border-color:var(--accent3)}
+.tn.lrev{background:#fef9c3;border-color:var(--gold)}
+.tn:hover{transform:scale(1.04);box-shadow:3px 3px 0 var(--ink)}
+.t-conn{display:flex;justify-content:space-around;font-family:var(--mono);font-size:.72em;color:var(--muted);margin:2px 60px}
+.sc-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}
+.sc-card{border:2px solid var(--border);border-radius:14px;padding:16px;background:white;position:relative;overflow:hidden}
+.sc-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px}
+.sc-card.lr::before{background:var(--accent2)}.sc-card.rf::before{background:var(--gold)}
+.sc-card.nb::before{background:var(--teal)}.sc-card.svm::before{background:var(--purple)}
+.sc-type{font-family:var(--mono);font-size:.65em;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.sc-title{font-weight:800;font-size:.96em;margin-bottom:6px}
+.sc-desc{font-size:.82em;color:#555;line-height:1.6}
+.sc-tag{display:inline-block;font-family:var(--mono);font-size:.68em;background:var(--cream);border:1px solid var(--border);border-radius:6px;padding:2px 8px;margin-top:8px}
+.clf-compare{width:100%;border-collapse:collapse;margin:16px 0;border:2px solid var(--ink);border-radius:12px;overflow:hidden}
+.clf-compare th{background:var(--ink);color:var(--paper);padding:11px 12px;text-align:left;font-family:var(--mono);font-size:.72em;white-space:nowrap}
+.clf-compare td{padding:9px 12px;border-bottom:1px solid var(--border);font-size:.82em;vertical-align:top}
+.clf-compare tr:last-child td{border-bottom:none}
+.clf-compare tr:nth-child(even) td{background:var(--cream)}
+.tp{display:inline-block;font-family:var(--mono);font-size:.63em;padding:2px 7px;border-radius:100px;border:1.5px solid;margin:1px}
+.tg{border-color:var(--accent3);color:var(--accent3)}
+.tr{border-color:var(--accent);color:var(--accent)}
+.tb{border-color:var(--accent2);color:var(--accent2)}
+.to{border-color:var(--gold);color:var(--gold)}
+.mm-q{background:white;border:2px solid var(--border);border-radius:12px;padding:16px;margin:10px 0}
+.mm-qt{font-weight:700;margin-bottom:10px;font-size:.93em;line-height:1.5}
+.mm-opts{display:flex;gap:7px;flex-wrap:wrap}
+.mm-btn{font-family:var(--mono);font-size:.71em;padding:6px 12px;border:1.5px solid var(--border);border-radius:8px;background:white;cursor:pointer;transition:all .2s}
+.mm-btn:hover{border-color:var(--accent2);background:#eff6ff}
+.mm-btn.mok{background:#dcfce7;border-color:var(--accent3);color:#166534;font-weight:700}
+.mm-btn.mno{background:#fee2e2;border-color:var(--accent);color:#991b1b}
+.mm-fb{margin-top:8px;font-size:.83em;color:#444;line-height:1.65;display:none;padding:10px;background:#f8fafc;border-radius:8px;border-left:3px solid var(--border)}
+.trophy-screen{text-align:center;padding:52px 20px}
+.big-trophy{font-size:4.5em;margin-bottom:16px;animation:bounce 1s infinite alternate;display:block}
+@keyframes bounce{from{transform:translateY(0)}to{transform:translateY(-13px)}}
+.trophy-screen h2{font-size:2.2em;font-weight:800;margin-bottom:10px}
+#finalScore{font-family:var(--mono);font-size:2.6em;font-weight:700;color:var(--accent);margin:20px 0;display:block}
+.fb-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;max-width:580px;margin:20px auto}
+.fb-card{background:white;border:2px solid var(--border);border-radius:10px;padding:13px;text-align:center}
+.fb-icon{font-size:1.8em}
+.fb-lbl{font-size:.76em;color:var(--muted);margin-top:4px}
+.confetti-piece{position:fixed;pointer-events:none;z-index:9999;font-size:1.1em;animation:fall linear forwards}
+@keyframes fall{0%{transform:translateY(-20px) rotate(0deg);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}
+@media(max-width:640px){
+  #scoreboard{top:auto;bottom:12px;right:12px;min-width:150px}
+  .analogy,.theory-bullets,.sc-grid{grid-template-columns:1fr}
+  .ana-side:first-child{border-right:none;border-bottom:2px solid var(--ink)}
+  .story-block{grid-template-columns:1fr}.story-icon{display:none}
+  .clf-grid{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+<canvas id="particles" width="1280" height="665"></canvas>
+<div id="scoreboard">
+  <div class="lbl">Score</div>
+  <div class="big-score" id="sc-pts">0</div>
+  <div class="lbl" style="margin-top:5px">/ 350 pts</div>
+  <div class="badges-row">
+    <div class="badge" id="b1">🎯</div><div class="badge" id="b2">🌳</div>
+    <div class="badge" id="b3">✂️</div><div class="badge" id="b4">⚡</div>
+    <div class="badge" id="b5">🧭</div><div class="badge" id="b6">🏆</div>
+  </div>
+  <div class="prog-bar"><div class="prog-fill" id="sc-prog" style="width:0%"></div></div>
+</div>
+
+<div class="page-wrap">
+<!-- LOGO BAR -->
+<div style="display:flex;align-items:center;justify-content:space-between;padding:16px 0 8px;border-bottom:1.5px solid var(--border);margin-bottom:20px">
+  <div style="display:flex;align-items:center;gap:14px">
+    <svg width="52" height="52" viewBox="0 0 200 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M100 15 L55 165 L75 165 L100 65 L125 165 L145 165 Z" fill="#2563eb"></path>
+      <path d="M100 15 L48 165 L63 165 L100 55 L137 165 L152 165 Z" fill="#1e40af" opacity="0.45"></path>
+      <path d="M65 45 Q52 95 48 165 L60 165 Q65 105 78 58Z" fill="#93c5fd" opacity="0.75"></path>
+      <path d="M135 45 Q148 95 152 165 L140 165 Q135 105 122 58Z" fill="#93c5fd" opacity="0.75"></path>
+    </svg>
+    <div>
+      <div style="font-family:var(--mono);font-size:.65em;letter-spacing:.14em;color:var(--muted);text-transform:uppercase">Impeccker Consulting</div>
+      <div style="font-weight:800;font-size:1em">ML for Data-Driven Decision Making</div>
+    </div>
+  </div>
+  <div style="font-family:var(--mono);font-size:.7em;color:var(--muted);text-align:right;line-height:1.5">Session 2.1<br><span style="color:var(--accent);font-weight:700">Classification</span></div>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="kicker">Session 2.1 · Impeccker Consulting · ML for Data-Driven Decision Making</div>
+  <h1>Teaching Machines to <span>Sort the World</span></h1>
+  <p class="sub">Classification is the most widely deployed form of ML. From spam filters to cancer screening — every time a model says YES or NO, it is classifying. Master all 7 classifiers, their maths, and when to use each.</p>
+  <div class="session-pills">
+    <span class="pill">🧭 What is Classification</span>
+    <span class="pill">📐 Logistic Regression</span>
+    <span class="pill">🌳 Decision Trees</span>
+    <span class="pill">🌲 Random Forest</span>
+    <span class="pill">✂️ SVM</span>
+    <span class="pill">👥 KNN</span>
+    <span class="pill">📧 Naive Bayes</span>
+    <span class="pill">⚡ XGBoost</span>
+    <span class="pill">⏱ ~90 mins</span>
+  </div>
+</div>
+
+<!-- MODULE NAV -->
+<div class="mod-nav">
+  <div class="mod-tab active" onclick="showMod(1)"><span class="num">01</span>Intro</div>
+  <div class="mod-tab" onclick="showMod(2)"><span class="num">02</span>Logistic Reg</div>
+  <div class="mod-tab" onclick="showMod(3)"><span class="num">03</span>Trees &amp; Forest</div>
+  <div class="mod-tab" onclick="showMod(4)"><span class="num">04</span>SVM · KNN · NB</div>
+  <div class="mod-tab" onclick="showMod(5)"><span class="num">05</span>XGBoost</div>
+  <div class="mod-tab" onclick="showMod(6)"><span class="num">06</span>Chooser</div>
+  <div class="mod-tab" onclick="showMod(7)"><span class="num">🏆</span>Results</div>
+</div>
+<!-- ═══ MODULE 1 — INTRO ═══ -->
+<div class="module active" id="mod1">
+  <div class="sec-title">What is Classification?</div>
+  <p class="sec-sub">Classification assigns a label (a category) to a new input based on patterns learned from labelled examples. It is the most commonly deployed form of machine learning in business.</p>
+  <div class="theory-slide">
+    <div class="ts-tag">Foundations · ~10 mins</div>
+    <h3>The Core Idea: Sorting Into Buckets</h3>
+    <p>Imagine you are a doctor examining patient files. For each one you say <strong>YES (will develop diabetes)</strong> or <strong>NO (will not)</strong>. That is classification. Your years of experience with past patients is the training data. The patient file is the new input. Your diagnosis is the prediction.</p>
+    <p>In ML we formalise this: given features X (age, blood sugar, BMI), a model learns a <strong>decision boundary</strong> separating YES from NO. For a new patient we measure where they fall relative to that boundary and output a probability — then compare it to a threshold to make the final call.</p>
+    <div class="theory-bullets">
+      <div class="t-bullet"><strong>Binary Classification</strong>Two possible outputs: Spam or not spam. Fraud or not fraud. Churn or not churn. About 90% of real-world ML deployments are binary classification problems.</div>
+      <div class="t-bullet"><strong>Multi-class Classification</strong>Three or more labels. Which product category? Positive / Neutral / Negative sentiment? Which disease? Each input gets exactly one label from a fixed set.</div>
+      <div class="t-bullet"><strong>What the Model Learns</strong>A boundary (line, curve, or complex surface) in feature space that separates classes. Different algorithms draw this boundary in different ways — that is what this entire session explores.</div>
+      <div class="t-bullet"><strong>Output is a Probability</strong>Most classifiers say "73% chance of YES". A threshold (often 50%) converts that probability into a hard label. The threshold is a <em>business decision</em>, not a mathematical one — it determines the trade-off between catching more positives vs avoiding false alarms.</div>
+    </div>
+    <p style="margin-top:14px;font-size:.88em;color:#a5b4fc">📌 <strong>Instructor note:</strong> Ask the class to name 5 classification problems they encounter before breakfast: unlock screen (face recognition), spam filter, news feed curation, Paytm fraud alert, Ola driver safety score. Classification is everywhere.</p>
+  </div>
+
+  <div class="divider"><span>human vs machine</span></div>
+  <div class="analogy">
+    <div class="ana-side ana-l">
+      <h5>🧠 The Human Analogy</h5>
+      <p>A loan officer sees an application: income ₹8L/year, age 32, existing loans ₹2L, owns a house. She says <strong>APPROVED</strong>. Her mental model was built from thousands of past decisions — she has learned where the boundary between safe and risky borrowers lies.</p>
+    </div>
+    <div class="ana-side ana-r">
+      <h5>🤖 The ML Equivalent</h5>
+      <p>A classification model reads the same fields. Trained on 50,000 historical decisions, it outputs <strong>P(default) = 0.12 → APPROVED</strong>. Faster, consistent, auditable, and processes 10,000 applications per second without fatigue or bias from the last case reviewed.</p>
+    </div>
+  </div>
+
+  <div class="story-block">
+    <div class="story-icon">🏦</div>
+    <div class="story-body">
+      <h3>Real Story: HDFC Bank Credit Scoring</h3>
+      <p>HDFC Bank processes over 4 lakh credit card applications per month. Human underwriters used to take 3–5 days per application. Their XGBoost-based classification model — trained on income, existing credit, transaction history, and employment stability — now classifies 90% of applications <strong>instantly with no human review</strong>.</p>
+      <p>The model outputs P(default in 12 months). If this exceeds a threshold set by the credit policy team, the application is flagged for review. Lowering the threshold = conservative book, fewer approvals. Raising it = growth mode, higher risk. The threshold is a business decision — not something the algorithm decides. This is why understanding classification is inseparable from understanding business trade-offs.</p>
+    </div>
+  </div>
+
+  <div class="dataflow">
+    <div class="df-lbl">Classification System Dataflow — HDFC Credit Scoring</div>
+    <div class="df-row">
+      <div class="df-box inp">Raw<br>Application</div><div class="df-arr">→</div>
+      <div class="df-box a">Feature<br>Engineering<br><span style="color:#64748b;font-size:.85em">income ratio,<br>util rate</span></div><div class="df-arr">→</div>
+      <div class="df-box a">Trained<br>Classifier<br><span style="color:#64748b;font-size:.85em">XGBoost</span></div><div class="df-arr">→</div>
+      <div class="df-box a">P(default)<br>= 0.12</div><div class="df-arr">→</div>
+      <div class="df-box a">Threshold<br>Check<br><span style="color:#64748b;font-size:.85em">&gt; 0.25?</span></div><div class="df-arr">→</div>
+      <div class="df-box out">APPROVE ✓<br><span style="font-size:.85em">or FLAG ⚠</span></div>
+    </div>
+  </div>
+
+  <div class="divider"><span>the classifier zoo — click any card to jump to its module</span></div>
+  <div class="clf-grid">
+    <div class="clf-card c-lr" onclick="showMod(2)"><div class="clf-icon">📐</div><div class="clf-name">Logistic Regression</div><div class="clf-tag">LINEAR · PROBABILISTIC</div><div class="clf-desc">Draws a straight boundary using an S-curve. Fast, interpretable, the gold-standard baseline for any new classification problem.</div></div>
+    <div class="clf-card c-dt" onclick="showMod(3)"><div class="clf-icon">🌳</div><div class="clf-name">Decision Tree</div><div class="clf-tag">TREE · INTERPRETABLE</div><div class="clf-desc">Asks a series of yes/no questions like a flowchart. Every decision is traceable from root to leaf in plain English.</div></div>
+    <div class="clf-card c-rf" onclick="showMod(3)"><div class="clf-icon">🌲</div><div class="clf-name">Random Forest</div><div class="clf-tag">ENSEMBLE · ROBUST</div><div class="clf-desc">100+ decision trees vote together. Wisdom of the crowd applied to ML. Industry workhorse for structured tabular data.</div></div>
+    <div class="clf-card c-svm" onclick="showMod(4)"><div class="clf-icon">✂️</div><div class="clf-name">Support Vector Machine</div><div class="clf-tag">MARGIN · KERNEL</div><div class="clf-desc">Finds the widest possible gap between classes. Excellent for high-dimensional text and image feature data.</div></div>
+    <div class="clf-card c-knn" onclick="showMod(4)"><div class="clf-icon">👥</div><div class="clf-name">K-Nearest Neighbours</div><div class="clf-tag">INSTANCE · DISTANCE</div><div class="clf-desc">"Tell me who your neighbours are and I'll tell you who you are." Classifies by majority vote of the K closest training points.</div></div>
+    <div class="clf-card c-nb" onclick="showMod(4)"><div class="clf-icon">📧</div><div class="clf-name">Naive Bayes</div><div class="clf-tag">PROBABILISTIC · FAST</div><div class="clf-desc">Uses Bayes' theorem with a simplifying independence assumption. Blazing fast — powers most spam filters worldwide.</div></div>
+    <div class="clf-card c-xgb" onclick="showMod(5)"><div class="clf-icon">⚡</div><div class="clf-name">XGBoost</div><div class="clf-tag">BOOSTING · STATE-OF-ART</div><div class="clf-desc">Builds trees sequentially, each correcting the previous one's errors. Wins Kaggle competitions. Powers Flipkart fraud detection.</div></div>
+  </div>
+
+  <div class="dataset-box">
+    <h4>📦 Dataset: Paytm Fraud Detection — Raw Transaction Features</h4>
+    <p class="ds-context">Paytm's fraud team collected 12 transactions. <strong>Click any row</strong> to see why it was classified as fraud/legit/borderline. Use filter buttons to explore patterns.</p>
+    <div class="ds-actions">
+      <button class="ds-btn active" onclick="fFilter(&#39;all&#39;,this)">All</button>
+      <button class="ds-btn" onclick="fFilter(&#39;fraud&#39;,this)">Fraud only</button>
+      <button class="ds-btn" onclick="fFilter(&#39;legit&#39;,this)">Legit only</button>
+      <button class="ds-btn" onclick="fFilter(&#39;borderline&#39;,this)">Borderline</button>
+    </div>
+    <table class="data-table" id="fraud-tbl">
+      <thead><tr><th>#</th><th>Amount</th><th>Hour</th><th>New Device</th><th>Intl Merchant</th><th>Velocity</th><th>Label</th></tr></thead>
+      <tbody>
+        <tr onclick="fRow(this,0)" data-t="fraud" style=""><td>1</td><td class="bad">₹48,200</td><td class="warn">03:14</td><td class="bad">YES</td><td class="bad">YES</td><td class="bad">High</td><td class="bad">🚨 FRAUD</td></tr>
+        <tr onclick="fRow(this,1)" data-t="legit" style=""><td>2</td><td class="good">₹1,200</td><td>11:30</td><td class="good">NO</td><td class="good">NO</td><td class="good">Normal</td><td class="good">✅ LEGIT</td></tr>
+        <tr onclick="fRow(this,2)" data-t="fraud" style=""><td>3</td><td class="bad">₹92,000</td><td class="warn">02:47</td><td class="bad">YES</td><td class="bad">YES</td><td class="bad">Extreme</td><td class="bad">🚨 FRAUD</td></tr>
+        <tr onclick="fRow(this,3)" data-t="legit" style=""><td>4</td><td class="good">₹340</td><td>14:10</td><td class="good">NO</td><td class="good">NO</td><td class="good">Normal</td><td class="good">✅ LEGIT</td></tr>
+        <tr onclick="fRow(this,4)" data-t="borderline" style=""><td>5</td><td class="warn">₹12,500</td><td class="warn">01:00</td><td class="good">NO</td><td class="good">NO</td><td class="warn">Medium</td><td class="warn">⚠ REVIEW</td></tr>
+        <tr onclick="fRow(this,5)" data-t="fraud" style=""><td>6</td><td class="bad">₹76,800</td><td class="warn">00:05</td><td class="bad">YES</td><td class="bad">YES</td><td class="bad">Extreme</td><td class="bad">🚨 FRAUD</td></tr>
+        <tr onclick="fRow(this,6)" data-t="legit" style=""><td>7</td><td class="good">₹2,800</td><td>09:22</td><td class="good">NO</td><td class="good">NO</td><td class="good">Normal</td><td class="good">✅ LEGIT</td></tr>
+        <tr onclick="fRow(this,7)" data-t="borderline" style=""><td>8</td><td class="warn">₹18,000</td><td>15:45</td><td class="bad">YES</td><td class="good">NO</td><td class="warn">Medium</td><td class="warn">⚠ REVIEW</td></tr>
+        <tr onclick="fRow(this,8)" data-t="legit" style=""><td>9</td><td class="good">₹580</td><td>13:00</td><td class="good">NO</td><td class="good">NO</td><td class="good">Normal</td><td class="good">✅ LEGIT</td></tr>
+        <tr onclick="fRow(this,9)" data-t="fraud" style=""><td>10</td><td class="bad">₹1,20,000</td><td class="warn">04:30</td><td class="bad">YES</td><td class="bad">YES</td><td class="bad">Extreme</td><td class="bad">🚨 FRAUD</td></tr>
+        <tr onclick="fRow(this,10)" data-t="legit" style=""><td>11</td><td class="good">₹4,200</td><td>16:30</td><td class="good">NO</td><td class="good">NO</td><td class="good">Normal</td><td class="good">✅ LEGIT</td></tr>
+        <tr onclick="fRow(this,11)" data-t="borderline" style=""><td>12</td><td class="warn">₹9,800</td><td class="warn">23:50</td><td class="good">NO</td><td class="bad">YES</td><td class="warn">Medium</td><td class="warn">⚠ REVIEW</td></tr>
+      </tbody>
+    </table>
+    <div class="ds-exp" id="fExp"></div>
+    <div class="ds-note">💡 <strong>Pattern:</strong> High amount + late night + new device + international merchant = classic fraud signature. Three of twelve rows are borderline — the hard cases where the decision boundary must be drawn carefully and the threshold must be chosen deliberately.</div>
+  </div>
+
+  <div class="quiz">
+    <h4>✅ Knowledge Check 1 of 7</h4>
+    <div class="qp">A Zomato model predicts whether a restaurant listing is genuine or fake. It outputs P(fake) = 0.64. The operations team sets threshold τ = 0.70. What happens to this listing, and why might 0.70 be better than 0.50?</div>
+    <div class="qopt" onclick="checkQ(&#39;q1&#39;,this,false)"><div class="mk">A</div>Flagged — 0.64 &gt; 0.50 so it crosses the default boundary</div>
+    <div class="qopt" onclick="checkQ(&#39;q1&#39;,this,true)"><div class="mk">B</div>NOT flagged — 0.64 &lt; 0.70. Zomato chose 0.70 because falsely flagging genuine restaurants damages partner relationships and is costly to resolve. A higher threshold reduces false positives at the cost of missing some fakes — a deliberate business trade-off.</div>
+    <div class="qopt" onclick="checkQ(&#39;q1&#39;,this,false)"><div class="mk">C</div>Flagged — classification thresholds are always fixed at exactly 0.50 by mathematical convention</div>
+    <div class="qopt" onclick="checkQ(&#39;q1&#39;,this,false)"><div class="mk">D</div>The output is invalid because probabilities above 0.60 indicate a miscalibrated model</div>
+    <div class="qfb" id="q1-fb"></div>
+  </div>
+  <div class="nav-btns"><div></div><button class="btn" onclick="showMod(2)">Next: Logistic Regression →</button></div>
+</div>
+<!-- ═══ MODULE 2 — LOGISTIC REGRESSION ═══ -->
+<div class="module" id="mod2">
+  <div class="sec-title">Logistic Regression</div>
+  <p class="sec-sub">Despite the name, Logistic Regression is a <em>classification</em> algorithm. It estimates the probability that an input belongs to a class using the sigmoid (S-shaped) function.</p>
+  <div class="theory-slide">
+    <div class="ts-tag">Algorithm 1 of 7 · ~15 mins</div>
+    <h3>The S-Curve That Changed Everything</h3>
+    <p>Linear Regression predicts numbers from −∞ to +∞. For classification we need a probability between 0 and 1. Logistic Regression <strong>squashes any number into (0,1)</strong> using the sigmoid function — think of it as bending a straight line into an S-curve.</p>
+    <p>Any input far to the left of the S gets probability near 0 (legit). Any input far to the right gets probability near 1 (fraud). The middle zone is genuine uncertainty — this is where the threshold matters most.</p>
+    <div class="theory-bullets">
+      <div class="t-bullet"><strong>Strengths</strong>Extremely fast to train. Probabilities are directly interpretable. Coefficients reveal feature importance and direction. Works well when classes are roughly linearly separable. Always the correct first baseline to build.</div>
+      <div class="t-bullet"><strong>Weaknesses</strong>Cannot learn non-linear boundaries on its own. Assumes a linear relationship between features and log-odds. Struggles when complex feature interactions exist (e.g. "elderly AND high income" is very different from either feature alone).</div>
+      <div class="t-bullet"><strong>Indian Use Cases</strong>CIBIL score to loan approval. Zepto: will this customer churn this week? Tata AIG: will this vehicle insurance claim be fraudulent? Biocon: will this drug compound bind to the target protein?</div>
+      <div class="t-bullet"><strong>When to Use It</strong>First attempt on any new classification problem. When predictions must be explainable to regulators (RBI, SEBI, IRDAI). When training data is small. When real-time scoring at microsecond speed is required.</div>
+    </div>
+  </div>
+
+  <div class="math-box">
+    <h4>🔬 The Sigmoid Formula — What Does σ(z) = 1 / (1 + e^−z) Mean?</h4>
+    <div class="formula">P(Y=1 | X) = σ(z) = 1 / (1 + e^−z)   where   z = w₀ + w₁·X₁ + w₂·X₂ + ... + wₙ·Xₙ</div>
+    <div class="fp-grid">
+      <div class="fp"><div class="fp-sym">P(Y=1|X)</div><div class="fp-desc"><strong>Probability the output is Class 1</strong> given input X. For HDFC: P(default | income, age, debt). This is what the model returns — a number between 0 and 1, before any threshold is applied.</div></div>
+      <div class="fp"><div class="fp-sym">z = w₀+wᵢXᵢ</div><div class="fp-desc"><strong>A plain weighted sum of features</strong> — exactly like Linear Regression. Positive weight = pushes towards Class 1 (fraud). Negative weight = pushes towards Class 0 (legit). These weights are learned from training data.</div></div>
+      <div class="fp"><div class="fp-sym">e^−z</div><div class="fp-desc"><strong>e ≈ 2.718 (Euler's number).</strong> When z is large positive, e^−z ≈ 0 → probability ≈ 1. When z is large negative, e^−z is huge → probability ≈ 0. The maths automatically keeps output inside [0,1] without any additional constraints.</div></div>
+      <div class="fp"><div class="fp-sym">Threshold τ</div><div class="fp-desc"><strong>The business decision layer.</strong> If P(fraud) &gt; τ, flag the transaction. Default τ = 0.50. A bank might use τ = 0.30 for higher recall (catch more fraud). An e-commerce site might use τ = 0.70 to avoid annoying legitimate customers.</div></div>
+    </div>
+    <div style="margin-top:14px;padding:12px;background:#1a1a1a;border-radius:8px;font-size:.86em;color:#94a3b8;line-height:1.7">💡 <strong style="color:white">Plain English:</strong> Multiply each feature by a learned weight and add them up. Very positive sum → high fraud probability. Very negative sum → low probability. The sigmoid squashes the sum to 0–1. Compare to threshold to decide.</div>
+  </div>
+
+  <div class="interactive">
+    <h4>🎮 Sigmoid Live Calculator — Paytm Fraud Model <span class="itag">INTERACTIVE</span></h4>
+    <p style="font-size:.9em;color:#555;margin-bottom:16px">Adjust three transaction features. Watch the fraud probability update in real time. This is exactly what a trained Logistic Regression model does for every transaction.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+      <div>
+        <div class="slw"><div class="sll"><span>Transaction Amount</span><span class="slv" id="amt-v">₹25,000</span></div><input type="range" id="amt-sl" min="500" max="150000" value="25000" oninput="updateLR()"></div>
+        <div class="slw"><div class="sll"><span>Hour of Transaction</span><span class="slv" id="hour-v">14:00</span></div><input type="range" id="hour-sl" min="0" max="23" value="14" oninput="updateLR()"></div>
+        <div class="slw"><div class="sll"><span>New Device (0=No, 1=Yes)</span><span class="slv" id="dev-v">0 (No)</span></div><input type="range" id="dev-sl" min="0" max="1" step="1" value="0" oninput="updateLR()"></div>
+        <div style="margin-top:12px;background:#f1f5f9;border-radius:10px;padding:12px;font-family:var(--mono);font-size:.73em;line-height:1.9;color:#475569">
+          z = w₀(−3.20) + w₁·amt(<span id="w1v">0.70</span>) + w₂·night(<span id="w2v">−0.30</span>) + w₃·dev(<span id="w3v">0</span>)<br>
+          <strong style="color:#0f172a">z = <span id="z-detail">-2.80</span></strong>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;justify-content:center">
+        <div style="text-align:center;background:white;border:2px solid var(--border);border-radius:14px;padding:22px">
+          <div style="font-family:var(--mono);font-size:.68em;color:var(--muted);margin-bottom:4px;text-transform:uppercase">Linear Score z</div>
+          <div style="font-family:var(--mono);font-size:1.5em;font-weight:700;color:var(--accent2)" id="lr-z">-2.80</div>
+          <div style="margin:12px 0;height:1px;background:var(--border)"></div>
+          <div style="font-family:var(--mono);font-size:.68em;color:var(--muted);margin-bottom:4px;text-transform:uppercase">P(Fraud) = σ(z)</div>
+          <div style="font-family: var(--mono); font-size: 2.2em; font-weight: 700; color: rgb(22, 163, 74);" id="lr-prob">0.06</div>
+          <div style="margin-top:14px;height:18px;border-radius:100px;overflow:hidden;background:#e5e7eb">
+            <div id="lr-bar" style="height: 100%; width: 5.73242%; background: rgb(22, 163, 74); border-radius: 100px; transition: 0.4s;"></div>
+          </div>
+          <div style="margin-top:10px;font-weight:700;font-size:.88em" id="lr-dec">✅ NOT FRAUD (below τ = 0.50)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="dataset-box">
+    <h4>📦 Dataset: Jio Telecom — Customer Churn (Logistic Regression)</h4>
+    <p class="ds-context">Jio trained a Logistic Regression model to predict monthly churn. <strong>Click any customer</strong> to see what the model found and what Jio should do.</p>
+    <div class="ds-actions">
+      <button class="ds-btn" onclick="jFilter(&#39;all&#39;,this)">All</button>
+      <button class="ds-btn" onclick="jFilter(&#39;high&#39;,this)">High risk</button>
+      <button class="ds-btn" onclick="jFilter(&#39;safe&#39;,this)">Safe</button>
+    </div>
+    <table class="data-table" id="jio-tbl">
+      <thead><tr><th>ID</th><th>Data/Mo</th><th>Calls/Mo</th><th>Complaints</th><th>Tenure(mo)</th><th>z-score</th><th>P(churn)</th><th>Decision</th></tr></thead>
+      <tbody>
+        <tr onclick="jRow(this,0)" data-t="high"><td class="hi">C001</td><td class="bad">0.8 GB</td><td class="bad">12</td><td class="bad">4</td><td class="warn">2</td><td class="bad">2.41</td><td class="bad">0.92</td><td class="bad">⚠ CHURN RISK</td></tr>
+        <tr onclick="jRow(this,1)" data-t="safe"><td class="hi">C002</td><td class="good">28 GB</td><td class="good">180</td><td class="good">0</td><td class="good">24</td><td class="good">−3.12</td><td class="good">0.04</td><td class="good">✅ SAFE</td></tr>
+        <tr onclick="jRow(this,2)" data-t="high"><td class="hi">C003</td><td class="bad">4 GB</td><td class="bad">20</td><td class="bad">3</td><td class="warn">1</td><td class="bad">1.87</td><td class="bad">0.87</td><td class="bad">⚠ CHURN RISK</td></tr>
+        <tr onclick="jRow(this,3)" data-t="safe"><td class="hi">C004</td><td class="good">35 GB</td><td class="good">210</td><td class="good">0</td><td class="good">36</td><td class="good">−2.95</td><td class="good">0.05</td><td class="good">✅ SAFE</td></tr>
+        <tr onclick="jRow(this,4)" data-t="high"><td class="hi">C005</td><td class="warn">6 GB</td><td class="warn">45</td><td class="bad">2</td><td class="warn">3</td><td class="warn">0.94</td><td class="warn">0.72</td><td class="bad">⚠ CHURN RISK</td></tr>
+        <tr onclick="jRow(this,5)" data-t="safe"><td class="hi">C006</td><td class="good">22 GB</td><td class="good">150</td><td class="good">0</td><td class="good">18</td><td class="good">−1.88</td><td class="good">0.13</td><td class="good">✅ SAFE</td></tr>
+      </tbody>
+    </table>
+    <div class="ds-exp" id="jExp"></div>
+    <div class="ds-note">💡 <strong>Learned weights:</strong> Data Used → w = −0.08 (more data = lower churn). Complaints → w = +0.52 (each complaint strongly signals future churn). Tenure → w = −0.11 (older customers are more loyal). z = w₀ + (−0.08×data) + (0.52×complaints) + (−0.11×tenure).</div>
+  </div>
+
+  <div class="quiz">
+    <h4>✅ Knowledge Check 2 of 7</h4>
+    <div class="qp">Jio's churn model gives Customer C007 P(churn) = 0.45. The retention team sets τ = 0.40 (they have budget for 2,000 calls/month). Is C007 called, and why did Jio choose 0.40 over 0.50?</div>
+    <div class="qopt" onclick="checkQ(&#39;q2&#39;,this,true)"><div class="mk">A</div>YES — 0.45 &gt; 0.40 so C007 is called. Jio chose 0.40 to increase recall (catch more real churners), accepting some wasted calls as the cost. This is worthwhile when retaining a customer is worth more than one unnecessary call.</div>
+    <div class="qopt" onclick="checkQ(&#39;q2&#39;,this,false)"><div class="mk">B</div>NO — 0.45 is below 0.50. Classification systems must always use the default threshold of 0.50.</div>
+    <div class="qopt" onclick="checkQ(&#39;q2&#39;,this,false)"><div class="mk">C</div>YES — but only because C007 has a complaint. Individual features always override the probability threshold.</div>
+    <div class="qopt" onclick="checkQ(&#39;q2&#39;,this,false)"><div class="mk">D</div>Logistic Regression cannot be used for churn — it only works for binary fraud detection tasks.</div>
+    <div class="qfb" id="q2-fb"></div>
+  </div>
+  <div class="nav-btns"><button class="btn btn-ghost" onclick="showMod(1)">← Intro</button><button class="btn" onclick="showMod(3)">Next: Decision Trees &amp; Random Forest →</button></div>
+</div>
+<!-- ═══ MODULE 3 — DECISION TREES + RANDOM FOREST ═══ -->
+<div class="module" id="mod3">
+  <div class="sec-title">Decision Trees &amp; Random Forest</div>
+  <p class="sec-sub">Decision Trees ask a series of yes/no questions. Random Forests ask hundreds of trees and take a majority vote. One is transparent; the other is powerful.</p>
+  <div class="theory-slide">
+    <div class="ts-tag">Algorithms 2 and 3 of 7 · ~20 mins</div>
+    <h3>Decision Trees: How a Machine Plays 20 Questions</h3>
+    <p>A Decision Tree splits data by asking the best question at each step — "Is amount &gt; ₹10,000?" splits into two buckets. It picks the question that creates the <strong>purest buckets</strong> (one mostly fraud, the other mostly legit). It keeps splitting until purity stops improving or a depth limit is reached.</p>
+    <p>The purity measure is called <strong>Gini Impurity</strong> (or Information Gain / Entropy). A perfectly pure bucket has Gini = 0. A 50/50 split has Gini = 0.5 — maximum impurity. The algorithm tries every possible split on every feature and picks the one that reduces average impurity the most.</p>
+    <div class="theory-bullets">
+      <div class="t-bullet"><strong>Decision Tree Pros</strong>Humans can read every rule. No feature scaling needed. Handles numeric and categorical features. Fast inference. Ideal where decisions must be auditable (RBI, IRDAI, HR tribunals).</div>
+      <div class="t-bullet"><strong>Decision Tree Cons</strong>Highly prone to overfitting — trees memorise noise when grown deep. Unstable: small data changes can produce entirely different trees. Single trees are weak learners on complex problems.</div>
+      <div class="t-bullet"><strong>Random Forest Pros</strong>Builds hundreds of trees on random data subsets and feature subsets. Ensemble dramatically reduces overfitting. Robust to outliers and missing values. Built-in feature importance. Industry workhorse for structured data.</div>
+      <div class="t-bullet"><strong>Random Forest Cons</strong>Black box at individual prediction level. Slower and more memory-intensive than a single tree. Storing hundreds of trees requires significant RAM. Struggles with very sparse, high-dimensional text data.</div>
+    </div>
+  </div>
+
+  <div class="math-box">
+    <h4>🔬 Gini Impurity — The Question-Picker Formula</h4>
+    <div class="formula">Gini(node) = 1 − Σ pᵢ²   where pᵢ = fraction of samples in class i at this node</div>
+    <div class="fp-grid">
+      <div class="fp"><div class="fp-sym">Pure node</div><div class="fp-desc"><strong>100 transactions, all fraud.</strong> p_fraud = 1.0. Gini = 1 − (1.0²) = 0. <span style="color:#86efac">Perfect purity — tree stops here.</span></div></div>
+      <div class="fp"><div class="fp-sym">50/50 split</div><div class="fp-desc"><strong>50 fraud, 50 legit.</strong> Gini = 1 − (0.5² + 0.5²) = 0.5. <span style="color:#fca5a5">Maximum impurity — must split further.</span></div></div>
+      <div class="fp"><div class="fp-sym">After split</div><div class="fp-desc"><strong>"Amount &gt; ₹10,000?"</strong> Left: 80 fraud/20 legit (Gini=0.32). Right: 10 fraud/90 legit (Gini=0.18). Weighted avg = 0.26. Gain = 0.50 − 0.26 = <strong>0.24 — great split, tree picks it.</strong></div></div>
+      <div class="fp"><div class="fp-sym">Plain English</div><div class="fp-desc">Try every possible question on every feature. Pick the one that most cleanly separates fraud from legit. Gini measures how clean the separation is. Repeat at each node until leaves are pure or depth limit is hit.</div></div>
+    </div>
+  </div>
+
+  <div class="interactive">
+    <h4>🎮 Build a Decision Tree — Click Through a Classification <span class="itag">INTERACTIVE</span></h4>
+    <p style="font-size:.9em;color:#555;margin-bottom:14px">Load a transaction case, then click through the tree nodes to classify it step by step. Follow the path from root to leaf.</p>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="loadDT(&#39;fraud&#39;)" style="font-size:.8em;padding:8px 14px">🚨 Load Fraud Case</button>
+      <button class="btn btn-ghost" onclick="loadDT(&#39;legit&#39;)" style="font-size:.8em;padding:8px 14px">✅ Load Legit Case</button>
+      <button class="btn btn-ghost" onclick="loadDT(&#39;hard&#39;)" style="font-size:.8em;padding:8px 14px">⚠ Load Borderline Case</button>
+    </div>
+    <div class="tree-viz">
+      <div style="text-align:center;margin-bottom:6px">
+        <div class="tn q" id="tn1" onclick="dtClick(1)">Amount &gt; ₹10,000?<br><span style="font-size:.8em;font-weight:400">Gini gain = 0.24 ← best split</span></div>
+      </div>
+      <div id="tc1" style="display:none">
+        <div class="t-conn">YES (left) ←————————→ NO (right)</div>
+        <div style="display:flex;justify-content:space-around;margin:6px 0">
+          <div class="tn q" id="tn2" onclick="dtClick(2)">Late Night?<br><span style="font-size:.8em;font-weight:400">(00:00 – 05:00)</span></div>
+          <div class="tn lno" id="tn3">✅ LEGIT<br><span style="font-size:.8em;font-weight:400">Gini=0.04 · 95% legit</span></div>
+        </div>
+      </div>
+      <div id="tc2" style="display:none">
+        <div class="t-conn" style="margin:0 100px">YES ←————→ NO</div>
+        <div style="display:flex;justify-content:space-around;margin:6px 0">
+          <div class="tn lyes" id="tn4">🚨 FRAUD<br><span style="font-size:.8em;font-weight:400">Gini=0.08 · 92% fraud</span></div>
+          <div class="tn q" id="tn5" onclick="dtClick(3)">New Device?</div>
+        </div>
+      </div>
+      <div id="tc3" style="display:none">
+        <div class="t-conn" style="margin:0 40px">YES ←————→ NO</div>
+        <div style="display:flex;justify-content:space-around;margin:6px 0">
+          <div class="tn lyes" id="tn6">🚨 FRAUD<br><span style="font-size:.8em;font-weight:400">Gini=0.12 · 88% fraud</span></div>
+          <div class="tn lrev" id="tn7">⚠ REVIEW<br><span style="font-size:.8em;font-weight:400">Gini=0.44 · impure</span></div>
+        </div>
+      </div>
+    </div>
+    <div id="dt-info" style="margin-top:12px;padding:12px;background:white;border:2px solid var(--border);border-radius:10px;font-size:.86em;line-height:1.7;color:#444">👆 Load a case first using the buttons above, then click the root node (blue) to begin classifying step by step.</div>
+  </div>
+
+  <div class="dataflow">
+    <div class="df-lbl">Random Forest Dataflow — Ensemble Voting (Flipkart Returns)</div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div class="df-row">
+        <div class="df-box inp" style="min-width:100px">Training<br>Data</div><div class="df-arr">→</div>
+        <div class="df-box a">Bootstrap 1<br><span style="color:#64748b;font-size:.85em">63% rows,<br>rand features</span></div><div class="df-arr">→</div>
+        <div class="df-box a">Tree 1</div><div class="df-arr">→</div>
+        <div class="df-box" style="background:#14532d;border-color:#16a34a;color:#86efac">ABUSE</div>
+      </div>
+      <div class="df-row">
+        <div class="df-box inp" style="min-width:100px;opacity:.3">Training<br>Data</div><div class="df-arr">→</div>
+        <div class="df-box a">Bootstrap 2<br><span style="color:#64748b;font-size:.85em">different 63%<br>rand features</span></div><div class="df-arr">→</div>
+        <div class="df-box a">Tree 2</div><div class="df-arr">→</div>
+        <div class="df-box" style="background:#14532d;border-color:#16a34a;color:#86efac">ABUSE</div>
+      </div>
+      <div class="df-row">
+        <div class="df-box inp" style="min-width:100px;opacity:.3">Training<br>Data</div><div class="df-arr">→</div>
+        <div class="df-box a">Bootstrap N<br><span style="color:#64748b;font-size:.85em">another 63%<br>rand features</span></div><div class="df-arr">→</div>
+        <div class="df-box a">Tree N</div><div class="df-arr">→</div>
+        <div class="df-box" style="background:#1a1020;border-color:#7c3aed;color:#c4b5fd">LEGIT</div>
+      </div>
+      <div class="df-row" style="margin-top:4px">
+        <div style="min-width:100px"></div><div class="df-arr" style="opacity:0">→</div>
+        <div style="flex:1"></div><div class="df-arr">→</div>
+        <div class="df-box a">Majority Vote<br><span style="color:#64748b;font-size:.85em">2 ABUSE<br>1 LEGIT</span></div><div class="df-arr">→</div>
+        <div class="df-box out">🚨 ABUSE<br><span style="font-size:.85em">66.7% vote</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="dataset-box">
+    <h4>📦 Dataset: Flipkart Returns — Decision Tree vs Random Forest</h4>
+    <p class="ds-context">Flipkart trained both models to predict if a return is policy abuse. <strong>Click any row</strong> to see how each model reasoned — especially on borderline cases where they disagree.</p>
+    <table class="data-table" id="flip-tbl">
+      <thead><tr><th>#</th><th>Days to Return</th><th>Order Value</th><th>Prior Returns</th><th>Same Product?</th><th>DT Prediction</th><th>RF (prob)</th></tr></thead>
+      <tbody>
+        <tr onclick="flipRow(this,0)"><td>1</td><td class="bad">28 days</td><td class="bad">₹8,200</td><td class="bad">7</td><td class="bad">YES</td><td class="bad">🚨 ABUSE</td><td class="bad">🚨 ABUSE (0.91)</td></tr>
+        <tr onclick="flipRow(this,1)"><td>2</td><td class="good">2 days</td><td class="good">₹450</td><td class="good">0</td><td class="good">NO</td><td class="good">✅ LEGIT</td><td class="good">✅ LEGIT (0.96)</td></tr>
+        <tr onclick="flipRow(this,2)"><td>3</td><td class="warn">14 days</td><td class="warn">₹3,100</td><td class="warn">3</td><td class="warn">YES</td><td class="bad">🚨 ABUSE</td><td class="warn">⚠ REVIEW (0.61)</td></tr>
+        <tr onclick="flipRow(this,3)"><td>4</td><td class="good">5 days</td><td class="warn">₹12,000</td><td class="good">1</td><td class="good">NO</td><td class="good">✅ LEGIT</td><td class="good">✅ LEGIT (0.78)</td></tr>
+        <tr onclick="flipRow(this,4)"><td>5</td><td class="bad">25 days</td><td class="bad">₹6,500</td><td class="bad">5</td><td class="bad">YES</td><td class="bad">🚨 ABUSE</td><td class="bad">🚨 ABUSE (0.88)</td></tr>
+        <tr onclick="flipRow(this,5)"><td>6</td><td class="warn">18 days</td><td class="good">₹900</td><td class="warn">4</td><td class="good">NO</td><td class="good">✅ LEGIT</td><td class="warn">⚠ REVIEW (0.54)</td></tr>
+      </tbody>
+    </table>
+    <div class="ds-exp" id="flipExp"></div>
+    <div class="ds-note">💡 <strong>Key contrast:</strong> Rows 3 and 6 — Decision Tree gives a hard YES/NO at a deterministic threshold. Random Forest gives a probability, correctly signalling uncertainty on borderline cases. RF knows what it does not know.</div>
+  </div>
+
+  <div class="challenge" id="ch1">
+    <div class="ch-head" onclick="toggleCh(&#39;ch1&#39;)">
+      <div class="ch-left"><div class="ch-ico">🧠</div><div><div class="ch-title">Brain Teaser: 100% Training Accuracy — Good or Bad?</div><div class="ch-sub">An unconstrained Decision Tree achieves perfect training accuracy. Should you deploy it?</div></div></div>
+      <div style="display:flex;align-items:center;gap:10px"><span class="ch-badge hard">+20 pts</span><span class="ch-arr" id="ch1-arr">▼</span></div>
+    </div>
+    <div class="ch-body" id="ch1-body">
+      <p style="margin-bottom:14px;font-size:.93em">An Ola data scientist builds a Decision Tree (no depth limit) to predict driver safety. Training accuracy = 100%. Test accuracy = 62%. A Random Forest with 200 trees scores Training = 97%, Test = 89%.</p>
+      <p style="margin-bottom:14px;font-size:.93em"><strong>What happened to the tree, and why does RF fix it?</strong></p>
+      <div class="qopt" onclick="checkQ(&#39;ch1q&#39;,this,false)"><div class="mk">A</div>The tree learned perfectly — 100% training accuracy means it is correct. The test set must be unrepresentative.</div>
+      <div class="qopt" onclick="checkQ(&#39;ch1q&#39;,this,true)"><div class="mk">B</div>The tree overfitted — with no depth limit it memorised every training point including noise. RF fixes this by training each tree on a different random 63% bootstrap sample and random feature subset, so no tree can memorise everything. Aggregating diverse trees cancels out individual errors.</div>
+      <div class="qopt" onclick="checkQ(&#39;ch1q&#39;,this,false)"><div class="mk">C</div>The tree needs more data — 100% training accuracy with low test accuracy always means insufficient data.</div>
+      <div class="qopt" onclick="checkQ(&#39;ch1q&#39;,this,false)"><div class="mk">D</div>Both models are wrong — always use Logistic Regression before trying tree-based models.</div>
+      <div class="qfb" id="ch1q-fb"></div>
+    </div>
+  </div>
+
+  <div class="quiz">
+    <h4>✅ Knowledge Check 3 of 7</h4>
+    <div class="qp">A Swiggy model classifies whether a delivery partner violated safety rules. The model's decisions must be fully auditable — a labour tribunal can ask "why was this partner penalised?" Which algorithm, and what key parameter must be carefully set?</div>
+    <div class="qopt" onclick="checkQ(&#39;q3&#39;,this,false)"><div class="mk">A</div>Random Forest — higher accuracy is always more important than explainability in operational systems.</div>
+    <div class="qopt" onclick="checkQ(&#39;q3&#39;,this,true)"><div class="mk">B</div>Decision Tree — every decision is a traceable chain of if-then rules (e.g. "if late_deliveries &gt; 5 AND rating &lt; 3.2 AND complaints &gt; 2 → FLAG"). Set max_depth carefully (typically 4–6) to prevent overfitting while keeping the tree readable for non-technical audiences.</div>
+    <div class="qopt" onclick="checkQ(&#39;q3&#39;,this,false)"><div class="mk">C</div>Naive Bayes — it is the most interpretable classifier because it uses transparent probability calculations.</div>
+    <div class="qopt" onclick="checkQ(&#39;q3&#39;,this,false)"><div class="mk">D</div>SVM — support vectors directly identify which training points drove the boundary.</div>
+    <div class="qfb" id="q3-fb"></div>
+  </div>
+  <div class="nav-btns"><button class="btn btn-ghost" onclick="showMod(2)">← Logistic Regression</button><button class="btn" onclick="showMod(4)">Next: SVM, KNN &amp; Naive Bayes →</button></div>
+</div>
+<!-- ═══ MODULE 4 — SVM, KNN, NAIVE BAYES ═══ -->
+<div class="module" id="mod4">
+  <div class="sec-title">SVM, K-Nearest Neighbours &amp; Naive Bayes</div>
+  <p class="sec-sub">Three fundamentally different philosophies: maximum margin separation, neighbourhood voting, and probabilistic reasoning. Each excels in specific domains.</p>
+  <div class="theory-slide">
+    <div class="ts-tag">Algorithms 4, 5 and 6 of 7 · ~20 mins</div>
+    <h3>Three Different World Views on Classification</h3>
+    <p><strong>SVM</strong> asks: "What is the widest possible road I can draw between the two classes?" It finds the hyperplane (decision boundary) that maximises the margin — the gap between the closest points of each class. Only the points on the edge of the margin matter — the <em>support vectors</em>. Remove everything else and the boundary is unchanged.</p>
+    <p><strong>KNN</strong> asks: "Who are this point's closest neighbours and what class are most of them?" No training phase — the model stores all training data. At prediction time it finds the K nearest points by distance and takes a majority vote. Simple, intuitive, no assumptions.</p>
+    <p><strong>Naive Bayes</strong> asks: "Given these features, which class is statistically most likely?" It applies Bayes' Theorem with the naive assumption that all features are independent of each other. Wrong in most real datasets, but it works surprisingly well for text because relative probabilities still align.</p>
+    <div class="theory-bullets">
+      <div class="t-bullet"><strong>SVM: Best For</strong>High-dimensional data (text, images). Clear margin between classes. Small-to-medium datasets. Medical imaging (tumour vs normal), email spam, face recognition. The kernel trick handles non-linear boundaries.</div>
+      <div class="t-bullet"><strong>KNN: Best For</strong>Small datasets. Recommendation systems ("customers like you also bought..."). Anomaly detection. Exploratory analysis when you need a fast non-parametric baseline before committing to a heavier model.</div>
+      <div class="t-bullet"><strong>Naive Bayes: Best For</strong>Text classification (spam, sentiment, topic labelling). Real-time classification at internet scale. Multi-class problems. When training data is limited — NB generalises well from few examples, making it ideal for new problem domains.</div>
+      <div class="t-bullet"><strong>Key Trade-offs</strong>SVM: slow to train at large scale but excellent on text. KNN: no training cost but prediction slows linearly with data size. NB: fastest of all but independence assumption is often wrong. Always benchmark all three before committing to production.</div>
+    </div>
+  </div>
+
+  <div class="math-box">
+    <h4>🔬 SVM: Maximum Margin — The Widest Road Formula</h4>
+    <div class="formula">Maximise: 2 / ||w||   Subject to: yᵢ(w·xᵢ + b) ≥ 1 for every training point i</div>
+    <div class="fp-grid">
+      <div class="fp"><div class="fp-sym">w·x + b = 0</div><div class="fp-desc"><strong>The decision boundary (hyperplane).</strong> In 2D this is a line. In 100 dimensions (text features) it is a hyperplane. Points on one side are Class 0, the other side are Class 1.</div></div>
+      <div class="fp"><div class="fp-sym">Margin = 2/||w||</div><div class="fp-desc"><strong>The width of the road between classes.</strong> SVM maximises this. A wider margin means more confident predictions on unseen data — the boundary is as far as possible from both classes.</div></div>
+      <div class="fp"><div class="fp-sym">Support Vectors</div><div class="fp-desc"><strong>The training points on the edge of the margin.</strong> These are the hardest cases to classify. They alone define the boundary. All other points are irrelevant to the model — removing them changes nothing.</div></div>
+      <div class="fp"><div class="fp-sym">Kernel Trick</div><div class="fp-desc"><strong>When classes are not linearly separable,</strong> the kernel maps data to higher dimensions where a linear boundary IS possible. RBF kernel maps 2D data to infinite dimensions — like uncrumpling a sheet to separate two groups of dots.</div></div>
+    </div>
+  </div>
+
+  <div class="math-box" style="margin-top:20px">
+    <h4>🔬 Naive Bayes: Bayes' Theorem Applied to Text</h4>
+    <div class="formula">P(Spam | words) ∝ P(Spam) × P("free"|Spam) × P("win"|Spam) × P("prize"|Spam)</div>
+    <div class="fp-grid">
+      <div class="fp"><div class="fp-sym">P(Spam|words)</div><div class="fp-desc"><strong>What we want to know.</strong> Given that this email contains "free", "win", "prize" — how likely is it spam? The model computes this from word frequency counts learned from millions of training emails.</div></div>
+      <div class="fp"><div class="fp-sym">P(word|Spam)</div><div class="fp-desc"><strong>Likelihood: how often this word appears in spam.</strong> In training data, "free" appeared in 80% of spam but only 5% of legitimate emails. This ratio makes "free" a very strong spam signal. NB learns thousands of such ratios.</div></div>
+      <div class="fp"><div class="fp-sym">P(Spam)</div><div class="fp-desc"><strong>Prior probability.</strong> What fraction of all training emails were spam? Say 30%. This is the baseline before looking at any words. Bayes' theorem updates this prior with evidence from each word in sequence.</div></div>
+      <div class="fp"><div class="fp-sym">Naive Part</div><div class="fp-desc"><strong>We assume "free", "win", "prize" are independent of each other.</strong> Mathematically false — spammers use them together. But the model works because relative class probabilities align correctly even when the independence assumption is violated.</div></div>
+    </div>
+  </div>
+
+  <div class="interactive">
+    <h4>🎮 KNN Classifier — Who Are Your Neighbours? <span class="itag">INTERACTIVE</span></h4>
+    <p style="font-size:.9em;color:#555;margin-bottom:14px">Swiggy classifies restaurants as Good 🟢 or Bad 🔴 based on avg order value and rating. Adjust K and watch how the mystery restaurant's (⭐) classification changes.</p>
+    <div class="slw" style="max-width:320px">
+      <div class="sll"><span>K (number of neighbours)</span><span class="slv" id="k-val">3</span></div>
+      <input type="range" id="k-sl" min="1" max="7" step="2" value="3" oninput="updateKNN()">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:12px">
+      <div>
+        <div style="background:white;border:2px solid var(--border);border-radius:10px;padding:10px">
+          <canvas id="knnCanvas" width="310" height="260"></canvas>
+        </div>
+        <div style="font-size:.74em;color:var(--muted);margin-top:6px;font-family:var(--mono)">🟢 Good · 🔴 Bad · ⭐ Mystery · dashed circle = K-radius</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="background:white;border:2px solid var(--border);border-radius:10px;padding:14px">
+          <div style="font-family:var(--mono);font-size:.68em;color:var(--muted);margin-bottom:8px;text-transform:uppercase">K Nearest Neighbours</div>
+          <div id="knn-list" style="font-size:.8em"><div style="display:flex;gap:8px;padding:4px 0;border-bottom:1px solid #f0f0f0;font-size:.79em;align-items:center">🟢<span style="font-weight:700;min-width:18px">I</span><span style="color:var(--muted)">₹800·4.2★ d=10</span></div><div style="display:flex;gap:8px;padding:4px 0;border-bottom:1px solid #f0f0f0;font-size:.79em;align-items:center">🟢<span style="font-weight:700;min-width:18px">J</span><span style="color:var(--muted)">₹700·4.0★ d=30</span></div><div style="display:flex;gap:8px;padding:4px 0;border-bottom:1px solid #f0f0f0;font-size:.79em;align-items:center">🔴<span style="font-weight:700;min-width:18px">K</span><span style="color:var(--muted)">₹350·2.8★ d=46</span></div></div>
+        </div>
+        <div style="background:white;border:2px solid var(--border);border-radius:10px;padding:14px;text-align:center">
+          <div style="font-family:var(--mono);font-size:.68em;color:var(--muted);margin-bottom:4px;text-transform:uppercase">Final Verdict</div>
+          <div style="font-size:1.7em;font-weight:800" id="knn-verdict">🟢 GOOD</div>
+          <div style="font-size:.8em;color:var(--muted);margin-top:4px" id="knn-conf">Good: 2/3 votes · Bad: 1/3 votes</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="dataset-box">
+    <h4>📦 Dataset: Myntra Reviews — Naive Bayes Fake Review Detection</h4>
+    <p class="ds-context">Myntra's trust team uses Naive Bayes to flag fake product reviews. <strong>Click any review</strong> to see how NB computes the verdict word by word using log probability ratios.</p>
+    <table class="data-table" id="myntra-tbl">
+      <thead><tr><th>#</th><th>Review Text</th><th>P(word|Fake) avg</th><th>P(word|Real) avg</th><th>Log Ratio</th><th>NB Verdict</th></tr></thead>
+      <tbody>
+        <tr onclick="myntraRow(this,0)"><td>1</td><td>"BEST product ever! BUY NOW! Amazing!"</td><td class="bad">0.87</td><td class="good">0.09</td><td class="bad">+2.27</td><td class="bad">🚨 FAKE</td></tr>
+        <tr onclick="myntraRow(this,1)"><td>2</td><td>"Wore this to a wedding. Fit slightly off for my size but colour accurate."</td><td class="good">0.04</td><td class="good">0.81</td><td class="good">−3.00</td><td class="good">✅ REAL</td></tr>
+        <tr onclick="myntraRow(this,2)"><td>3</td><td>"5 stars highly recommend excellent quality fast delivery great product"</td><td class="bad">0.91</td><td class="bad">0.11</td><td class="bad">+2.12</td><td class="bad">🚨 FAKE</td></tr>
+        <tr onclick="myntraRow(this,3)"><td>4</td><td>"Returned it. Zip broke in 2 weeks. Customer service took 4 days to respond."</td><td class="good">0.06</td><td class="good">0.74</td><td class="good">−2.51</td><td class="good">✅ REAL</td></tr>
+        <tr onclick="myntraRow(this,4)"><td>5</td><td>"Perfect gift! Great quality! Must buy for everyone!"</td><td class="warn">0.68</td><td class="warn">0.22</td><td class="warn">+1.13</td><td class="warn">⚠ BORDERLINE</td></tr>
+      </tbody>
+    </table>
+    <div class="ds-exp" id="myntraExp"></div>
+    <div class="ds-note">💡 <strong>Log Ratio is the key signal.</strong> Strongly positive = fake probability dominates. Strongly negative = real dominates. NB multiplies all word probabilities together (adds their logs), so even one strong fake-looking word like "BUY NOW" can tip the entire verdict. This is why spam filters are trained on millions of emails — to learn precise weights for thousands of words.</div>
+  </div>
+
+  <div class="quiz">
+    <h4>✅ Knowledge Check 4 of 7</h4>
+    <div class="qp">Google India's spam filter must classify 2 billion emails per day in under 1 millisecond each. Which classifier is most appropriate, and why would SVM be impractical despite its excellent text accuracy?</div>
+    <div class="qopt" onclick="checkQ(&#39;q4&#39;,this,true)"><div class="mk">A</div>Naive Bayes — once trained, classifying an email requires multiplying a handful of word probabilities together (microseconds). SVM at this scale must compute similarity against potentially millions of support vectors for every single email — roughly 100× slower, making 2B per day physically impossible without enormous GPU clusters.</div>
+    <div class="qopt" onclick="checkQ(&#39;q4&#39;,this,false)"><div class="mk">B</div>SVM — highest accuracy on text, should always be preferred regardless of computational constraints.</div>
+    <div class="qopt" onclick="checkQ(&#39;q4&#39;,this,false)"><div class="mk">C</div>KNN — requires no training time so it can be deployed instantly at any scale.</div>
+    <div class="qopt" onclick="checkQ(&#39;q4&#39;,this,false)"><div class="mk">D</div>Decision Tree — the only classifier that can handle raw text data at internet scale.</div>
+    <div class="qfb" id="q4-fb"></div>
+  </div>
+  <div class="nav-btns"><button class="btn btn-ghost" onclick="showMod(3)">← Trees &amp; Forest</button><button class="btn" onclick="showMod(5)">Next: XGBoost →</button></div>
+</div>
+<!-- ═══ MODULE 5 — XGBOOST ═══ -->
+<div class="module" id="mod5">
+  <div class="sec-title">XGBoost — The Kaggle King</div>
+  <p class="sec-sub">XGBoost builds trees sequentially, each correcting the errors of all previous trees. It is the single most effective algorithm for structured tabular data and powers fraud detection across India's top fintech companies.</p>
+  <div class="theory-slide">
+    <div class="ts-tag">Algorithm 7 of 7 · ~15 mins</div>
+    <h3>Boosting: Learning From Mistakes, One Tree at a Time</h3>
+    <p>Random Forest builds hundreds of trees in parallel and averages them. <strong>XGBoost builds trees in sequence.</strong> Tree 1 makes predictions. Tree 2 focuses entirely on the cases Tree 1 got wrong. Tree 3 focuses on what Tree 2 still gets wrong. After 100–1000 trees, the combined model is extraordinarily accurate on structured data.</p>
+    <p>Each new tree is fitted to the <strong>residual errors</strong> — the gap between current predictions and true labels. This is gradient descent applied to function space: the algorithm uses calculus to find the direction that reduces error fastest, then builds a tree to step in that direction.</p>
+    <div class="theory-bullets">
+      <div class="t-bullet"><strong>Why XGBoost Wins</strong>L1 and L2 regularisation built in. Handles missing values natively. Custom loss functions for imbalanced data (scale_pos_weight). Parallelised tree building despite sequential logic. SHAP explainability built in.</div>
+      <div class="t-bullet"><strong>Real Deployments in India</strong>Flipkart: fraud scoring on 10M+ daily transactions. Zerodha: options manipulation detection. Apollo Hospitals: readmission risk. PhonePe: AML flagging. 17 of 29 Kaggle winners (2015–2017) used XGBoost.</div>
+      <div class="t-bullet"><strong>Key Hyperparameters</strong>n_estimators: number of trees (100–1000). max_depth: depth per tree (3–8). learning_rate/eta: step size per tree (0.01–0.3). subsample: fraction of data per tree (0.6–1.0). Lower eta + more trees = better but slower.</div>
+      <div class="t-bullet"><strong>When NOT to Use XGBoost</strong>When full transparency is required (use LR or Decision Tree). When data is under 500 rows (overfits easily). When inputs are images or text sequences (use CNNs or Transformers). For everything else tabular: try XGBoost.</div>
+    </div>
+  </div>
+
+  <div class="math-box">
+    <h4>🔬 Gradient Boosting Formula — Building on Mistakes</h4>
+    <div class="formula">F_m(x) = F_{m-1}(x) + η × h_m(x)    where h_m is trained on residuals rᵢ = yᵢ − F_{m-1}(xᵢ)</div>
+    <div class="fp-grid">
+      <div class="fp"><div class="fp-sym">F_{m-1}(x)</div><div class="fp-desc"><strong>The current ensemble prediction.</strong> At step 0 this is just the base rate (e.g. 30% fraud). At step 100 it is the combined output of 100 correction trees stacked together.</div></div>
+      <div class="fp"><div class="fp-sym">rᵢ = yᵢ−F_{m-1}</div><div class="fp-desc"><strong>The residual error for each training point.</strong> "My model predicts P(fraud)=0.30 but this was actually fraud (1.0). Residual = 0.70." Tree m is trained to predict these residuals — focusing effort on the hardest cases.</div></div>
+      <div class="fp"><div class="fp-sym">h_m(x)</div><div class="fp-desc"><strong>The new tree fitted to residuals.</strong> This tree learns where the current ensemble is wrong and by how much. Training effort concentrates on cases where the gap between prediction and ground truth is largest.</div></div>
+      <div class="fp"><div class="fp-sym">η (eta)</div><div class="fp-desc"><strong>Learning rate — how cautiously each tree contributes.</strong> η = 0.1 means each tree adds only 10% of its correction. Lower eta = more trees needed, but more stable and usually better final accuracy. Prevents overcorrection.</div></div>
+    </div>
+  </div>
+
+  <div class="interactive">
+    <h4>🎮 Watch XGBoost Learn — Add Trees One at a Time <span class="itag">INTERACTIVE</span></h4>
+    <p style="font-size:.9em;color:#555;margin-bottom:14px">Five Flipkart transactions. Press "Add Tree" to see each new tree correcting the remaining errors. Watch residuals shrink and accuracy climb.</p>
+    <div class="btn-row">
+      <button class="btn" onclick="xgbNext()" id="xgb-btn" style="font-size:.85em;padding:9px 16px">➕ Add Next Tree</button>
+      <button class="btn btn-ghost" onclick="xgbReset()" style="font-size:.85em;padding:9px 16px">↺ Reset to Baseline</button>
+    </div>
+    <div style="margin-top:14px">
+      <div id="xgb-info" style="font-family:var(--mono);font-size:.74em;color:var(--muted);margin-bottom:10px;padding:8px 12px;background:#f1f5f9;border-radius:8px">Step 0/4 — Baseline — predict Legit for all | Predicting majority class for everyone. Only 2/5 correct (40%). Three fraud cases entirely missed.</div>
+      <div id="xgb-rows" style="display:flex;flex-direction:column;gap:7px"><div style="display:flex;align-items:center;gap:8px;background:#fef2f2;border:1.5px solid #fca5a5;border-radius:8px;padding:8px 12px;font-size:.78em;font-family:var(--mono);flex-wrap:wrap"><span style="min-width:68px;color:#64748b">TXN001</span><span style="min-width:78px">₹48,200</span><span style="min-width:46px;color:#64748b">3am</span><span style="min-width:78px">True: <strong>Fraud</strong></span><span style="min-width:96px">Pred: <strong style="color:#16a34a">Legit</strong></span><span>❌</span><span style="color:#94a3b8;margin-left:6px">residual:−1.0</span></div><div style="display:flex;align-items:center;gap:8px;background:#f0fdf4;border:1.5px solid #86efac;border-radius:8px;padding:8px 12px;font-size:.78em;font-family:var(--mono);flex-wrap:wrap"><span style="min-width:68px;color:#64748b">TXN002</span><span style="min-width:78px">₹1,200</span><span style="min-width:46px;color:#64748b">11am</span><span style="min-width:78px">True: <strong>Legit</strong></span><span style="min-width:96px">Pred: <strong style="color:#16a34a">Legit</strong></span><span>✅</span><span style="color:#94a3b8;margin-left:6px">residual:0</span></div><div style="display:flex;align-items:center;gap:8px;background:#fef2f2;border:1.5px solid #fca5a5;border-radius:8px;padding:8px 12px;font-size:.78em;font-family:var(--mono);flex-wrap:wrap"><span style="min-width:68px;color:#64748b">TXN003</span><span style="min-width:78px">₹12,500</span><span style="min-width:46px;color:#64748b">1am</span><span style="min-width:78px">True: <strong>Fraud</strong></span><span style="min-width:96px">Pred: <strong style="color:#16a34a">Legit</strong></span><span>❌</span><span style="color:#94a3b8;margin-left:6px">residual:−1.0</span></div><div style="display:flex;align-items:center;gap:8px;background:#f0fdf4;border:1.5px solid #86efac;border-radius:8px;padding:8px 12px;font-size:.78em;font-family:var(--mono);flex-wrap:wrap"><span style="min-width:68px;color:#64748b">TXN004</span><span style="min-width:78px">₹340</span><span style="min-width:46px;color:#64748b">2pm</span><span style="min-width:78px">True: <strong>Legit</strong></span><span style="min-width:96px">Pred: <strong style="color:#16a34a">Legit</strong></span><span>✅</span><span style="color:#94a3b8;margin-left:6px">residual:0</span></div><div style="display:flex;align-items:center;gap:8px;background:#fef2f2;border:1.5px solid #fca5a5;border-radius:8px;padding:8px 12px;font-size:.78em;font-family:var(--mono);flex-wrap:wrap"><span style="min-width:68px;color:#64748b">TXN005</span><span style="min-width:78px">₹28,000</span><span style="min-width:46px;color:#64748b">4am</span><span style="min-width:78px">True: <strong>Fraud</strong></span><span style="min-width:96px">Pred: <strong style="color:#16a34a">Legit</strong></span><span>❌</span><span style="color:#94a3b8;margin-left:6px">residual:−1.0</span></div></div>
+    </div>
+    <div style="margin-top:16px">
+      <div style="font-family:var(--mono);font-size:.7em;color:var(--muted);margin-bottom:6px;text-transform:uppercase">Model Test Accuracy by Tree Count</div>
+      <div style="background:white;border:2px solid var(--border);border-radius:12px;padding:12px"><canvas id="xgbChart" height="0" style="display: block; box-sizing: border-box; height: 0px; width: 0px;" width="0"></canvas></div>
+    </div>
+  </div>
+
+  <div class="dataset-box">
+    <h4>📦 Dataset: Zerodha Options — XGBoost Feature Importance</h4>
+    <p class="ds-context">Zerodha's risk model uses XGBoost to flag manipulative trades. <strong>Click any feature</strong> to understand its business meaning and how it drives the model.</p>
+    <table class="data-table" id="zerodha-tbl">
+      <thead><tr><th>Rank</th><th>Feature</th><th>Importance</th><th>Relative Bar</th><th>Direction</th></tr></thead>
+      <tbody>
+        <tr onclick="zRow(this,0)"><td class="hi">1</td><td>Order-to-Cancel Ratio</td><td class="bad">0.341</td><td><div style="width:90%;height:8px;background:#ef4444;border-radius:4px;display:inline-block"></div></td><td class="bad">↑ Risky</td></tr>
+        <tr onclick="zRow(this,1)"><td class="hi">2</td><td>Trade Velocity (orders/min)</td><td class="bad">0.218</td><td><div style="width:64%;height:8px;background:#ef4444;border-radius:4px;display:inline-block"></div></td><td class="bad">↑ Risky</td></tr>
+        <tr onclick="zRow(this,2)"><td class="hi">3</td><td>Account Age (months)</td><td class="good">0.142</td><td><div style="width:42%;height:8px;background:#16a34a;border-radius:4px;display:inline-block"></div></td><td class="good">↑ Safe</td></tr>
+        <tr onclick="zRow(this,3)"><td class="hi">4</td><td>Avg Trade Size (₹)</td><td class="warn">0.098</td><td><div style="width:29%;height:8px;background:#d97706;border-radius:4px;display:inline-block"></div></td><td class="warn">↕ Mixed</td></tr>
+        <tr onclick="zRow(this,4)"><td class="hi">5</td><td>Spread at Order Time</td><td class="good">0.087</td><td><div style="width:26%;height:8px;background:#16a34a;border-radius:4px;display:inline-block"></div></td><td class="good">↑ Safe</td></tr>
+        <tr onclick="zRow(this,5)"><td class="hi">6</td><td>Historical P&amp;L Volatility</td><td class="warn">0.074</td><td><div style="width:22%;height:8px;background:#d97706;border-radius:4px;display:inline-block"></div></td><td class="warn">↕ Mixed</td></tr>
+      </tbody>
+    </table>
+    <div class="ds-exp" id="zExp"></div>
+    <div class="ds-note">💡 <strong>Feature Importance is XGBoost's built-in explainability tool.</strong> Even with 300 trees, we can say "Order-to-Cancel Ratio drives 34.1% of decisions." For individual prediction explanations, use SHAP values — which show exactly how much each feature pushed this specific transaction's probability up or down.</div>
+  </div>
+
+  <div class="challenge" id="ch2">
+    <div class="ch-head" onclick="toggleCh(&#39;ch2&#39;)">
+      <div class="ch-left"><div class="ch-ico">⚡</div><div><div class="ch-title">XGBoost vs Random Forest: When Does RF Win?</div><div class="ch-sub">XGBoost is not always the answer. Find the scenario where RF beats it.</div></div></div>
+      <div style="display:flex;align-items:center;gap:10px"><span class="ch-badge med">+15 pts</span><span class="ch-arr" id="ch2-arr">▼</span></div>
+    </div>
+    <div class="ch-body" id="ch2-body">
+      <p style="margin-bottom:14px;font-size:.93em">Axis Bank deploys a loan approval model to 800 branches, each with 4 GB RAM local servers. Model must update daily and score in under 100ms. Which model wins here?</p>
+      <div class="qopt" onclick="checkQ(&#39;ch2q&#39;,this,false)"><div class="mk">A</div>XGBoost — always more accurate, banks should always prioritise accuracy above operational constraints.</div>
+      <div class="qopt" onclick="checkQ(&#39;ch2q&#39;,this,true)"><div class="mk">B</div>Random Forest — smaller memory footprint (critical on 4 GB local servers), faster daily retraining (no sequential tree dependency), and fewer hyperparameters to tune. XGBoost's marginal accuracy advantage does not justify the operational complexity in this environment.</div>
+      <div class="qopt" onclick="checkQ(&#39;ch2q&#39;,this,false)"><div class="mk">C</div>Logistic Regression — all loan approval models in India are legally required to use fully interpretable models.</div>
+      <div class="qopt" onclick="checkQ(&#39;ch2q&#39;,this,false)"><div class="mk">D</div>Decision Tree — the only classifier that can run reliably on local branch servers with limited RAM.</div>
+      <div class="qfb" id="ch2q-fb"></div>
+    </div>
+  </div>
+
+  <div class="quiz">
+    <h4>✅ Knowledge Check 5 of 7</h4>
+    <div class="qp">PhonePe's XGBoost model flags a ₹45,000 UPI transaction at 2am (P = 0.91). The customer complains. The fraud analyst needs to explain exactly why this was flagged. What tool should they use?</div>
+    <div class="qopt" onclick="checkQ(&#39;q5&#39;,this,false)"><div class="mk">A</div>XGBoost has no explanation capability — it is a black box and the analyst must manually investigate.</div>
+    <div class="qopt" onclick="checkQ(&#39;q5&#39;,this,true)"><div class="mk">B</div>SHAP values — for this specific transaction, SHAP decomposes the prediction into per-feature contributions: e.g. Amount +0.31, Hour(2am) +0.24, New_device +0.18, Account_age −0.09 → P(fraud)=0.91. This is actionable, regulatorily defensible, and explainable on a customer service call.</div>
+    <div class="qopt" onclick="checkQ(&#39;q5&#39;,this,false)"><div class="mk">C</div>The global feature importance table answers every individual prediction question adequately.</div>
+    <div class="qopt" onclick="checkQ(&#39;q5&#39;,this,false)"><div class="mk">D</div>XGBoost automatically prints a human-readable rule path for each prediction, like a Decision Tree.</div>
+    <div class="qfb" id="q5-fb"></div>
+  </div>
+  <div class="nav-btns"><button class="btn btn-ghost" onclick="showMod(4)">← SVM, KNN, NB</button><button class="btn" onclick="showMod(6)">Next: Algorithm Chooser →</button></div>
+</div>
+<!-- ═══ MODULE 6 — CHOOSER ═══ -->
+<div class="module" id="mod6">
+  <div class="sec-title">Which Classifier Do I Use?</div>
+  <p class="sec-sub">There is no universally best algorithm. The right choice depends on data type, size, interpretability requirement, latency constraint, and the cost of different error types.</p>
+  <div class="theory-slide">
+    <div class="ts-tag">Synthesis · ~10 mins</div>
+    <h3>The Algorithm Selection Framework</h3>
+    <p>A practical heuristic: <strong>Start with Logistic Regression.</strong> If it cannot capture the pattern, try Random Forest. If you need the last 2–3% accuracy on tabular data, try XGBoost. For real-time text classification, use Naive Bayes. For high-dimensional feature spaces with a clear margin, try SVM.</p>
+    <p>What matters most is not the algorithm — it is asking the right questions first: <strong>Who must explain this decision? How fast must it run? How much data exists? What type of data is it?</strong> The answers constrain your choice more than accuracy benchmarks do.</p>
+    <div class="theory-bullets">
+      <div class="t-bullet"><strong>Rule 1: Interpretability</strong>Regulatory requirement (RBI, SEBI, IRDAI, HR tribunal)? Use Logistic Regression or Decision Tree. "Black box is fine, optimise accuracy"? Use XGBoost or Random Forest.</div>
+      <div class="t-bullet"><strong>Rule 2: Data Size</strong>Under 1,000 rows → LR or SVM. 1,000–100,000 rows → RF or XGBoost. Over 1M rows with text → NB or fine-tuned deep learning. KNN does not scale past ~50,000 rows without approximation tricks.</div>
+      <div class="t-bullet"><strong>Rule 3: Data Type</strong>Tabular business data → LR then RF then XGBoost ladder. Text and NLP → NB then SVM then BERT. Images → CNNs exclusively. Mixed tabular and text → separate pipelines, then combine predictions.</div>
+      <div class="t-bullet"><strong>Rule 4: Class Imbalance</strong>Severe imbalance (fraud = 0.1% of data)? All classifiers need SMOTE, class weights, or threshold adjustment. XGBoost handles this best via scale_pos_weight. Logistic Regression is most sensitive to raw imbalance without correction.</div>
+    </div>
+  </div>
+
+  <div class="interactive">
+    <h4>🎮 Algorithm Matchmaker — 8 Scenarios, Pick the Right Classifier <span class="itag">GAME</span></h4>
+    <p style="margin-bottom:14px;color:#555;font-size:.93em">Eight real Indian business scenarios. Pick the most appropriate classifier for each. Wrong answers show the correct reasoning.</p>
+    <div id="alg-game"></div>
+    <div id="alg-score" style="display:none;margin-top:14px;padding:14px;background:#f0fdf4;border-radius:10px;border-left:4px solid var(--accent3);font-weight:700;color:#166534"></div>
+  </div>
+
+  <div class="divider"><span>master comparison table</span></div>
+  <table class="clf-compare">
+    <thead><tr><th>Classifier</th><th>Interpretable?</th><th>Scales Large?</th><th>Non-linear?</th><th>Best For</th><th>Avoid When</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Logistic Regression</strong></td><td><span class="tp tg">✓ Fully</span></td><td><span class="tp tg">✓ Yes</span></td><td><span class="tp tr">✗ No</span></td><td>Baseline, regulatory, real-time scoring</td><td>Complex non-linear feature interactions</td></tr>
+      <tr><td><strong>Decision Tree</strong></td><td><span class="tp tg">✓ Fully</span></td><td><span class="tp to">⚠ Medium</span></td><td><span class="tp tg">✓ Yes</span></td><td>Audit trails, full explainability required</td><td>Noisy data, no depth limit set</td></tr>
+      <tr><td><strong>Random Forest</strong></td><td><span class="tp to">⚠ Partial</span></td><td><span class="tp tg">✓ Yes</span></td><td><span class="tp tg">✓ Yes</span></td><td>Tabular data, robust production baseline</td><td>Very limited RAM, sparse text data</td></tr>
+      <tr><td><strong>SVM</strong></td><td><span class="tp tr">✗ Limited</span></td><td><span class="tp tr">✗ Slow train</span></td><td><span class="tp tg">✓ Kernel</span></td><td>High-dim text, images, clear class margin</td><td>Millions of rows, real-time inference</td></tr>
+      <tr><td><strong>KNN</strong></td><td><span class="tp tg">✓ Intuitive</span></td><td><span class="tp tr">✗ No</span></td><td><span class="tp tg">✓ Yes</span></td><td>Small data, recommendation, anomaly</td><td>Large datasets, high-dimensional features</td></tr>
+      <tr><td><strong>Naive Bayes</strong></td><td><span class="tp tg">✓ Yes</span></td><td><span class="tp tg">✓ Fastest</span></td><td><span class="tp tr">✗ No</span></td><td>Text, NLP, real-time, multi-class</td><td>Strongly correlated numeric features</td></tr>
+      <tr><td><strong>XGBoost</strong></td><td><span class="tp to">⚠ SHAP</span></td><td><span class="tp tg">✓ Yes</span></td><td><span class="tp tg">✓ Yes</span></td><td>Tabular data, max accuracy, competitions</td><td>Images, text sequences, tiny RAM</td></tr>
+    </tbody>
+  </table>
+
+  <div class="sc-grid">
+    <div class="sc-card lr"><div class="sc-type">Use Case · Logistic Regression</div><div class="sc-title">💳 CIBIL Credit Scoring</div><div class="sc-desc">RBI requires lenders to explain every rejection. "Your income-to-debt ratio exceeded our threshold" — directly traceable to an LR coefficient. Regulatory compliance forces interpretability.</div><div class="sc-tag">Algorithm: Logistic Regression</div></div>
+    <div class="sc-card rf"><div class="sc-type">Use Case · Random Forest</div><div class="sc-title">🛒 Meesho Seller Quality</div><div class="sc-desc">Classify new sellers as high-quality vs at-risk using tabular features: delivery rate, return rate, response time, complaints. RF handles feature interactions naturally and is robust to outliers.</div><div class="sc-tag">Algorithm: Random Forest</div></div>
+    <div class="sc-card nb"><div class="sc-type">Use Case · Naive Bayes</div><div class="sc-title">📰 Inshorts Article Categories</div><div class="sc-desc">Classify news snippets into 12 categories in under 1ms. 50 million articles per day. NB's microsecond text inference and minimal memory footprint make it the only viable choice at this volume.</div><div class="sc-tag">Algorithm: Naive Bayes</div></div>
+    <div class="sc-card svm"><div class="sc-type">Use Case · SVM</div><div class="sc-title">🏥 Apollo Tumour Detection</div><div class="sc-desc">Classify MRI patch features (texture, shape, density — 500+ dimensions) as malignant or benign. High-dimensional input, small annotated dataset, clear class margin. SVM with RBF kernel excels here.</div><div class="sc-tag">Algorithm: SVM (RBF Kernel)</div></div>
+  </div>
+
+  <div class="challenge" id="ch3">
+    <div class="ch-head" onclick="toggleCh(&#39;ch3&#39;)">
+      <div class="ch-left"><div class="ch-ico">🧩</div><div><div class="ch-title">Stacking Challenge — When Do Ensembles of Classifiers Win?</div><div class="ch-sub">Razorpay combines LR + RF + XGBoost and beats any single model. Why?</div></div></div>
+      <div style="display:flex;align-items:center;gap:10px"><span class="ch-badge hard">+20 pts</span><span class="ch-arr" id="ch3-arr">▼</span></div>
+    </div>
+    <div class="ch-body" id="ch3-body">
+      <p style="margin-bottom:14px;font-size:.93em">Razorpay trains: LR (AUC=0.82), RF (AUC=0.88), XGBoost (AUC=0.91). They build a stacking ensemble — a meta-model that takes all three outputs as inputs. The stacked model scores AUC=0.94. Why does stacking work, and when does it NOT?</p>
+      <div class="qopt" onclick="checkQ(&#39;ch3q&#39;,this,false)"><div class="mk">A</div>Stacking always works — combining more models always improves accuracy because errors mathematically cancel out.</div>
+      <div class="qopt" onclick="checkQ(&#39;ch3q&#39;,this,true)"><div class="mk">B</div>Stacking works when base models make DIFFERENT errors (diverse failures). LR misses non-linear patterns. RF misses sequential time-based fraud. XGBoost covers most structured patterns. The meta-model learns when to trust which classifier. Stacking FAILS when all base models fail on the same cases — correlated failures add no new information.</div>
+      <div class="qopt" onclick="checkQ(&#39;ch3q&#39;,this,false)"><div class="mk">C</div>Stacking works because averaging probabilities always reduces variance regardless of model correlation.</div>
+      <div class="qopt" onclick="checkQ(&#39;ch3q&#39;,this,false)"><div class="mk">D</div>Stacking only works with exactly three classifiers — a fourth model always degrades performance.</div>
+      <div class="qfb" id="ch3q-fb"></div>
+    </div>
+  </div>
+
+  <div class="quiz">
+    <h4>✅ Knowledge Check 6 of 7</h4>
+    <div class="qp">Urban Company must classify customer complaints into 8 categories from free text. Volume: 500,000 per month. Prediction under 50ms. Training data: 200,000 labelled complaints. Which classifier and why?</div>
+    <div class="qopt" onclick="checkQ(&#39;q6&#39;,this,false)"><div class="mk">A</div>XGBoost — the best algorithm for all classification tasks regardless of input data type.</div>
+    <div class="qopt" onclick="checkQ(&#39;q6&#39;,this,true)"><div class="mk">B</div>Naive Bayes (Multinomial) — text classification, 8 classes, strict latency, high volume. NB is purpose-built for word frequency data, classifies in microseconds, scales trivially to 500k/month. For higher accuracy later, upgrade to SVM with TF-IDF, then fine-tuned BERT.</div>
+    <div class="qopt" onclick="checkQ(&#39;q6&#39;,this,false)"><div class="mk">C</div>Random Forest — tree-based models are the industry standard for all Indian customer service classification.</div>
+    <div class="qopt" onclick="checkQ(&#39;q6&#39;,this,false)"><div class="mk">D</div>KNN — the closest complaint in training data naturally determines the correct category.</div>
+    <div class="qfb" id="q6-fb"></div>
+  </div>
+
+  <div class="quiz">
+    <h4>✅ Knowledge Check 7 of 7</h4>
+    <div class="qp">You trained a Random Forest on Ola driver safety data. Training: 94%. Test: 93%. But the model flags 40% of all drivers as "at risk" — way too high. What is most likely wrong and what do you try first?</div>
+    <div class="qopt" onclick="checkQ(&#39;q7&#39;,this,false)"><div class="mk">A</div>The model is overfitting — the 94% vs 93% gap proves it learned noise from training data.</div>
+    <div class="qopt" onclick="checkQ(&#39;q7&#39;,this,true)"><div class="mk">B</div>The classification threshold is miscalibrated. If training data was 40% "at risk", the model is correctly calibrated to that distribution. Raise the threshold from 0.50 to 0.65–0.70 to reduce flags to 10–15% without retraining. Also verify: does the training data class distribution represent current driver behaviour?</div>
+    <div class="qopt" onclick="checkQ(&#39;q7&#39;,this,false)"><div class="mk">C</div>Random Forest always overpredicts the minority class — switch to XGBoost for better calibration.</div>
+    <div class="qopt" onclick="checkQ(&#39;q7&#39;,this,false)"><div class="mk">D</div>93% test accuracy means the model is excellent — the operations team must accept the 40% flag rate.</div>
+    <div class="qfb" id="q7-fb"></div>
+  </div>
+  <div class="nav-btns"><button class="btn btn-ghost" onclick="showMod(5)">← XGBoost</button><button class="btn btn-ok" onclick="showMod(7)">🏆 See Your Results</button></div>
+</div>
+
+<!-- ═══ MODULE 7 — RESULTS ═══ -->
+<div class="module" id="mod7">
+  <div class="trophy-screen">
+    <span class="big-trophy">🏆</span>
+    <h2>Session 2.1 Complete!</h2>
+    <span id="finalScore"></span>
+    <p id="finalMsg" style="max-width:520px;margin:0 auto;color:var(--muted);line-height:1.7;font-size:.97em"></p>
+    <div class="fb-grid" id="finalBreakdown"></div>
+    <div class="btn-row" style="justify-content:center;margin-top:28px">
+      <button class="btn btn-ghost" onclick="resetAll()">↺ Restart Session</button>
+      <button class="btn btn-ok" onclick="showMod(1)">📖 Review Content</button>
+    </div>
+  </div>
+  <div style="background:linear-gradient(135deg,#1e1b4b,#1e3a5f);border-radius:18px;padding:28px 32px;margin-top:32px;border:2px solid #3730a3">
+    <div style="font-family:var(--mono);font-size:.65em;letter-spacing:.15em;color:#a5b4fc;text-transform:uppercase;margin-bottom:12px">Session 2 Roadmap</div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;gap:12px;align-items:flex-start;background:rgba(232,76,61,.15);border-radius:8px;padding:8px 10px;border-left:3px solid var(--accent)"><span style="font-family:var(--mono);color:var(--accent);min-width:28px;font-weight:700">2.1</span><span style="color:white"><strong>Classification</strong> — LR, Decision Tree, RF, SVM, KNN, Naive Bayes, XGBoost. <em>This session — complete ✅</em></span></div>
+      <div style="display:flex;gap:12px;align-items:flex-start"><span style="font-family:var(--mono);color:var(--gold);min-width:28px;font-weight:700">2.2</span><span style="color:#c7d2fe"><strong style="color:white">Regression</strong> — Linear, Ridge, Lasso, Polynomial, SVR, tree-based regression. Predicting flat prices, delivery ETA, demand forecasting.</span></div>
+      <div style="display:flex;gap:12px;align-items:flex-start"><span style="font-family:var(--mono);color:var(--gold);min-width:28px;font-weight:700">2.3</span><span style="color:#c7d2fe"><strong style="color:white">Clustering</strong> — K-Means, DBSCAN, Hierarchical. Segmenting Ola drivers, BigBasket customers, Myntra shoppers without labels.</span></div>
+      <div style="display:flex;gap:12px;align-items:flex-start"><span style="font-family:var(--mono);color:var(--gold);min-width:28px;font-weight:700">2.4</span><span style="color:#c7d2fe"><strong style="color:white">Dimensionality Reduction</strong> — PCA, t-SNE, UMAP. Visualising 500-dimensional customer data in 2D and compressing medical imaging features for faster training.</span></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /page-wrap -->
+<script>
+// ── STATE ──────────────────────────────────────────────
+var pts=0,maxPts=350,answered={};
+var qPts={q1:30,q2:30,q3:30,q4:30,q5:30,q6:30,q7:30,ch1q:20,ch2q:15,ch3q:20};
+
+// ── SCOREBOARD ─────────────────────────────────────────
+function updSB(){
+  document.getElementById('sc-pts').textContent=pts;
+  document.getElementById('sc-prog').style.width=Math.min(100,pts/maxPts*100)+'%';
+}
+function earnBadge(qId){
+  var map={q1:'b1',q2:'b1',q3:'b2',ch1q:'b2',q4:'b3',q5:'b4',ch2q:'b4',q6:'b5',q7:'b5',ch3q:'b5'};
+  if(map[qId]) document.getElementById(map[qId]).classList.add('earned');
+  if(pts>=maxPts*0.8) document.getElementById('b6').classList.add('earned');
+}
+
+// ── MODULE NAV ─────────────────────────────────────────
+function showMod(n){
+  document.querySelectorAll('.module').forEach(function(m){m.classList.remove('active');});
+  document.querySelectorAll('.mod-tab').forEach(function(t){t.classList.remove('active');});
+  document.getElementById('mod'+n).classList.add('active');
+  document.querySelectorAll('.mod-tab')[n-1].classList.add('active');
+  if(n===4) initKNN();
+  if(n===5) initXGB();
+  if(n===6) buildGame();
+  if(n===7) buildFinal();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ── QUIZ ENGINE ────────────────────────────────────────
+var FB={
+  q1:{ok:'✅ Correct. P(fake)=0.64 < τ=0.70 → NOT flagged. The threshold is a business decision: Zomato chose 0.70 because falsely flagging genuine restaurant partners damages relationships and incurs costly manual review. Higher threshold = fewer false positives, at the cost of missing some fakes. This trade-off is always a business call, never a mathematical one.',
+      no:'❌ The threshold is 0.70, not 0.50. P(fake)=0.64 < 0.70 so the listing is NOT flagged. Thresholds are business decisions — 0.50 is the mathematical default, not a fixed rule. Raising the threshold reduces false positives at the cost of missing some true positives.'},
+  q2:{ok:'✅ Exactly right. P(churn)=0.45 > τ=0.40 → C007 IS called. Jio chose 0.40 to increase recall — some unnecessary calls (false positives) are accepted in exchange for catching more real churners. This is worthwhile when the lifetime value of a retained customer exceeds the cost of one unnecessary call.',
+      no:'❌ The threshold is 0.40, not 0.50. P(churn)=0.45 > 0.40, so C007 IS called. Thresholds convert probabilities into business actions — the choice of 0.40 vs 0.50 reflects the economics of call costs vs customer lifetime value.'},
+  q3:{ok:'✅ Perfect. When auditability is legally required, Decision Tree is the only choice. Every path from root to leaf is a traceable, human-readable rule chain. max_depth is critical — too shallow = underfitting; too deep = overfitting and the tree becomes unreadable. Depth 4–6 is typically the sweet spot.',
+      no:'❌ When auditability is a legal requirement, interpretability is not optional. Random Forest cannot explain individual predictions. Decision Tree can trace every decision as a complete rule chain auditable by any person.'},
+  q4:{ok:'✅ Exactly right. Naive Bayes inference is O(features) — just multiply word probabilities together, taking microseconds. SVM must compare against all support vectors — at Google scale that could mean millions of comparisons per email, making 2B per day physically impossible without enormous GPU clusters.',
+      no:'❌ At internet scale, inference speed is the binding constraint. Naive Bayes classifies in microseconds. SVM must compare against millions of support vectors per email at Google scale — roughly 100× slower. Speed, not marginal accuracy, dictates the choice here.'},
+  q5:{ok:'✅ Correct. SHAP values decompose each specific prediction into per-feature contributions: "Amount +0.31, Hour(2am) +0.24, New_device +0.18, Account_age −0.09 → P(fraud)=0.91." This is mathematically rigorous, regulatorily defensible, and explainable on a customer service call. SHAP is now standard practice in regulated Indian fintech.',
+      no:'❌ XGBoost is not a black box. SHAP values provide per-prediction explanations for any individual transaction. Global feature importance tells you what matters on average; SHAP tells you what drove this specific flag. These are different tools for different purposes.'},
+  q6:{ok:'✅ Sharp thinking. Text classification, 8 classes, strict latency, high volume → Naive Bayes (Multinomial). NB is purpose-built for word frequency inputs, classifies in microseconds, handles multi-class natively. 200k labelled examples is strong training signal. Natural upgrade: NB → SVM with TF-IDF → fine-tuned BERT as accuracy demands grow.',
+      no:'❌ This is a text classification task. XGBoost is designed for numeric tabular data. KNN on text at 500k/month is computationally infeasible. Multinomial Naive Bayes is the standard first algorithm for high-volume text classification with strict latency requirements.'},
+  q7:{ok:'✅ Excellent diagnostic thinking. A 94%/93% gap is negligible — NOT overfitting. The 40% flag rate is a threshold calibration issue: if training data was 40% "at risk", the model is correctly calibrated to that distribution. Raising τ from 0.50 to 0.65–0.70 will immediately reduce flags to a manageable level without any retraining. This is one of the most common misdiagnoses in production ML.',
+      no:'❌ A 94%/93% train-test gap is negligible — this is not overfitting. The 40% flag rate is a threshold problem, not a model problem. The model is working correctly. Raise the threshold from 0.50 to 0.65–0.70 to reduce flags to ~10–15% without retraining.'},
+  ch1q:{ok:'✅ Correct. An unconstrained tree memorises every training point including noise — each leaf holds exactly one example, Gini=0 everywhere on training data, but rules are specific to noise rather than genuine patterns. RF breaks this via randomness: each tree sees a different 63% bootstrap sample and considers only a random feature subset at each split. Aggregating 200 diverse trees cancels out idiosyncratic noise.',
+        no:'❌ 100% training accuracy on an unconstrained tree is a red flag for overfitting, not perfect learning. The tree memorised noise. RF uses bootstrapping and feature subsampling to build diverse trees whose individual errors cancel out in the majority vote.'},
+  ch2q:{ok:'✅ Right for operational reasons. XGBoost scores higher on accuracy benchmarks, but in constrained branch environments (4 GB RAM, daily retraining, distributed local servers), RF wins on practicality: smaller model footprint, faster daily retraining, fewer hyperparameters. The best model that cannot be deployed reliably is worse than a good model that runs everywhere.',
+        no:'❌ XGBoost wins on accuracy but loses on operational constraints. 4 GB RAM limits model size. Daily retraining favours RF because XGBoost\'s sequential tree construction takes longer. Operational viability often outweighs marginal accuracy gains in real-world deployments.'},
+  ch3q:{ok:'✅ Exactly right. Stacking gains come from model diversity. LR misses non-linear patterns. RF misses sequential time-based fraud. XGBoost covers most structured patterns. The meta-model learns when to trust which classifier. Stacking FAILS when base models fail on the same cases (correlated failures) — the meta-model has no additional signal to work with.',
+        no:'❌ Stacking does not always help. It only works when base models make DIFFERENT errors. If LR, RF, and XGBoost all misclassify the same transactions, the meta-model cannot recover. Model diversity is the prerequisite for stacking to provide value.'}
+};
+
+function checkQ(qId,el,correct){
+  if(answered[qId]!==undefined) return;
+  answered[qId]=correct;
+  var opts=el.parentElement.querySelectorAll('.qopt');
+  opts.forEach(function(o){
+    o.style.pointerEvents='none';
+    if(o===el) o.classList.add(correct?'correct':'incorrect');
+  });
+  if(!correct){
+    opts.forEach(function(o){
+      var oc=o.getAttribute('onclick')||'';
+      if(oc.indexOf(',true)')!==-1) o.classList.add('correct');
+    });
+  }
+  var fb=document.getElementById(qId+'-fb');
+  if(fb){fb.style.display='block';fb.className='qfb '+(correct?'ok':'no');fb.textContent=FB[qId][correct?'ok':'no'];}
+  if(correct&&qPts[qId]){
+    pts=Math.min(maxPts,pts+qPts[qId]);
+    updSB(); earnBadge(qId);
+    if(pts>=maxPts*0.8) celebrate();
+  }
+}
+
+function toggleCh(id){
+  var body=document.getElementById(id+'-body');
+  var arr=document.getElementById(id+'-arr');
+  body.classList.toggle('open');
+  arr.classList.toggle('open');
+}
+
+// ── MODULE 1: FRAUD TABLE ──────────────────────────────
+var fExplain=[
+  '🚨 FRAUD — All four risk flags active simultaneously: ₹48,200 (large amount), 3:14am (late night), brand-new device, international merchant. P(fraud)=0.97. Card blocked immediately; customer receives SMS verification request.',
+  '✅ LEGIT — Textbook safe: ₹1,200 at 11:30am on a known device at a domestic merchant. P(fraud)=0.03. Auto-approved in milliseconds.',
+  '🚨 FRAUD — ₹92,000 at 2:47am on a new device at an international merchant with extreme transaction velocity. P(fraud)=0.99. Immediate card suspension triggered.',
+  '✅ LEGIT — Small amount (₹340), afternoon, usual device, Indian merchant. Completely normal pattern. P(fraud)=0.02.',
+  '⚠ BORDERLINE — ₹12,500 at 1am is concerning (late night + significant amount), but known device and domestic merchant partially offset risk. P(fraud)=0.54. Sent to human review queue; OTP requested.',
+  '🚨 FRAUD — ₹76,800 at midnight on a new device to an international merchant. Classic card-not-present fraud pattern. P(fraud)=0.98. Immediate block and fraud team alert.',
+  '✅ LEGIT — Normal morning transaction, small amount, domestic, known device. P(fraud)=0.01.',
+  '⚠ BORDERLINE — ₹18,000 on a new device during business hours. New device is a risk signal but amount and time are normal. P(fraud)=0.61. Flagged for Step-Up Authentication.',
+  '✅ LEGIT — ₹580 at lunchtime, known device. Maximally confident legitimate transaction. P(fraud)=0.01.',
+  '🚨 FRAUD — ₹1,20,000 at 4:30am, new device, international merchant, extreme velocity. All five risk indicators at maximum. P(fraud)=0.999. Immediate block + fraud case opened.',
+  '✅ LEGIT — Afternoon, moderate amount, domestic, known device. P(fraud)=0.04.',
+  '⚠ BORDERLINE — Late night (23:50) and international merchant are risk signals, but moderate amount and known device partially offset. P(fraud)=0.58. Flagged for SMS confirmation.'
+];
+function fRow(tr,idx){
+  document.querySelectorAll('#fraud-tbl tbody tr').forEach(function(r){r.classList.remove('selected');});
+  tr.classList.add('selected');
+  var e=document.getElementById('fExp'); e.style.display='block'; e.textContent=fExplain[idx];
+}
+function fFilter(type,btn){
+  document.querySelectorAll('.ds-actions .ds-btn').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  document.querySelectorAll('#fraud-tbl tbody tr').forEach(function(r){
+    r.style.display=(type==='all'||r.dataset.t===type)?'':'none';
+  });
+}
+
+// ── MODULE 2: LOGISTIC REGRESSION ─────────────────────
+function updateLR(){
+  var amt=+document.getElementById('amt-sl').value;
+  var hour=+document.getElementById('hour-sl').value;
+  var dev=+document.getElementById('dev-sl').value;
+  document.getElementById('amt-v').textContent='₹'+amt.toLocaleString('en-IN');
+  document.getElementById('hour-v').textContent=String(hour).padStart(2,'0')+':00';
+  document.getElementById('dev-v').textContent=dev===1?'1 (Yes)':'0 (No)';
+  var amtW=(amt/75000*2.1).toFixed(2);
+  var nightVal=(hour<6||hour>22)?1.4:-0.3;
+  var nightStr=(hour<6||hour>22)?'+1.40':'−0.30';
+  document.getElementById('w1v').textContent=amtW;
+  document.getElementById('w2v').textContent=nightStr;
+  document.getElementById('w3v').textContent=dev;
+  var z=-3.2+(amt/75000*2.1)+nightVal+(dev*1.8);
+  var prob=1/(1+Math.exp(-z));
+  document.getElementById('lr-z').textContent=z.toFixed(2);
+  document.getElementById('z-detail').textContent=z.toFixed(2);
+  document.getElementById('lr-prob').textContent=prob.toFixed(2);
+  var bar=document.getElementById('lr-bar');
+  var dec=document.getElementById('lr-dec');
+  bar.style.width=(prob*100)+'%';
+  if(prob>0.7){bar.style.background='#ef4444';document.getElementById('lr-prob').style.color='#ef4444';dec.textContent='🚨 FRAUD FLAGGED (above τ = 0.50)';}
+  else if(prob>0.5){bar.style.background='#d97706';document.getElementById('lr-prob').style.color='#d97706';dec.textContent='⚠ FRAUD FLAGGED (above τ = 0.50)';}
+  else{bar.style.background='#16a34a';document.getElementById('lr-prob').style.color='#16a34a';dec.textContent='✅ NOT FRAUD (below τ = 0.50)';}
+}
+
+// ── MODULE 2: JIO TABLE ────────────────────────────────
+var jExplain=[
+  'C001 — Extreme churn risk. Very low data usage (0.8 GB = barely using the plan), few calls, 4 complaints in 2 months, only 2 months tenure. z=2.41 → P(churn)=0.92. Immediate retention call: offer free 3-month data upgrade.',
+  'C002 — Model is very confident this customer is safe. 28 GB heavy user, 180 calls/month, zero complaints across 24 months of loyalty. z=−3.12 → P(churn)=0.04. No action needed. Ideal candidate for 5G plan upsell.',
+  'C003 — High churn risk despite being a new customer. The 3 complaints in just 1 month is the dominant signal (each complaint pushes z up by +0.52). Likely an onboarding issue — bad first experience and already looking for alternatives.',
+  'C004 — Safest customer in dataset. 35 GB, 210 calls/month, 36-month loyal tenure, zero complaints. z=−2.95 → P(churn)=0.05. Ideal for premium upsell — unlimited 5G plan or Jio Cinema bundle.',
+  'C005 — Medium churn risk. Below-average data, 2 complaints, only 3 months tenure. z=0.94 → P(churn)=0.72. Crosses retention threshold of 0.65. Proactive engagement: usage optimisation call + complaint resolution.',
+  'C006 — Safe and engaged. 22 GB, zero complaints, 18-month tenure. z=−1.88 → P(churn)=0.13. No action needed now. Flag for loyalty reward at 24-month anniversary.'
+];
+function jRow(tr,idx){
+  document.querySelectorAll('#jio-tbl tbody tr').forEach(function(r){r.classList.remove('selected');});
+  tr.classList.add('selected');
+  var e=document.getElementById('jExp'); e.style.display='block'; e.textContent=jExplain[idx];
+}
+function jFilter(type,btn){
+  document.querySelectorAll('.ds-actions .ds-btn').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  document.querySelectorAll('#jio-tbl tbody tr').forEach(function(r){
+    r.style.display=(type==='all'||r.dataset.t===type)?'':'none';
+  });
+}
+
+// ── MODULE 3: DECISION TREE ────────────────────────────
+var dtCase=null;
+var dtCases={
+  fraud:{amount:48200,night:true,device:true,desc:'₹48,200 at 3:14am on a brand-new device.'},
+  legit:{amount:1200,night:false,device:false,desc:'₹1,200 at 11:30am on a known device.'},
+  hard:{amount:12500,night:true,device:false,desc:'₹12,500 at 1:00am on a known device.'}
+};
+function loadDT(type){
+  dtCase=dtCases[type];
+  ['tc1','tc2','tc3'].forEach(function(id){var e=document.getElementById(id);if(e)e.style.display='none';});
+  document.getElementById('tn1').style.background='#dbeafe';
+  document.getElementById('dt-info').innerHTML='<strong>Case loaded:</strong> '+dtCase.desc+' — Click the root node (blue) to begin.';
+}
+function dtClick(step){
+  if(!dtCase){document.getElementById('dt-info').textContent='Please load a case using the buttons above first.';return;}
+  var c=dtCase;
+  if(step===1){
+    document.getElementById('tc1').style.display='block';
+    document.getElementById('tn1').style.background='#bfdbfe';
+    if(c.amount>10000){
+      document.getElementById('dt-info').innerHTML='<strong>Step 1:</strong> Amount=₹'+c.amount.toLocaleString('en-IN')+' IS > ₹10,000 → go <strong>LEFT (YES branch)</strong> → check if late night.';
+    } else {
+      document.getElementById('tn3').style.background='#d1fae5';
+      document.getElementById('dt-info').innerHTML='<strong>Step 1:</strong> Amount=₹'+c.amount.toLocaleString('en-IN')+' is NOT > ₹10,000 → go <strong>RIGHT (NO branch)</strong> → Final: ✅ LEGIT (leaf Gini=0.04, 95% legit).';
+    }
+  } else if(step===2&&c.amount>10000){
+    document.getElementById('tc2').style.display='block';
+    if(c.night){
+      document.getElementById('tn4').style.background='#fecaca';
+      document.getElementById('dt-info').innerHTML='<strong>Step 2:</strong> Late night = YES (between midnight and 5am) → go <strong>LEFT</strong> → Final: 🚨 FRAUD (leaf Gini=0.08, 92% fraud).';
+    } else {
+      document.getElementById('dt-info').innerHTML='<strong>Step 2:</strong> Late night = NO → go <strong>RIGHT</strong> → check device next.';
+    }
+  } else if(step===3&&!c.night){
+    document.getElementById('tc3').style.display='block';
+    if(c.device){
+      document.getElementById('tn6').style.background='#fecaca';
+      document.getElementById('dt-info').innerHTML='<strong>Step 3:</strong> New Device = YES → Final: 🚨 FRAUD (Gini=0.12, 88% fraud). High value at non-peak hours on a new device is a strong secondary fraud pattern.';
+    } else {
+      document.getElementById('tn7').style.background='#fef9c3';
+      document.getElementById('dt-info').innerHTML='<strong>Step 3:</strong> New Device = NO → ⚠ REVIEW (Gini=0.44 — still impure). The tree cannot make a confident call: high amount + late night + known device is genuinely ambiguous. Sent to human review queue.';
+    }
+  }
+}
+
+// ── MODULE 3: FLIPKART TABLE ───────────────────────────
+var flipExp=[
+  'Clear abuse: 28-day return at the policy limit, high value, 7 prior returns of same product. Both DT and RF agree with high confidence (0.91). Action: block future same-product returns for this account.',
+  'Clear legitimate return: 2 days (fast, within window), cheap item, zero prior returns. Both models agree (0.96 legit). Approve immediately.',
+  'Borderline: 14-day return, medium value, 3 prior returns of same product. DT says ABUSE (crossed a deterministic threshold). RF is only 61% confident — correctly signalling genuine uncertainty. RF recommends human review; DT overcalls on borderline cases.',
+  'Appears safe: quick 5-day return on a high-value item (₹12,000), only 1 prior return. RF says 78% legit. High value warrants physical inspection before refund is processed.',
+  'Textbook abuse: 25-day return, ₹6,500, 5 prior returns of same product. Both models: ABUSE (0.88). Classic pattern: buy → use for 25 days → return.',
+  'Interesting split: 18-day return but only ₹900 (cheap item), 4 prior returns of various products. DT says LEGIT (cheap amount did not cross its value threshold). RF says 54% — nearly 50/50. RF\'s uncertainty is appropriate here — genuine ambiguity exists.'
+];
+function flipRow(tr,idx){
+  document.querySelectorAll('#flip-tbl tbody tr').forEach(function(r){r.classList.remove('selected');});
+  tr.classList.add('selected');
+  var e=document.getElementById('flipExp'); e.style.display='block'; e.textContent=flipExp[idx];
+}
+
+// ── MODULE 4: KNN ──────────────────────────────────────
+var knnData=[
+  {x:55,y:75,c:'good',n:'A',i:'₹1200·4.8★'},{x:75,y:65,c:'good',n:'B',i:'₹1100·4.6★'},
+  {x:65,y:95,c:'good',n:'C',i:'₹900·4.7★'},{x:95,y:55,c:'good',n:'D',i:'₹1400·4.9★'},
+  {x:215,y:195,c:'bad',n:'E',i:'₹300·2.1★'},{x:195,y:215,c:'bad',n:'F',i:'₹280·2.4★'},
+  {x:225,y:185,c:'bad',n:'G',i:'₹320·1.9★'},{x:205,y:205,c:'bad',n:'H',i:'₹290·2.3★'},
+  {x:135,y:135,c:'good',n:'I',i:'₹800·4.2★'},{x:155,y:115,c:'good',n:'J',i:'₹700·4.0★'},
+  {x:165,y:155,c:'bad',n:'K',i:'₹350·2.8★'}
+];
+var mystery={x:128,y:128};
+function dist2(a,b){return Math.sqrt((a.x-b.x)*(a.x-b.x)+(a.y-b.y)*(a.y-b.y));}
+function initKNN(){updateKNN();}
+function updateKNN(){
+  var k=+document.getElementById('k-sl').value;
+  document.getElementById('k-val').textContent=k;
+  var sorted=knnData.map(function(p){return Object.assign({},p,{d:dist2(p,mystery)});}).sort(function(a,b){return a.d-b.d;});
+  var nb=sorted.slice(0,k);
+  var good=nb.filter(function(p){return p.c==='good';}).length;
+  var bad=nb.filter(function(p){return p.c==='bad';}).length;
+  document.getElementById('knn-verdict').textContent=good>bad?'🟢 GOOD':bad>good?'🔴 BAD':'⚠ TIE';
+  document.getElementById('knn-conf').textContent='Good: '+good+'/'+k+' votes · Bad: '+bad+'/'+k+' votes';
+  document.getElementById('knn-list').innerHTML=nb.map(function(p){
+    return '<div style="display:flex;gap:8px;padding:4px 0;border-bottom:1px solid #f0f0f0;font-size:.79em;align-items:center">'+(p.c==='good'?'🟢':'🔴')+'<span style="font-weight:700;min-width:18px">'+p.n+'</span><span style="color:var(--muted)">'+p.i+' d='+Math.round(p.d)+'</span></div>';
+  }).join('');
+  drawKNN(nb);
+}
+function drawKNN(nb){
+  var canvas=document.getElementById('knnCanvas');
+  if(!canvas)return;
+  var ctx=canvas.getContext('2d');
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.strokeStyle='#f3f4f6';ctx.lineWidth=1;
+  for(var gx=0;gx<canvas.width;gx+=40){ctx.beginPath();ctx.moveTo(gx,0);ctx.lineTo(gx,canvas.height);ctx.stroke();}
+  for(var gy=0;gy<canvas.height;gy+=40){ctx.beginPath();ctx.moveTo(0,gy);ctx.lineTo(canvas.width,gy);ctx.stroke();}
+  nb.forEach(function(p){
+    ctx.beginPath();ctx.moveTo(mystery.x,mystery.y);ctx.lineTo(p.x,p.y);
+    ctx.strokeStyle=p.c==='good'?'rgba(34,197,94,.35)':'rgba(239,68,68,.35)';
+    ctx.lineWidth=1.5;ctx.setLineDash([4,3]);ctx.stroke();ctx.setLineDash([]);
+  });
+  if(nb.length>0){
+    var maxD=Math.max.apply(null,nb.map(function(p){return dist2(p,mystery);}));
+    ctx.beginPath();ctx.arc(mystery.x,mystery.y,maxD,0,Math.PI*2);
+    ctx.strokeStyle='#d97706';ctx.lineWidth=1.5;ctx.setLineDash([5,4]);ctx.stroke();ctx.setLineDash([]);
+  }
+  knnData.forEach(function(p){
+    var isH=nb.some(function(h){return h.n===p.n;});
+    ctx.beginPath();ctx.arc(p.x,p.y,isH?10:6,0,Math.PI*2);
+    ctx.fillStyle=p.c==='good'?'#22c55e':'#ef4444';
+    ctx.fill();ctx.strokeStyle=isH?'#0f172a':'white';ctx.lineWidth=isH?3:2;ctx.stroke();
+  });
+  ctx.beginPath();ctx.arc(mystery.x,mystery.y,10,0,Math.PI*2);
+  ctx.fillStyle='#f59e0b';ctx.fill();ctx.strokeStyle='#0f172a';ctx.lineWidth=3;ctx.stroke();
+  ctx.font='bold 11px monospace';ctx.fillStyle='#0f172a';ctx.fillText('⭐ Mystery',mystery.x-28,mystery.y-14);
+}
+
+// ── MODULE 4: MYNTRA TABLE ─────────────────────────────
+var myntraExp=[
+  '🚨 FAKE — NB sees: "BEST"(fake P=0.82), "BUY NOW"(fake P=0.94), "Amazing!"(fake P=0.79). Combined log-score=+2.27 strongly favouring Fake. Real reviews rarely use imperative buying calls or ALL-CAPS superlatives. Exclamation mark density and word pattern are textbook review farm output.',
+  '✅ REAL — NB sees specific details: "wedding"(context), "slightly off"(honest criticism), "colour accurate"(specific observation). Combined log-score=−3.00 strongly favouring Real. Specific details, realistic caveats, and personal context are hallmarks of genuine reviews that fake farms cannot easily replicate at scale.',
+  '🚨 FAKE — Six positive superlatives in one short review: "5 stars", "highly recommend", "excellent", "quality", "fast delivery", "great product". Each adds to the fake log-probability. Total=+2.12. Review farm content stacks generic praise because it cannot include product-specific details.',
+  '✅ REAL — Specific timeline ("2 weeks"), specific failure ("zip broke"), specific process ("4 days to respond"). Log-score=−3.7 strongly Real. Detailed negative reviews with specific timelines are the strongest signal of genuine human authorship. Fake farms rarely write convincing negative reviews.',
+  '⚠ BORDERLINE — "Perfect gift!" and "Must buy" are mild fake signals (+0.8 each), but "great quality" is neutral. Total log-score=+1.1. NB is uncertain. Could be an enthusiastic genuine buyer or a light fake. Sent for secondary review using account age and verified purchase status.'
+];
+function myntraRow(tr,idx){
+  document.querySelectorAll('#myntra-tbl tbody tr').forEach(function(r){r.classList.remove('selected');});
+  tr.classList.add('selected');
+  var e=document.getElementById('myntraExp'); e.style.display='block'; e.textContent=myntraExp[idx];
+}
+
+// ── MODULE 5: XGB ──────────────────────────────────────
+var xgbData=[
+  {id:'TXN001',amt:'₹48,200',hr:'3am',truth:'Fraud'},
+  {id:'TXN002',amt:'₹1,200',hr:'11am',truth:'Legit'},
+  {id:'TXN003',amt:'₹12,500',hr:'1am',truth:'Fraud'},
+  {id:'TXN004',amt:'₹340',hr:'2pm',truth:'Legit'},
+  {id:'TXN005',amt:'₹28,000',hr:'4am',truth:'Fraud'}
+];
+var xgbSteps=[
+  {label:'Baseline — predict Legit for all',preds:['Legit','Legit','Legit','Legit','Legit'],acc:40,res:['−1.0','0','−1.0','0','−1.0'],note:'Predicting majority class for everyone. Only 2/5 correct (40%). Three fraud cases entirely missed.'},
+  {label:'Tree 1 — Learn from residuals',preds:['Fraud','Legit','Legit','Legit','Fraud'],acc:60,res:['0','0','−0.8','0','0'],note:'Tree 1 learned: "amount > ₹20k AND hour < 5am → Fraud." TXN001 and TXN005 corrected. TXN003 (borderline) still missed. 3/5 correct (60%).'},
+  {label:'Tree 2 — Correct TXN003',preds:['Fraud','Legit','Fraud','Legit','Fraud'],acc:80,res:['0','0','0','0','−0.3'],note:'Tree 2 focused on TXN003\'s residual. Learned: "₹10–15k at 1am = moderate fraud risk." All three frauds now correct. 4/5 correct (80%).'},
+  {label:'Tree 3 — Fine-tuning residuals',preds:['Fraud','Legit','Fraud','Legit','Fraud'],acc:90,res:['0','0','0','0','0'],note:'Tree 3 reduces remaining uncertainty. Regularisation (L2 on leaf weights) begins limiting tree contribution. 5/5 correct on training set. Test accuracy ~90%.'},
+  {label:'Tree 4 — Diminishing returns + regularisation',preds:['Fraud','Legit','Fraud','Legit','Fraud'],acc:92,res:['0','0','0','0','0'],note:'Additional trees give diminishing accuracy gains. L1/L2 regularisation prevents overfitting. Model stabilises at ~92% test accuracy. More trees here would overfit.'}
+];
+var xgbStep=0,xgbChart=null;
+function initXGB(){
+  xgbStep=0; renderXGB();
+  var ctx=document.getElementById('xgbChart');
+  if(!ctx)return;
+  if(xgbChart)xgbChart.destroy();
+  xgbChart=new Chart(ctx,{
+    type:'line',
+    data:{labels:['Baseline','Tree 1','Tree 2','Tree 3','Tree 4'],
+      datasets:[{label:'Test Accuracy %',data:[40,60,80,90,92],borderColor:'#2563eb',backgroundColor:'rgba(37,99,235,0.1)',fill:true,tension:0.4,pointRadius:5,pointBackgroundColor:'#2563eb'}]},
+    options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{min:0,max:100,ticks:{callback:function(v){return v+'%';}}}}}
+  });
+}
+function renderXGB(){
+  var s=xgbSteps[xgbStep];
+  document.getElementById('xgb-info').textContent='Step '+xgbStep+'/4 — '+s.label+' | '+s.note;
+  document.getElementById('xgb-rows').innerHTML=xgbData.map(function(d,i){
+    var pred=s.preds[i],ok=pred===d.truth;
+    return '<div style="display:flex;align-items:center;gap:8px;background:'+(ok?'#f0fdf4':'#fef2f2')+';border:1.5px solid '+(ok?'#86efac':'#fca5a5')+';border-radius:8px;padding:8px 12px;font-size:.78em;font-family:var(--mono);flex-wrap:wrap">'+
+      '<span style="min-width:68px;color:#64748b">'+d.id+'</span>'+
+      '<span style="min-width:78px">'+d.amt+'</span>'+
+      '<span style="min-width:46px;color:#64748b">'+d.hr+'</span>'+
+      '<span style="min-width:78px">True: <strong>'+d.truth+'</strong></span>'+
+      '<span style="min-width:96px">Pred: <strong style="color:'+(pred==='Fraud'?'#ef4444':'#16a34a')+'">'+pred+'</strong></span>'+
+      '<span>'+(ok?'✅':'❌')+'</span>'+
+      '<span style="color:#94a3b8;margin-left:6px">residual:'+s.res[i]+'</span></div>';
+  }).join('');
+  document.getElementById('xgb-btn').disabled=xgbStep>=4;
+}
+function xgbNext(){if(xgbStep<4){xgbStep++;renderXGB();}}
+function xgbReset(){xgbStep=0;renderXGB();}
+
+// ── MODULE 5: ZERODHA TABLE ────────────────────────────
+var zExp=[
+  'Order-to-Cancel Ratio (importance=0.341, the #1 signal). A trader placing 1,000 orders and cancelling 950 is "layering" — creating false volume impression to manipulate other traders. This single feature drives 34% of all model decisions.',
+  'Trade Velocity (0.218). Normal retail investors place 1–5 orders per day. Algorithmic manipulators place hundreds per minute. High velocity combined with high cancel ratio explains over 55% of model predictions together.',
+  'Account Age (0.142, direction=Safe). Manipulation typically comes from fresh accounts created to evade detection. Each additional year of clean trading history significantly reduces the risk score.',
+  'Average Trade Size (0.098, Mixed). The relationship is U-shaped: very small trades (₹500, potential wash trading) AND very large trades (₹50L+, institutional manipulation) are both higher risk than moderate sizes.',
+  'Spread at Order Time (0.087, Safe). Clean trades happen at tight bid-ask spreads (normal liquid markets). Consistently trading at wide spreads may indicate exploiting illiquidity the trader helped create.',
+  'Historical P&L Volatility (0.074, Mixed). Extreme P&L swings — massive gains followed by sharp losses — can indicate pump-and-dump cycles. Stable consistent P&L suggests genuine trading. Some volatile traders are simply high-risk legitimate speculators.'
+];
+function zRow(tr,idx){
+  document.querySelectorAll('#zerodha-tbl tbody tr').forEach(function(r){r.classList.remove('selected');});
+  tr.classList.add('selected');
+  var e=document.getElementById('zExp'); e.style.display='block'; e.textContent=zExp[idx];
+}
+
+// ── MODULE 6: ALGORITHM MATCHMAKER GAME ───────────────
+var algScenarios=[
+  {q:'SEBI needs to flag insider trading suspects from 50 million trades. Every flag must be explainable to a court as plain-English rules.',
+   opts:['Logistic Regression','XGBoost','Random Forest','Decision Tree'],ans:3,
+   why:'Decision Tree — court admissibility requires traceable if-then rule chains. "IF trade_size > ₹50L AND timing < 8 min before announcement AND account_age < 6 months THEN flag." Every node is one auditable logical condition.'},
+  {q:'Practo classifies medical reports into 15 disease categories from clinical notes text. 10 million reports per day, 5ms latency.',
+   opts:['SVM','Naive Bayes','Random Forest','KNN'],ans:1,
+   why:'Naive Bayes — text data + ultra-high throughput + multi-class + strict latency = perfect NB use case. Multinomial NB handles word frequencies natively and classifies in microseconds. Nothing else meets all four requirements simultaneously.'},
+  {q:'Tata Digital builds a churn model for 200 million subscribers. Tabular data: 80 features. No regulatory interpretability requirement.',
+   opts:['KNN','Logistic Regression','XGBoost','Naive Bayes'],ans:2,
+   why:'XGBoost — large tabular data, no interpretability constraint, accuracy-first. 200M users provides abundant training data for gradient boosting to learn complex feature interactions. SHAP can still provide business insights without regulatory obligation.'},
+  {q:'AIIMS converts MRI scans into 1,200 texture and shape features per patch. Must classify each patch as tumour vs healthy tissue.',
+   opts:['Naive Bayes','Logistic Regression','SVM with RBF kernel','Decision Tree'],ans:2,
+   why:'SVM with RBF kernel — 1,200-dimensional feature space, small dataset (hundreds of annotated scans), clear class margin. SVM\'s maximum-margin principle is purpose-built for high-dimensional, small-N medical classification tasks.'},
+  {q:'Urban Company\'s dispatch engine recommends the best technician from 5,000 options for each new booking in real time.',
+   opts:['K-Nearest Neighbours','XGBoost','Random Forest','SVM'],ans:0,
+   why:'KNN — recommendation is fundamentally a similarity problem: "This job is most similar to jobs that matched well with technicians A, B, C → recommend them." With 5,000 technicians (small DB), KNN lookup is instantaneous. This is how Amazon\'s "customers also bought" actually works.'},
+  {q:'Groww classifies user app comments (500,000 per day) as Positive, Negative, or Neutral for the product analytics team.',
+   opts:['XGBoost','KNN','Naive Bayes','Decision Tree'],ans:2,
+   why:'Naive Bayes (Multinomial) — text sentiment, 3 classes, high volume. NB is the natural first choice. Upgrade path: NB → SVM with TF-IDF → fine-tuned BERT as accuracy demands grow.'},
+  {q:'PharmEasy classifies pharmacy orders as genuine prescription vs potential abuse. Only 9.8% of orders are abuse — severely imbalanced.',
+   opts:['Unweighted Decision Tree','LR with class_weight=balanced','K-Nearest Neighbours','Naive Bayes'],ans:1,
+   why:'Logistic Regression with class_weight=balanced — this parameter re-weights training loss to compensate for imbalance, preventing the model from defaulting to the majority class. Also interpretable for pharmacy regulatory compliance. XGBoost with scale_pos_weight is the accuracy upgrade.'},
+  {q:'Infosys HR builds an attrition risk model. Managers must be told specifically WHY an employee is flagged, in language they can act on.',
+   opts:['XGBoost','Random Forest','Logistic Regression','SVM'],ans:2,
+   why:'Logistic Regression — HR conversations require clear specific explanations: "Commute distance (45km), no promotion in 3 years, and manager satisfaction score (2.9/5) are the three strongest predictors." LR coefficients provide direct actionable factor explanations. Managers cannot act on "the forest of 200 trees decided."'}
+];
+var algAnswered={};
+function buildGame(){
+  algAnswered={};
+  var c=document.getElementById('alg-game');
+  if(!c)return;
+  c.innerHTML=algScenarios.map(function(s,i){
+    return '<div class="mm-q" id="alg-q'+i+'"><div class="mm-qt">'+(i+1)+'. '+s.q+'</div>'+
+      '<div class="mm-opts">'+s.opts.map(function(o,j){return '<button class="mm-btn" onclick="algAns('+i+','+j+')">'+o+'</button>';}).join('')+'</div>'+
+      '<div class="mm-fb" id="alg-fb'+i+'"></div></div>';
+  }).join('');
+}
+function algAns(qi,ai){
+  if(algAnswered[qi]!==undefined)return;
+  algAnswered[qi]=(ai===algScenarios[qi].ans);
+  var btns=document.querySelectorAll('#alg-q'+qi+' .mm-btn');
+  btns.forEach(function(b,j){
+    b.style.pointerEvents='none';
+    if(j===algScenarios[qi].ans)b.classList.add('mok');
+    else if(j===ai&&ai!==algScenarios[qi].ans)b.classList.add('mno');
+  });
+  var fb=document.getElementById('alg-fb'+qi);
+  fb.style.display='block';
+  fb.innerHTML=(ai===algScenarios[qi].ans?'✅ ':'❌ ')+algScenarios[qi].why;
+  if(ai===algScenarios[qi].ans){pts=Math.min(maxPts,pts+8);updSB();}
+  if(Object.keys(algAnswered).length===algScenarios.length){
+    var corr=Object.values(algAnswered).filter(Boolean).length;
+    var sc=document.getElementById('alg-score');
+    sc.style.display='block';
+    sc.textContent='🎮 Game complete! '+corr+'/'+algScenarios.length+' correct — '+(corr>=6?'🏆 Algorithm Expert! You have mastered the selection framework.':corr>=4?'🌟 Good instincts! Review the comparison table above.':'📚 Revisit the theory slides and comparison table, then replay.');
+    if(corr>=6)document.getElementById('b5').classList.add('earned');
+  }
+}
+
+// ── MODULE 7: FINAL SCREEN ─────────────────────────────
+function buildFinal(){
+  var pct=Math.round(pts/maxPts*100);
+  document.getElementById('finalScore').textContent=pts+' / '+maxPts+' pts ('+pct+'%)';
+  var msg=pct>=80?'🏆 Outstanding! You have mastered all 7 classifiers — from the sigmoid curve of Logistic Regression to XGBoost\'s sequential boosting. You can select the right algorithm for any business problem, explain it to any stakeholder, and defend your threshold choice with precision.':
+    pct>=60?'🌟 Great work! Solid grasp of classification fundamentals. Revisit the Algorithm Chooser module to sharpen your selection instincts — that is the skill that separates analysts from practitioners.':
+    pct>=40?'👍 Good start! Go back to the interactive labs — play with the Sigmoid Calculator and KNN visualiser. Hands-on intuition accelerates understanding faster than re-reading theory.':
+    '📚 Keep going! Classification is the foundation of all production ML deployment. Run every interactive lab, click through every dataset row, and the pattern will click into place.';
+  document.getElementById('finalMsg').textContent=msg;
+  var topics=[
+    {icon:'🧭',lbl:'Concepts',q:'q1'},{icon:'📐',lbl:'Logistic Reg',q:'q2'},
+    {icon:'🌳',lbl:'Trees',q:'q3'},{icon:'✂️',lbl:'SVM & NB',q:'q4'},
+    {icon:'⚡',lbl:'XGBoost',q:'q5'},{icon:'🎯',lbl:'Chooser',q:'q6'},
+    {icon:'🔧',lbl:'Threshold',q:'q7'}
+  ];
+  document.getElementById('finalBreakdown').innerHTML=topics.map(function(t){
+    var a=answered[t.q];
+    return '<div class="fb-card"><div class="fb-icon">'+t.icon+'</div>'+
+      '<div style="font-weight:700;margin-top:5px;font-size:1.1em">'+(a===undefined?'⬜':a?'✅':'❌')+'</div>'+
+      '<div class="fb-lbl">'+t.lbl+'</div>'+
+      '<div style="font-family:var(--mono);font-size:.68em;color:var(--muted);margin-top:2px">'+(a===undefined?'not attempted':a?'+'+qPts[t.q]+' pts':'try again')+'</div></div>';
+  }).join('');
+  if(pts>=260){document.getElementById('b6').classList.add('earned');celebrate();}
+}
+function resetAll(){
+  Object.keys(answered).forEach(function(k){delete answered[k];});
+  pts=0;updSB();
+  document.querySelectorAll('.qopt').forEach(function(o){o.className='qopt';o.style.pointerEvents='';});
+  document.querySelectorAll('.qfb').forEach(function(f){f.style.display='none';});
+  document.querySelectorAll('.badge').forEach(function(b){b.classList.remove('earned');});
+  buildGame(); showMod(1);
+}
+
+// ── CONFETTI ───────────────────────────────────────────
+function celebrate(){
+  var e=['🎉','⭐','✨','🌟','🎊','💡','🏆','🧠','⚡'];
+  for(var i=0;i<20;i++){
+    (function(d){setTimeout(function(){
+      var el=document.createElement('div');
+      el.className='confetti-piece';
+      el.textContent=e[Math.floor(Math.random()*e.length)];
+      el.style.left=Math.random()*100+'vw';
+      el.style.animationDuration=(1.4+Math.random()*1.6)+'s';
+      el.style.fontSize=(0.9+Math.random()*0.9)+'em';
+      document.body.appendChild(el);
+      setTimeout(function(){el.remove();},3000);
+    },d);})(i*80);
+  }
+}
+
+// ── PARTICLES ──────────────────────────────────────────
+function renderParticles(){
+  var c=document.getElementById('particles');
+  c.width=window.innerWidth;c.height=window.innerHeight;
+  var ctx=c.getContext('2d');
+  var dots=[];
+  for(var i=0;i<28;i++) dots.push({x:Math.random()*c.width,y:Math.random()*c.height,vx:(Math.random()-.5)*.2,vy:(Math.random()-.5)*.2,r:.8+Math.random()*1.4});
+  (function draw(){
+    ctx.clearRect(0,0,c.width,c.height);
+    dots.forEach(function(d){
+      d.x+=d.vx;d.y+=d.vy;
+      if(d.x<0)d.x=c.width;if(d.x>c.width)d.x=0;
+      if(d.y<0)d.y=c.height;if(d.y>c.height)d.y=0;
+      ctx.beginPath();ctx.arc(d.x,d.y,d.r,0,Math.PI*2);ctx.fillStyle='#2563eb';ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  })();
+}
+
+// ── INIT ───────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded',function(){
+  renderParticles();
+  updateLR();
+  initKNN();
+  initXGB();
+});
+</script>
+
+
+</body></html>

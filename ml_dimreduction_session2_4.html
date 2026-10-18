@@ -1,0 +1,1341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ML Session 2.4 — Dimensionality Reduction | Impeccker Consulting</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Bricolage+Grotesque:wght@300;400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0d0d0d;--paper:#faf8f3;--cream:#f2ede3;
+  --accent:#7c3aed;--accent2:#2563eb;--accent3:#16a34a;
+  --gold:#d97706;--purple:#7c3aed;--teal:#0d9488;
+  --muted:#6b6b6b;--border:#d4cfc4;--card:#fff;
+  --mono:"Space Mono",monospace;--sans:"Bricolage Grotesque",sans-serif
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--sans);background:var(--paper);color:var(--ink);min-height:100vh;overflow-x:hidden}
+#particles{position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.18}
+#scoreboard{position:fixed;top:16px;right:16px;background:var(--ink);color:var(--paper);border-radius:16px;padding:16px 20px;z-index:999;min-width:190px;box-shadow:4px 4px 0 var(--accent);font-family:var(--mono);font-size:.76em}
+#scoreboard .label{color:#888;font-size:.72em;letter-spacing:.1em;text-transform:uppercase}
+#scoreboard .big-score{font-size:1.9em;font-weight:700;color:var(--accent);line-height:1}
+.badges-row{display:flex;gap:5px;flex-wrap:wrap;margin-top:9px}
+.badge{width:30px;height:30px;border-radius:50%;background:#333;border:2px solid #555;display:flex;align-items:center;justify-content:center;font-size:.85em;transition:all .3s;filter:grayscale(1)}
+.badge.earned{filter:none;border-color:var(--gold);background:#222;transform:scale(1.15)}
+.prog-bar{height:4px;background:#333;border-radius:4px;margin-top:9px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--gold));transition:width .5s;border-radius:4px}
+.page-wrap{max-width:960px;margin:0 auto;padding:20px 20px 80px;position:relative;z-index:1}
+.hero{text-align:center;padding:44px 20px 32px;border-bottom:2px solid var(--ink);margin-bottom:36px}
+.hero .kicker{font-family:var(--mono);font-size:.72em;letter-spacing:.15em;color:var(--accent);text-transform:uppercase;margin-bottom:10px}
+.hero h1{font-size:clamp(1.9em,5vw,3.3em);font-weight:800;line-height:1.05;letter-spacing:-.02em}
+.hero h1 span{color:var(--accent)}
+.hero .sub{font-size:1em;color:var(--muted);margin-top:12px;max-width:580px;margin-inline:auto;line-height:1.65}
+.session-pills{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:18px}
+.pill{font-family:var(--mono);font-size:.72em;border:1.5px solid var(--border);border-radius:100px;padding:4px 13px;color:var(--muted)}
+.mod-nav{display:flex;border:2px solid var(--ink);border-radius:12px;overflow:hidden;margin-bottom:32px;flex-wrap:wrap}
+.mod-tab{flex:1;min-width:80px;padding:12px 5px;text-align:center;font-weight:600;font-size:.78em;cursor:pointer;border-right:2px solid var(--ink);background:white;transition:all .2s;line-height:1.3}
+.mod-tab:last-child{border-right:none}
+.mod-tab:hover{background:var(--cream)}
+.mod-tab.active{background:var(--ink);color:white}
+.mod-tab .num{font-family:var(--mono);font-size:1.1em;display:block}
+.module{display:none;animation:fadeSlide .3s ease}
+.module.active{display:block}
+@keyframes fadeSlide{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.sec-title{font-size:1.8em;font-weight:800;letter-spacing:-.02em;border-left:6px solid var(--accent);padding-left:14px;margin-bottom:5px}
+.sec-sub{color:var(--muted);margin-bottom:24px;font-size:.97em}
+.theory-slide{background:linear-gradient(135deg,#1e1b4b 0%,#1e3a5f 100%);color:white;border-radius:18px;padding:28px 32px;margin:20px 0;position:relative;overflow:hidden;border:2px solid #3730a3}
+.theory-slide .ts-tag{font-family:var(--mono);font-size:.65em;letter-spacing:.15em;color:#a5b4fc;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.theory-slide .ts-tag::before{content:"";width:30px;height:2px;background:#a5b4fc;display:block}
+.theory-slide h3{font-size:1.3em;font-weight:800;margin-bottom:14px;color:white}
+.theory-slide p{color:#c7d2fe;line-height:1.75;margin-bottom:12px;font-size:.94em}
+.theory-slide p:last-child{margin-bottom:0}
+.theory-slide strong{color:white}
+.theory-bullets{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.t-bullet{background:rgba(255,255,255,.07);border-radius:10px;padding:12px 14px;border-left:3px solid #818cf8;font-size:.88em;line-height:1.6;color:#c7d2fe}
+.t-bullet strong{color:#a5b4fc;display:block;margin-bottom:4px;font-size:.85em;text-transform:uppercase;letter-spacing:.06em}
+.dataset-box{background:var(--ink);color:var(--paper);border-radius:16px;padding:22px 26px;margin:20px 0;position:relative;overflow:hidden}
+.dataset-box::before{content:"LIVE DATASET";position:absolute;top:13px;right:18px;font-family:var(--mono);font-size:.6em;color:var(--gold);letter-spacing:.12em}
+.dataset-box h4{font-size:1em;color:var(--gold);margin-bottom:8px;font-weight:700}
+.ds-context{color:#bbb;font-size:.88em;line-height:1.7;margin-bottom:14px}
+.data-table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:.76em;margin-bottom:10px}
+.data-table th{background:#1f1f1f;color:var(--gold);padding:9px 11px;text-align:left;border-bottom:1px solid #333;white-space:nowrap}
+.data-table td{padding:8px 11px;border-bottom:1px solid #222;color:#ddd}
+.data-table td.hi{color:#7dd3fc;font-weight:700}
+.data-table td.bad{color:#fca5a5}
+.data-table td.good{color:#86efac}
+.data-table td.warn{color:#fde68a}
+.story-block{display:grid;grid-template-columns:64px 1fr;gap:16px;background:var(--card);border:2px solid var(--ink);border-radius:16px;padding:22px;margin-bottom:18px;box-shadow:4px 4px 0 var(--ink)}
+.story-icon{font-size:2.6em;display:flex;align-items:flex-start;justify-content:center;padding-top:2px}
+.story-body h3{font-size:1.15em;font-weight:800;margin-bottom:7px}
+.story-body p{color:#444;line-height:1.72;margin-bottom:9px;font-size:.95em}
+.story-body p:last-child{margin-bottom:0}
+.math-story{background:var(--ink);color:var(--paper);border-radius:16px;padding:24px;margin:20px 0;position:relative;overflow:hidden}
+.math-story::before{content:"FORMULA DECODED";position:absolute;top:13px;right:18px;font-family:var(--mono);font-size:.6em;color:var(--accent);letter-spacing:.1em}
+.math-story h4{font-size:1em;color:var(--gold);margin-bottom:11px;font-weight:700}
+.formula-display{background:#1a1a1a;border-radius:10px;padding:13px 16px;font-family:var(--mono);font-size:.95em;color:#c4b5fd;margin:11px 0;border-left:3px solid var(--accent)}
+.formula-parts{display:grid;gap:9px;margin-top:12px}
+.formula-part{display:flex;gap:11px;align-items:flex-start;background:#1a1a1a;border-radius:8px;padding:10px 12px}
+.fp-sym{font-family:var(--mono);color:#c4b5fd;min-width:90px;font-weight:700;font-size:.88em;padding-top:1px}
+.fp-desc{color:#ccc;font-size:.86em;line-height:1.65}
+.fp-desc strong{color:var(--paper)}
+.interactive{background:var(--cream);border:2px dashed var(--border);border-radius:16px;padding:24px;margin:20px 0}
+.interactive h4{font-size:1em;font-weight:700;margin-bottom:12px}
+.interactive h4 .tag{display:inline-block;background:var(--accent);color:white;font-size:.6em;padding:2px 9px;border-radius:100px;vertical-align:middle;margin-left:7px;font-family:var(--mono)}
+.slider-wrap{margin:12px 0}
+.slider-label{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-weight:600;font-size:.86em}
+.slider-val{font-family:var(--mono);background:var(--ink);color:var(--paper);padding:2px 9px;border-radius:6px;font-size:.81em}
+input[type=range]{width:100%;-webkit-appearance:none;height:6px;background:var(--border);border-radius:6px;outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--ink);cursor:pointer;border:3px solid white;box-shadow:0 0 0 2px var(--ink);transition:transform .2s}
+input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
+.btn{display:inline-flex;align-items:center;gap:6px;font-family:var(--sans);font-weight:700;font-size:.9em;padding:10px 20px;border:2px solid var(--ink);border-radius:10px;cursor:pointer;transition:all .2s;background:var(--ink);color:white}
+.btn:hover{transform:translateY(-2px);box-shadow:3px 3px 0 var(--accent)}
+.btn:active{transform:translateY(0);box-shadow:none}
+.btn-ghost{background:transparent;color:var(--ink)}
+.btn-ghost:hover{background:var(--cream);box-shadow:3px 3px 0 var(--ink)}
+.btn-warn{background:var(--gold);border-color:var(--gold);color:white}
+.chart-box{background:white;border:2px solid var(--border);border-radius:12px;padding:12px;margin:12px 0}
+.quiz-block{background:#faf5ff;border:2px solid var(--accent);border-radius:16px;padding:20px;margin:20px 0}
+.quiz-block h4{font-weight:700;margin-bottom:4px;color:#5b21b6}
+.quiz-block .q-prompt{font-size:.93em;color:var(--ink);margin:9px 0 13px;line-height:1.65}
+.quiz-opt{background:white;border:2px solid var(--border);border-radius:10px;padding:12px 15px;margin:6px 0;cursor:pointer;transition:all .2s;font-size:.91em;display:flex;align-items:flex-start;gap:10px;line-height:1.5}
+.quiz-opt:hover{border-color:var(--accent);background:#f5f3ff}
+.quiz-opt.correct{background:#dcfce7;border-color:var(--accent3)}
+.quiz-opt.incorrect{background:#fee2e2;border-color:#dc2626}
+.quiz-opt .marker{width:23px;height:23px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:.71em;flex-shrink:0;margin-top:1px}
+.q-feedback{margin-top:10px;padding:11px 14px;border-radius:10px;font-size:.88em;line-height:1.6;display:none}
+.q-feedback.ok{background:#dcfce7;color:#166534;border-left:4px solid var(--accent3)}
+.q-feedback.no{background:#fee2e2;color:#991b1b;border-left:4px solid #dc2626}
+.info-strip{background:#f5f3ff;border-left:4px solid var(--accent);padding:12px 15px;border-radius:6px;margin:11px 0;font-size:.9em;line-height:1.72}
+.warn-strip{background:#fff7ed;border-left:4px solid var(--gold);padding:12px 15px;border-radius:6px;margin:11px 0;font-size:.9em;line-height:1.72}
+.success-strip{background:#f0fdf4;border-left:4px solid var(--accent3);padding:12px 15px;border-radius:6px;margin:11px 0;font-size:.9em;line-height:1.72}
+.challenge-toggle{border:2px solid var(--ink);border-radius:14px;margin:12px 0;overflow:hidden;box-shadow:3px 3px 0 var(--ink);transition:box-shadow .2s}
+.challenge-toggle:hover{box-shadow:5px 5px 0 var(--accent)}
+.ch-header{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;cursor:pointer;background:white;user-select:none}
+.ch-header:hover{background:var(--cream)}
+.ch-left{display:flex;align-items:center;gap:13px}
+.ch-icon{font-size:1.8em}
+.ch-title{font-weight:800;font-size:1em}
+.ch-sub{color:var(--muted);font-size:.81em;margin-top:2px}
+.ch-badge{font-family:var(--mono);font-size:.65em;padding:3px 10px;border-radius:100px;border:1.5px solid}
+.ch-badge.hard{border-color:#dc2626;color:#dc2626}
+.ch-badge.med{border-color:var(--gold);color:var(--gold)}
+.ch-arrow{font-size:1.1em;transition:transform .3s}
+.ch-arrow.open{transform:rotate(180deg)}
+.ch-body{display:none;padding:20px;border-top:2px solid var(--border);background:var(--cream)}
+.ch-body.open{display:block}
+.cmp-table{width:100%;border-collapse:collapse;margin:16px 0;border-radius:12px;overflow:hidden;border:2px solid var(--ink)}
+.cmp-table th{background:var(--ink);color:var(--paper);padding:12px 14px;text-align:left;font-family:var(--mono);font-size:.76em}
+.cmp-table td{padding:10px 14px;border-bottom:1px solid var(--border);font-size:.86em}
+.cmp-table tr:last-child td{border-bottom:none}
+.cmp-table tr:nth-child(even) td{background:var(--cream)}
+.divider{display:flex;align-items:center;gap:12px;margin:24px 0}
+.divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--border)}
+.divider span{font-family:var(--mono);font-size:.7em;color:var(--muted);letter-spacing:.1em;text-transform:uppercase}
+.mod-nav-btns{display:flex;justify-content:space-between;margin-top:40px;padding-top:20px;border-top:2px solid var(--border)}
+.clust-tab-bar{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0 10px}
+.clust-tab{font-family:var(--mono);font-size:.72em;padding:6px 14px;border:2px solid var(--border);border-radius:8px;background:white;cursor:pointer;transition:all .2s;font-weight:600}
+.clust-tab:hover{border-color:var(--ink);background:var(--cream)}
+.clust-tab.active{background:var(--ink);color:white;border-color:var(--ink)}
+.clust-panel{display:none}.clust-panel.active{display:block;animation:fadeSlide .3s ease}
+.timeline{border-left:3px solid var(--accent);padding-left:20px;margin:16px 0}
+.tl-item{margin-bottom:16px;position:relative}
+.tl-item::before{content:"";position:absolute;left:-26px;top:5px;width:11px;height:11px;border-radius:50%;background:var(--accent)}
+.tl-step{font-family:var(--mono);font-size:.69em;color:var(--accent);font-weight:700;letter-spacing:.1em;margin-bottom:3px}
+.tl-title{font-weight:700;margin-bottom:3px;font-size:.97em}
+.tl-desc{font-size:.86em;color:#555;line-height:1.65}
+.trophy-screen{text-align:center;padding:52px 20px}
+.trophy-screen .big-trophy{font-size:4.5em;margin-bottom:16px;animation:bounce 1s infinite alternate}
+@keyframes bounce{from{transform:translateY(0)}to{transform:translateY(-13px)}}
+.trophy-screen h2{font-size:2.2em;font-weight:800;margin-bottom:10px}
+#finalScore{font-family:var(--mono);font-size:2.6em;font-weight:700;color:var(--accent);margin:20px 0;display:block}
+.final-breakdown{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;max-width:580px;margin:20px auto}
+.fb-card{background:white;border:2px solid var(--border);border-radius:10px;padding:13px;text-align:center}
+.fb-card .icon{font-size:1.8em}
+.fb-card .label{font-size:.76em;color:var(--muted);margin-top:4px}
+.confetti-piece{position:fixed;pointer-events:none;z-index:9999;font-size:1.1em;animation:fall linear forwards}
+@keyframes fall{0%{transform:translateY(-20px) rotate(0deg);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}
+.analogy-box{display:grid;grid-template-columns:1fr 1fr;border:2px solid var(--ink);border-radius:14px;overflow:hidden;margin:16px 0}
+.ana-side{padding:18px}
+.ana-side:first-child{border-right:2px solid var(--ink)}
+.ana-side h5{font-weight:700;font-size:.81em;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+.ana-side p{font-size:.86em;line-height:1.72;color:#444}
+.ana-left{background:#faf5ff}
+.ana-right{background:#dbeafe}
+.dim-type-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;margin:20px 0}
+.dim-card{border:2px solid var(--ink);border-radius:14px;padding:16px;background:white;box-shadow:3px 3px 0 var(--ink);cursor:pointer;transition:all .22s;position:relative;overflow:hidden;border-left:6px solid #aaa}
+.dim-card:hover{transform:translateY(-3px);box-shadow:5px 5px 0 var(--ink)}
+.dim-card.selected{background:var(--ink);color:white}
+.dim-card .dc-tag{font-family:var(--mono);font-size:.62em;letter-spacing:.1em;text-transform:uppercase;margin-bottom:7px}
+.dim-card .dc-name{font-weight:800;font-size:.95em;margin-bottom:6px}
+.dim-card .dc-desc{font-size:.8em;line-height:1.6;color:#555}
+.dim-card.selected .dc-desc{color:#aaa}
+.dim-card .dc-badge{display:inline-block;font-family:var(--mono);font-size:.62em;background:var(--cream);border:1px solid var(--border);border-radius:6px;padding:2px 8px;margin-top:8px}
+.dim-card.selected .dc-badge{background:#222;border-color:#555;color:#ccc}
+.dim-detail{background:var(--ink);color:white;border-radius:16px;padding:24px;margin-top:16px;display:none;animation:fadeSlide .3s ease}
+.dim-detail.show{display:block}
+.flow-diagram{background:#0f172a;border-radius:14px;padding:20px;margin:16px 0;border:2px solid #1e293b;overflow-x:auto}
+.flow-row{display:flex;align-items:center;gap:0;min-width:600px}
+.flow-node{background:#1e293b;border:2px solid #334155;border-radius:10px;padding:10px 12px;text-align:center;font-size:.78em;min-width:90px;flex-shrink:0}
+.flow-node .fn-icon{font-size:1.3em;margin-bottom:3px}
+.flow-node .fn-label{font-weight:700;color:#e2e8f0;font-size:.82em}
+.flow-node .fn-sub{color:#94a3b8;font-size:.72em;margin-top:2px;line-height:1.3}
+.flow-node.active-node{background:#2e1065;border-color:#7c3aed}
+.flow-node.result-node{background:#14532d;border-color:#16a34a}
+.flow-arrow{color:#475569;font-size:1.3em;padding:0 3px;flex-shrink:0}
+.step-card{background:#fff;border:2px solid var(--ink);border-radius:14px;padding:18px 20px;margin-bottom:12px;display:grid;grid-template-columns:48px 1fr;gap:14px;box-shadow:3px 3px 0 var(--ink)}
+.step-num{font-family:var(--mono);font-size:1.3em;font-weight:700;color:var(--accent);display:flex;align-items:center;justify-content:center;border:2px solid var(--accent);border-radius:50%;width:40px;height:40px}
+.step-content h4{font-size:1em;font-weight:800;margin-bottom:5px}
+.step-content p{font-size:.86em;color:#444;line-height:1.7}
+.analogy-banner{background:linear-gradient(135deg,#1e1b4b,#312e81);border-radius:18px;padding:24px 28px;margin:20px 0;border:2px solid #4f46e5;color:white;text-align:center}
+.analogy-banner .emoji{font-size:3em;margin-bottom:10px}
+.analogy-banner h3{font-size:1.2em;font-weight:800;margin-bottom:8px}
+.analogy-banner p{color:#c7d2fe;font-size:.9em;line-height:1.7}
+.var-bar-wrap{margin:5px 0}
+.var-bar-label{display:flex;justify-content:space-between;font-size:.78em;margin-bottom:2px;font-family:var(--mono)}
+.var-bar{height:12px;background:#e5e7eb;border-radius:6px;overflow:hidden}
+.var-bar-fill{height:100%;border-radius:6px;transition:width .5s ease}
+@media(max-width:640px){
+  #scoreboard{top:auto;bottom:12px;right:12px;min-width:150px}
+  .analogy-box,.theory-bullets{grid-template-columns:1fr}
+  .ana-side:first-child{border-right:none;border-bottom:2px solid var(--ink)}
+  .story-block{grid-template-columns:1fr}
+  .story-icon{display:none}
+  .dim-type-grid{grid-template-columns:1fr 1fr}
+  .step-card{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<canvas id="particles"></canvas>
+
+<div id="scoreboard">
+  <div class="label">Your Score</div>
+  <div class="big-score" id="sc-pts">0</div>
+  <div style="color:#888;font-size:.68em;margin-top:1px">/ 350 pts</div>
+  <div class="prog-bar"><div class="prog-fill" id="sc-prog" style="width:0%"></div></div>
+  <div class="badges-row">
+    <div class="badge" id="b1" title="Curse Crusher">&#127744;</div>
+    <div class="badge" id="b2" title="PCA Pioneer">&#128300;</div>
+    <div class="badge" id="b3" title="Factor Finder">&#129513;</div>
+    <div class="badge" id="b4" title="LDA Legend">&#127919;</div>
+    <div class="badge" id="b5" title="Manifold Master">&#128506;</div>
+    <div class="badge" id="b6" title="Dimension Champion">&#127942;</div>
+  </div>
+</div>
+
+<div class="page-wrap">
+<div style="display:flex;align-items:center;justify-content:space-between;padding:18px 0 22px;border-bottom:2px solid var(--ink);margin-bottom:0">
+  <div>
+    <img src="data:image/jpeg;base64,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" style="max-height:60px;width:auto;object-fit:contain" alt="Impeccker Consulting">
+  </div>
+  <div style="font-family:var(--mono);font-size:.72em;color:var(--muted);text-align:right">
+    <div style="font-weight:700;color:var(--ink)">Session 2.4</div>
+    <div>Machine Learning for<br>Data-Driven Decision Making</div>
+  </div>
+</div>
+
+<div class="hero">
+  <div class="kicker">Session 2 &middot; Module 4 of 4</div>
+  <h1>The Art of Seeing Less<br><span>Dimensionality Reduction</span></h1>
+  <div class="sub">Turn 1,000 confusing variables into 2 crystal-clear patterns. Master PCA, Factor Analysis, LDA, t-SNE &amp; UMAP &#8212; with live visualisations, Indian business examples, and zero intimidation.</div>
+  <div class="session-pills">
+    <div class="pill">2.1 Classification &#10003;</div>
+    <div class="pill">2.2 Regression &#10003;</div>
+    <div class="pill">2.3 Clustering &#10003;</div>
+    <div class="pill" style="background:var(--ink);color:white;border-color:var(--ink)">2.4 Dimensionality Reduction &#8592; You are here</div>
+  </div>
+</div>
+
+<div class="mod-nav">
+  <div class="mod-tab active" onclick="showModule(0)"><span class="num">&#9312;</span>Big Picture</div>
+  <div class="mod-tab" onclick="showModule(1)"><span class="num">&#9313;</span>PCA</div>
+  <div class="mod-tab" onclick="showModule(2)"><span class="num">&#9314;</span>Factor Analysis</div>
+  <div class="mod-tab" onclick="showModule(3)"><span class="num">&#9315;</span>LDA &amp; Others</div>
+  <div class="mod-tab" onclick="showModule(4)"><span class="num">&#9316;</span>t-SNE &amp; UMAP</div>
+  <div class="mod-tab" onclick="showModule(5)"><span class="num">&#127942;</span>Final Challenge</div>
+</div>
+<!-- ═══ MODULE 0 — BIG PICTURE ═══ -->
+<div class="module active" id="mod0">
+  <div class="sec-title">Why Does Dimensionality Matter?</div>
+  <p class="sec-sub">Before diving into algorithms, let's build the intuition. What even is a "dimension"? And why do too many hurt?</p>
+
+  <div style="background:white;border:2px solid var(--ink);border-radius:16px;padding:22px;margin:20px 0;box-shadow:4px 4px 0 var(--ink)">
+    <div style="font-size:1.4em;margin-bottom:10px">&#127974; Start Here: The Patient File Problem</div>
+    <p style="font-size:.93em;color:#333;line-height:1.8;margin-bottom:14px">Imagine AIIMS Delhi has patient records with <strong>2,000 measurements</strong> each: 800 blood test values, 400 genetic markers, 350 lifestyle variables, 250 vitals, 200 demographics. They want to predict diabetes risk. But <strong>most of those 2,000 columns contain overlapping or useless information</strong>. A doctor looks at 5&#8211;10 key indicators. Dimensionality Reduction teaches the computer to do the same &#8212; compress 2,000 columns into 5&#8211;10 &#8220;super columns&#8221; that capture all the important variation.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div style="background:#faf5ff;border-radius:10px;padding:14px;border-left:4px solid var(--accent)">
+        <div style="font-weight:800;color:#5b21b6;margin-bottom:7px">&#128308; The Problem: Too Many Dimensions</div>
+        <div style="font-size:.85em;color:#3b0764;line-height:1.8">2000 columns &#8594; model confusion<br>Correlated variables &#8594; redundancy<br>Mostly noise &#8594; worse predictions<br>Slow training &#8594; wasted compute<br>Can&#8217;t visualise &#8594; no human insight</div>
+      </div>
+      <div style="background:#f0fdf4;border-radius:10px;padding:14px;border-left:4px solid var(--accent3)">
+        <div style="font-weight:800;color:#14532d;margin-bottom:7px">&#129001; The Solution: Dimensionality Reduction</div>
+        <div style="font-size:.85em;color:#166534;line-height:1.8">10 components &#8594; model clarity<br>Uncorrelated axes &#8594; clean signal<br>Noise removed &#8594; better predictions<br>Fast training &#8594; efficient compute<br>2D plot &#8594; visual insight instantly</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="theory-slide">
+    <div class="ts-tag">Core Intuition</div>
+    <h3>"A Dimension is simply a column of information. Dimensionality Reduction finds a smarter, smaller set of columns."</h3>
+    <p>Every dataset is a table: rows = samples, columns = features (dimensions). If a patient has height=175cm and weight=80kg, they live in <strong>2-dimensional space</strong>. If they have 2,000 measurements, they live in <strong>2,000-dimensional space</strong> &#8212; impossible to visualise, hard to model. Dimensionality reduction creates NEW columns (called <em>components</em> or <em>factors</em>) that are combinations of the originals, capturing the same information in far fewer dimensions.</p>
+    <div class="theory-bullets">
+      <div class="t-bullet"><strong>What Is A "Dimension"?</strong>A dimension = a feature/column. A 5-column dataset lives in 5D space. Each row is a point in that space. DR moves those same points into a lower-dimensional space while preserving their relative distances and structure.</div>
+      <div class="t-bullet"><strong>The Curse of Dimensionality</strong>As dimensions increase, data becomes "sparse" &#8212; points spread far apart and all distances look similar. A model can't find patterns in sparse data. With 1,000 features, you'd need billions of training samples to be statistically reliable!</div>
+      <div class="t-bullet"><strong>Two Types of DR</strong><em>Feature Extraction:</em> Creates NEW columns that are combinations of originals (PCA, FA, LDA). <em>Feature Selection:</em> Picks the most important original columns and drops the rest (Lasso, mutual information). This session focuses on Feature Extraction.</div>
+      <div class="t-bullet"><strong>Supervised vs Unsupervised</strong>PCA &amp; Factor Analysis are <em>unsupervised</em> &#8212; they reduce dimensions without using labels. LDA is <em>supervised</em> &#8212; it uses class labels to find dimensions that best separate groups. t-SNE/UMAP are unsupervised but focused on visualisation only.</div>
+    </div>
+  </div>
+
+  <div class="analogy-banner">
+    <div class="emoji">&#128248;</div>
+    <h3>The Perfect Analogy: Photography</h3>
+    <p>A 3D object (an Eiffel Tower model) has infinite details. A photographer chooses ONE angle that captures the most information &#8212; the iconic front view. They've reduced 3D reality to a 2D photo while preserving the essence. <strong>PCA and friends do exactly this, mathematically, for data.</strong> They find the "best angle" (projection) to view high-dimensional data that preserves the most information.</p>
+  </div>
+
+  <div class="divider"><span>the DR family &#8212; 6 techniques</span></div>
+  <p style="font-size:.93em;color:#444;margin-bottom:16px;line-height:1.7">Click any card to see how it works, where it's used, and a real Indian business example.</p>
+
+  <div class="dim-type-grid" id="dimTypeGrid">
+    <div class="dim-card" style="border-left-color:#7c3aed" onclick="showDimCard('pca',this)">
+      <div class="dc-tag" style="color:#7c3aed">Most Fundamental</div>
+      <div class="dc-name">&#128300; PCA</div>
+      <div class="dc-desc">Finds directions of maximum variance. The queen of dimensionality reduction.</div>
+      <div class="dc-badge">Principal Components</div>
+    </div>
+    <div class="dim-card" style="border-left-color:#2563eb" onclick="showDimCard('fa',this)">
+      <div class="dc-tag" style="color:#2563eb">Theory-Grounded</div>
+      <div class="dc-name">&#129513; Factor Analysis</div>
+      <div class="dc-desc">Assumes hidden factors drive observed variables. Great for surveys.</div>
+      <div class="dc-badge">Latent Factors</div>
+    </div>
+    <div class="dim-card" style="border-left-color:#16a34a" onclick="showDimCard('lda',this)">
+      <div class="dc-tag" style="color:#16a34a">Supervised</div>
+      <div class="dc-name">&#127919; LDA</div>
+      <div class="dc-desc">Uses class labels to maximise class separation. Best pre-processing for classifiers.</div>
+      <div class="dc-badge">Linear Discriminants</div>
+    </div>
+    <div class="dim-card" style="border-left-color:#d97706" onclick="showDimCard('tsne',this)">
+      <div class="dc-tag" style="color:#d97706">Visualisation</div>
+      <div class="dc-name">&#128506; t-SNE</div>
+      <div class="dc-desc">Clusters similar points together in 2D. Reveals hidden structure beautifully.</div>
+      <div class="dc-badge">Probability-based</div>
+    </div>
+    <div class="dim-card" style="border-left-color:#e84c3d" onclick="showDimCard('umap',this)">
+      <div class="dc-tag" style="color:#e84c3d">Modern</div>
+      <div class="dc-name">&#128640; UMAP</div>
+      <div class="dc-desc">Faster than t-SNE, better for large datasets. Preserves global structure too.</div>
+      <div class="dc-badge">Topology-based</div>
+    </div>
+    <div class="dim-card" style="border-left-color:#0d9488" onclick="showDimCard('svd',this)">
+      <div class="dc-tag" style="color:#0d9488">Matrix Magic</div>
+      <div class="dc-name">&#9881;&#65039; SVD</div>
+      <div class="dc-desc">Powers recommendation systems. Decomposes the data matrix into signals.</div>
+      <div class="dc-badge">Matrix Decomposition</div>
+    </div>
+  </div>
+  <div class="dim-detail" id="dimDetailPanel"><div id="dimDetailContent"></div></div>
+
+  <div class="divider"><span>the curse of dimensionality &#8212; live visualiser</span></div>
+  <div class="interactive">
+    <h4>&#127918; The Curse Visualiser <span class="tag">INTERACTIVE</span></h4>
+    <p style="font-size:.86em;color:#555;margin-bottom:16px">Drag the sliders. Watch how your dataset becomes dangerously sparse as dimensions grow &#8212; the #1 reason we need DR.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start">
+      <div>
+        <div class="slider-wrap">
+          <div class="slider-label"><span>Number of Dimensions (Features)</span><span class="slider-val" id="dimVal">5</span></div>
+          <input type="range" min="1" max="50" value="5" step="1" id="dimSlider" oninput="updateCurse()">
+        </div>
+        <div class="slider-wrap">
+          <div class="slider-label"><span>Training Samples</span><span class="slider-val" id="sampVal">1000</span></div>
+          <input type="range" min="100" max="10000" value="1000" step="100" id="sampSlider" oninput="updateCurse()">
+        </div>
+        <div style="background:#111;border-radius:10px;padding:14px;margin-top:8px">
+          <div style="color:#c4b5fd;font-family:var(--mono);font-size:.74em;margin-bottom:8px">CURSE METRICS</div>
+          <div style="display:grid;grid-template-columns:1fr;gap:7px">
+            <div style="background:#1a1a1a;border-radius:7px;padding:9px;display:flex;justify-content:space-between;align-items:center">
+              <div style="font-size:.75em;color:#888">Samples per Dimension</div>
+              <div style="font-family:var(--mono);font-size:1em;font-weight:700;color:#c4b5fd" id="spdDisplay">200</div>
+            </div>
+            <div style="background:#1a1a1a;border-radius:7px;padding:9px;display:flex;justify-content:space-between;align-items:center">
+              <div style="font-size:.75em;color:#888">Data Sparsity</div>
+              <div style="font-family:var(--mono);font-size:1em;font-weight:700" id="sparsityDisplay">LOW</div>
+            </div>
+            <div style="background:#1a1a1a;border-radius:7px;padding:9px;display:flex;justify-content:space-between;align-items:center">
+              <div style="font-size:.75em;color:#888">Model Reliability</div>
+              <div style="font-family:var(--mono);font-size:.9em;font-weight:700" id="reliabilityDisplay">Excellent</div>
+            </div>
+          </div>
+          <div id="curse-verdict" style="margin-top:10px;font-size:.8em;padding:8px;background:#1e293b;border-radius:6px;color:#94a3b8;line-height:1.6"></div>
+        </div>
+      </div>
+      <div class="chart-box" style="padding:8px"><canvas id="curseCanvas" height="240"></canvas></div>
+    </div>
+  </div>
+
+  <table class="cmp-table">
+    <thead><tr><th>Situation</th><th>Signal</th><th>Technique</th></tr></thead>
+    <tbody>
+      <tr><td>Many correlated features</td><td>PCA finds uncorrelated axes</td><td>PCA</td></tr>
+      <tr><td>Survey with 50 Likert questions</td><td>Hidden attitudes drive answers</td><td>Factor Analysis</td></tr>
+      <tr><td>Before a classifier (multi-class)</td><td>Need cleaner separation</td><td>LDA</td></tr>
+      <tr><td>Want to see clusters in 2D</td><td>Exploring data patterns</td><td>t-SNE / UMAP</td></tr>
+      <tr><td>Recommendation system</td><td>User-item matrix is huge</td><td>SVD</td></tr>
+      <tr><td>Images / deep embeddings</td><td>Very high-D, nonlinear structure</td><td>UMAP / Autoencoder</td></tr>
+    </tbody>
+  </table>
+
+  <div class="quiz-block">
+    <h4>&#10003; Quick Check &#8212; Module 0</h4>
+    <div class="q-prompt">A Zomato data scientist has a dataset with 500 restaurant features (cuisine ratings, delivery time by hour slot, etc.). The model trains slowly and performs poorly. What should she try first?</div>
+    <div class="quiz-opt" onclick="checkQ('q0a',this,false)"><div class="marker">A</div>Add more training data &#8212; the model needs more restaurants to learn from</div>
+    <div class="quiz-opt" onclick="checkQ('q0a',this,true)"><div class="marker">B</div>Apply dimensionality reduction &#8212; 500 features likely have massive redundancy; compressing to 20&#8211;50 PCs will speed training and improve generalisation</div>
+    <div class="quiz-opt" onclick="checkQ('q0a',this,false)"><div class="marker">C</div>Remove categorical features &#8212; they always cause high dimensionality</div>
+    <div class="quiz-opt" onclick="checkQ('q0a',this,false)"><div class="marker">D</div>Switch to a neural network &#8212; deep learning doesn&#8217;t suffer from dimensionality</div>
+    <div class="q-feedback" id="q0a-fb"></div>
+  </div>
+
+  <div class="mod-nav-btns">
+    <div></div>
+    <button class="btn" onclick="showModule(1)">&#9313; PCA Deep Dive &#8594;</button>
+  </div>
+</div>
+
+<!-- ═══ MODULE 1 — PCA ═══ -->
+<div class="module" id="mod1">
+  <div class="sec-title">Principal Component Analysis (PCA)</div>
+  <p class="sec-sub">The workhorse of dimensionality reduction. PCA finds the "best camera angles" for your data &#8212; capturing the most variation in the fewest dimensions.</p>
+
+  <div style="background:white;border:2px solid var(--ink);border-radius:16px;padding:22px;margin:20px 0;box-shadow:4px 4px 0 var(--ink)">
+    <div style="font-size:1.4em;margin-bottom:10px">&#127942; Start Here: IPL Player Statistics</div>
+    <p style="font-size:.93em;line-height:1.8;margin-bottom:14px">IPL player data: <strong>batting average, strike rate, centuries, half-centuries, fours, sixes, bowling economy, wickets, catches, run-outs&#8230;</strong> &#8212; 20 statistics per player. They&#8217;re all correlated &#8212; a good batsman tends to have high strike rate AND many sixes AND high average. PCA finds 2&#8211;3 "super-stats" &#8212; say: <em>PC1 = Overall Batting Ability</em>, <em>PC2 = Aggressive vs Defensive Style</em> &#8212; that capture 90% of variation across all 20 stats.</p>
+    <div class="info-strip">&#128161; <strong>Key insight:</strong> PCA doesn&#8217;t delete your original features &#8212; it creates NEW features that are weighted combinations. "Batting Ability" might be 0.4&#215;(average) + 0.35&#215;(strike rate) + 0.25&#215;(centuries). The weights are chosen mathematically to maximise the variance captured.</div>
+  </div>
+
+  <div class="analogy-box">
+    <div class="ana-side ana-left">
+      <h5>&#127749; Analogy: The Shadow</h5>
+      <p>Hold a 3D statue in sunlight. Its shadow on the wall is 2D. PCA finds the angle of light that makes the most <em>informative</em> shadow &#8212; where different parts of the statue map to different points in the shadow, not squashed together.</p>
+    </div>
+    <div class="ana-side ana-right">
+      <h5>&#128202; In Data Terms</h5>
+      <p>Your data "cloud" (points in high-D space) gets projected onto a line/plane. PCA finds the projection direction where projected points are most spread out &#8212; maximum variance is preserved. Low-variance directions (noise) get discarded.</p>
+    </div>
+  </div>
+
+  <div class="divider"><span>PCA step-by-step &#8212; the algorithm decoded</span></div>
+
+  <div class="step-card">
+    <div class="step-num">1</div>
+    <div class="step-content"><h4>Standardise the Data</h4>
+    <p>Subtract the mean of each feature and divide by its standard deviation. Why? PCA is sensitive to scale. If "salary" is in lakhs (0&#8211;50) and "age" is in years (20&#8211;60), PCA would overweight salary. After standardisation, all features have mean=0, std=1 &#8212; equal footing. <strong>IPL example:</strong> Batting average (0&#8211;60) and strike rate (80&#8211;200) rescaled to the same range before PCA.</p></div>
+  </div>
+  <div class="step-card">
+    <div class="step-num">2</div>
+    <div class="step-content"><h4>Compute the Covariance Matrix</h4>
+    <p>The covariance matrix captures how each pair of features moves together. High covariance between "batting average" and "centuries" means players with high averages also tend to have many centuries. <strong>Formula:</strong> Cov(X,Y) = &Sigma;[(x&#7522;&#8722;x&#772;)(y&#7522;&#8722;&#563;)] / (n&#8722;1). This is a p&#215;p matrix where p = number of features. All relationships live here.</p></div>
+  </div>
+  <div class="step-card">
+    <div class="step-num">3</div>
+    <div class="step-content"><h4>Find Eigenvectors &amp; Eigenvalues</h4>
+    <p>Each <strong>eigenvector</strong> is a direction in feature space &#8212; a potential principal component axis. Each <strong>eigenvalue</strong> tells you how much variance that direction explains. Sort by eigenvalue (largest first): PC1 explains the most variance, PC2 the next most, etc. <strong>Plain English:</strong> Finding the main "tilt" of the data cloud. The eigenvector points in the direction the cloud stretches most.</p></div>
+  </div>
+  <div class="step-card">
+    <div class="step-num">4</div>
+    <div class="step-content"><h4>Choose Number of Components (Scree Plot)</h4>
+    <p>Each eigenvalue tells you what % of total variance that component explains. Keep adding components until you&#8217;ve explained ~85&#8211;95% of variance. The <strong>scree plot</strong> shows eigenvalues vs component number &#8212; look for the "elbow" where additional components add little. <strong>Kaiser criterion:</strong> Keep components with eigenvalue &gt; 1. Play with the interactive scree plot below!</p></div>
+  </div>
+  <div class="step-card">
+    <div class="step-num">5</div>
+    <div class="step-content"><h4>Project Data onto New Axes</h4>
+    <p>Multiply original data by selected eigenvectors (the "loadings matrix"). Each sample gets new coordinates in PC space. An IPL player originally described by 20 stats now has just 3 scores: PC1=2.1 (high batting ability), PC2=&#8722;0.4 (slightly defensive), PC3=0.8 (good fielder). These 3 numbers capture 88% of all variation in the original 20 stats.</p></div>
+  </div>
+
+  <div class="math-story">
+    <h4>&#128208; PCA Formula &#8212; Every Symbol Decoded</h4>
+    <div class="formula-display">Z = X &#183; W &nbsp;&nbsp; where W = [w&#8321;, w&#8322;, ..., w&#8342;] (eigenvectors / loadings)</div>
+    <div class="formula-parts">
+      <div class="formula-part"><div class="fp-sym">Z</div><div class="fp-desc"><strong>The new reduced data</strong> &#8212; your data after PCA. If X was 1000 patients &#215; 2000 features and you keep k=10 components, Z is 1000 patients &#215; 10 components. Same patients, far fewer columns!</div></div>
+      <div class="formula-part"><div class="fp-sym">X</div><div class="fp-desc"><strong>Original standardised data</strong> &#8212; your starting point. Every row is a sample, every column is a feature. Must be standardised (mean=0, std=1) before PCA to avoid scale bias.</div></div>
+      <div class="formula-part"><div class="fp-sym">W (loadings)</div><div class="fp-desc"><strong>The "recipe" for each component</strong> &#8212; each column of W is an eigenvector. E.g., w&#8321; = [0.4, 0.35, 0.1, 0.25&#8230;] means PC1 is 40% feature1 + 35% feature2 etc. Large absolute loadings = important features for that component.</div></div>
+      <div class="formula-part"><div class="fp-sym">Var Explained</div><div class="fp-desc"><strong>% explained by component k = &#955;&#8342; / &#8721;&#955; &#215; 100</strong> where &#955; is the eigenvalue. If &#955;&#8321;=8, &#955;&#8322;=4, total=20, then PC1 explains 40% and PC2 explains 20% of all variation in the data.</div></div>
+    </div>
+    <div style="background:#111;border-radius:10px;padding:14px;margin-top:14px;border-left:4px solid var(--accent)">
+      <div style="font-family:var(--mono);color:#c4b5fd;font-size:.86em;font-weight:700;margin-bottom:8px">&#127973; Real Example: AIIMS Patient Data PCA</div>
+      <div style="color:#e2e8f0;font-size:.86em;line-height:2">
+        Input: 500 patients &#215; 2000 features (blood tests, genetics, vitals)<br>
+        Step 1: Standardise all 2000 columns &#8594; mean=0, std=1<br>
+        Step 2: Compute 2000&#215;2000 covariance matrix<br>
+        Step 3: Find 2000 eigenvectors, sort by eigenvalue<br>
+        Step 4: PC1 explains 28%, PC2 explains 19%, PC3 explains 11%... First 10 PCs explain 82%<br>
+        Output: <span style="color:#c4b5fd;font-weight:700">500 patients &#215; 10 components</span> &#8212; 99.5% dimensionality reduction!<br>
+        Result: Diabetes risk model trained 40&#215; faster, accuracy improved 6%
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"><span>PCA live playground &#8212; scree plot explorer</span></div>
+  <div class="interactive">
+    <h4>&#128300; Variance Explained Explorer <span class="tag">LIVE</span></h4>
+    <p style="font-size:.86em;color:#555;margin-bottom:14px">Adjust the number of principal components kept. Watch how cumulative variance explained changes &#8212; and when you hit diminishing returns (the elbow).</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start">
+      <div>
+        <div class="slider-wrap">
+          <div class="slider-label"><span>Components to Keep (k)</span><span class="slider-val" id="pcaK">3</span></div>
+          <input type="range" min="1" max="10" value="3" step="1" id="pcaSlider" oninput="updatePCA()">
+        </div>
+        <div id="varianceBars" style="margin-top:10px"></div>
+        <div style="background:#111;border-radius:10px;padding:12px;margin-top:10px">
+          <div style="color:#c4b5fd;font-family:var(--mono);font-size:.74em;margin-bottom:7px">COMPRESSION STATS</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">
+            <div style="background:#1a1a1a;border-radius:7px;padding:9px;text-align:center">
+              <div style="font-family:var(--mono);font-size:1.2em;font-weight:700;color:#c4b5fd" id="varExplained">--</div>
+              <div style="font-size:.68em;color:#888;margin-top:2px">Variance Explained</div>
+            </div>
+            <div style="background:#1a1a1a;border-radius:7px;padding:9px;text-align:center">
+              <div style="font-family:var(--mono);font-size:1.2em;font-weight:700;color:#86efac" id="comprRatio">--</div>
+              <div style="font-size:.68em;color:#888;margin-top:2px">PCs / Total</div>
+            </div>
+          </div>
+          <div id="pca-verdict" style="margin-top:8px;font-size:.8em;padding:8px;background:#1e293b;border-radius:6px;color:#94a3b8;line-height:1.5"></div>
+        </div>
+      </div>
+      <div class="chart-box" style="padding:8px"><canvas id="screeCanvas" height="240"></canvas></div>
+    </div>
+  </div>
+
+  <div class="divider"><span>interpreting PCA &#8212; Indian state development index</span></div>
+  <div class="dataset-box">
+    <h4>&#128203; NITI Aayog Development Data &#8212; PCA in Action</h4>
+    <div class="ds-context">15 socio-economic indicators for 28 states compressed to 3 principal components. Each PC captures a real hidden pattern in Indian development.</div>
+    <div style="overflow-x:auto">
+    <table class="data-table">
+      <thead><tr><th>State</th><th>PC1 (Development)</th><th>PC2 (Agriculture)</th><th>PC3 (Urban Gap)</th><th>Insight</th></tr></thead>
+      <tbody>
+        <tr><td>Kerala</td><td class="good">+2.8</td><td class="warn">&#8722;0.4</td><td class="hi">+1.1</td><td class="good">Highly developed, balanced</td></tr>
+        <tr><td>Maharashtra</td><td class="good">+2.1</td><td class="hi">+0.3</td><td class="bad">+2.4</td><td class="warn">Developed but urban-rural gap</td></tr>
+        <tr><td>Bihar</td><td class="bad">&#8722;2.6</td><td class="good">+1.8</td><td class="warn">&#8722;0.8</td><td class="bad">Agriculture-driven economy</td></tr>
+        <tr><td>Punjab</td><td class="warn">+0.8</td><td class="good">+2.9</td><td class="hi">+0.2</td><td class="warn">Green Revolution leader</td></tr>
+        <tr><td>Tamil Nadu</td><td class="good">+1.9</td><td class="hi">+0.1</td><td class="good">+0.6</td><td class="good">Well-developed, balanced</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <div style="margin-top:12px;padding:12px 14px;background:#0a1628;border-radius:8px;border:1px solid #2e1065;font-size:.84em;color:#c4b5fd;line-height:1.8">
+      &#128161; PC1 has high loadings on GDP/capita, literacy, infant mortality &#8594; <strong>"Overall Development."</strong> PC2 loads on irrigation, crop yield, kisan credit &#8594; <strong>"Agricultural Strength."</strong> PC3 loads on urban/rural income gap &#8594; <strong>"Inequality Index."</strong> PCA found these patterns from raw numbers with no human labelling!
+    </div>
+  </div>
+
+  <div class="challenge-toggle">
+    <div class="ch-header" onclick="toggleCh('ch_pca')">
+      <div class="ch-left"><div class="ch-icon">&#129300;</div>
+        <div><div class="ch-title">PCA Puzzle: The Retained Variance Paradox</div><div class="ch-sub">When does keeping 95% variance actually cause problems?</div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px"><span class="ch-badge med">+15 pts</span><span class="ch-arrow" id="ch_pca-arrow">&#9660;</span></div>
+    </div>
+    <div class="ch-body" id="ch_pca-body">
+      <p style="font-size:.93em;line-height:1.7;margin-bottom:12px">A data scientist at HDFC Bank runs PCA on fraud detection data (1,000 features &#8594; 50 PCs, 95% variance retained). Model gets 92% accuracy. Her colleague says: <strong>"PCA might actually be harming your fraud detection here."</strong> Is the colleague right?</p>
+      <div class="quiz-opt" onclick="checkQ('bt_pca',this,false)"><div class="marker">A</div>No &#8212; 95% variance retained means only 5% information lost. The model is practically as good as using all 1000 features.</div>
+      <div class="quiz-opt" onclick="checkQ('bt_pca',this,true)"><div class="marker">B</div>Possibly yes &#8212; PCA maximises variance, but the 5% dropped might contain the MOST DISCRIMINATIVE information for fraud. Small, unusual transactions are low-variance but high signal. For anomaly detection, low-variance directions are often the most important!</div>
+      <div class="quiz-opt" onclick="checkQ('bt_pca',this,false)"><div class="marker">C</div>Yes &#8212; PCA always hurts classification tasks. Use raw features always.</div>
+      <div class="q-feedback" id="bt_pca-fb"></div>
+      <div style="margin-top:12px;padding:12px;background:#f5f3ff;border-radius:8px;font-size:.85em;line-height:1.7">
+        &#128161; <strong>Key lesson:</strong> PCA optimises for <em>variance</em>, not for <em>discriminability</em>. Fraudulent transactions are rare (low variance!) but crucial. This is why LDA or raw features are sometimes better than PCA for classification. Always validate with AND without PCA!
+      </div>
+    </div>
+  </div>
+
+  <div class="quiz-block">
+    <h4>&#10003; Knowledge Check &#8212; PCA</h4>
+    <div class="q-prompt">A Flipkart product review dataset has 100 text features (TF-IDF). PCA reduces it to 10 components explaining 80% of variance. A manager asks: "What does Principal Component 1 actually mean?"</div>
+    <div class="quiz-opt" onclick="checkQ('q1a',this,false)"><div class="marker">A</div>PC1 is the most important original feature &#8212; probably the word that appears most often</div>
+    <div class="quiz-opt" onclick="checkQ('q1a',this,true)"><div class="marker">B</div>PC1 is a weighted combination of all 100 features &#8212; the direction in 100D space where reviews vary most. You&#8217;d look at which words have the highest loadings to interpret it (e.g., "quality", "price", "delivery" &#8594; "Overall Satisfaction" axis)</div>
+    <div class="quiz-opt" onclick="checkQ('q1a',this,false)"><div class="marker">C</div>PC1 explains 80% of variance &#8212; it IS the 80% figure</div>
+    <div class="quiz-opt" onclick="checkQ('q1a',this,false)"><div class="marker">D</div>PC1 is the average of all 100 features, normalised to unit length</div>
+    <div class="q-feedback" id="q1a-fb"></div>
+  </div>
+
+  <div class="mod-nav-btns">
+    <button class="btn btn-ghost" onclick="showModule(0)">&#8592; Big Picture</button>
+    <button class="btn" onclick="showModule(2)">&#9314; Factor Analysis &#8594;</button>
+  </div>
+</div>
+
+<!-- ═══ MODULE 2 — FACTOR ANALYSIS ═══ -->
+<div class="module" id="mod2">
+  <div class="sec-title">Factor Analysis (FA)</div>
+  <p class="sec-sub">PCA&#8217;s smarter, more interpretable cousin. FA assumes hidden variables ("factors") are driving what you observe &#8212; and tries to find them.</p>
+
+  <div style="background:white;border:2px solid var(--ink);border-radius:16px;padding:22px;margin:20px 0;box-shadow:4px 4px 0 var(--ink)">
+    <div style="font-size:1.4em;margin-bottom:10px">&#128221; The IIM Ahmedabad Career Survey</div>
+    <p style="font-size:.93em;line-height:1.8;margin-bottom:14px">IIM Ahmedabad gives students a 30-question career survey: "I like working in teams", "I enjoy solving puzzles", "I am comfortable with ambiguity", "I prefer detailed instructions", "I like influencing people&#8230;" The 30 questions are correlated. Why? Because underlying <strong>hidden personality traits</strong> (like "Introversion/Extraversion", "Analytical Thinking", "Leadership Drive") drive answers to multiple questions. <strong>Factor Analysis finds these hidden traits.</strong></p>
+    <div class="info-strip">&#128161; <strong>PCA vs FA:</strong> PCA finds directions of maximum variance without caring WHY data varies. Factor Analysis has a <em>causal model</em> &#8212; hidden factors CAUSE the observed correlations. FA is more interpretable but requires theoretical assumptions.</div>
+  </div>
+
+  <div class="theory-slide">
+    <div class="ts-tag">The Factor Analysis Model</div>
+    <h3>"Observed variables = Weighted sum of hidden factors + Unique noise"</h3>
+    <p>Every measurement you observe is driven partly by hidden (latent) factors you can&#8217;t directly see, and partly by random noise unique to that variable. FA decomposes your data to reveal those hidden drivers &#8212; like an archaeologist uncovering the skeleton beneath the surface.</p>
+    <div class="theory-bullets">
+      <div class="t-bullet"><strong>Common Factors</strong>The shared hidden variables driving multiple observed measures. "Intelligence" can&#8217;t be directly measured but drives scores on Maths, Verbal, Spatial, and Reasoning tests simultaneously. FA finds "Intelligence" as a latent factor you can name and use.</div>
+      <div class="t-bullet"><strong>Factor Loadings</strong>How strongly each observed variable relates to each factor. A loading of 0.85 on "Verbal Intelligence" means 85% of your vocabulary test score is driven by that factor. Loadings help you NAME and INTERPRET factors meaningfully.</div>
+      <div class="t-bullet"><strong>Unique Variance</strong>The portion of each variable&#8217;s variance NOT explained by common factors &#8212; specific to that variable. In IQ tests, specific cricket knowledge is unique variance (not part of general intelligence). This is what separates FA from PCA mathematically.</div>
+      <div class="t-bullet"><strong>Number of Factors</strong>You must specify k (or use criteria like parallel analysis). Too few: underfitting. Too many: uninterpretable. The goal is k meaningful, interpretable factors that explain most of the correlation structure in the data.</div>
+    </div>
+  </div>
+
+  <div class="math-story">
+    <h4>&#128208; Factor Analysis Formula &#8212; Plain English</h4>
+    <div class="formula-display">X = L &#183; F + &#949; &nbsp;&nbsp; (Each observation = Loadings &#215; Factors + Unique Error)</div>
+    <div class="formula-parts">
+      <div class="formula-part"><div class="fp-sym">X</div><div class="fp-desc"><strong>Your observed data</strong> &#8212; the 30 survey questions you can actually measure. This is what you start with and what FA tries to explain.</div></div>
+      <div class="formula-part"><div class="fp-sym">L (Loadings)</div><div class="fp-desc"><strong>The strength of each factor&#8217;s influence</strong> on each variable. If L&#8321;&#8322;=0.8, Factor 2 strongly drives Variable 1. Think of loadings as correlation coefficients between factors and variables.</div></div>
+      <div class="formula-part"><div class="fp-sym">F (Factors)</div><div class="fp-desc"><strong>The hidden variables</strong> you&#8217;re trying to discover &#8212; things like "Extraversion", "Conscientiousness", "Analytical Ability". They explain WHY variables correlate with each other.</div></div>
+      <div class="formula-part"><div class="fp-sym">&#949; (Error)</div><div class="fp-desc"><strong>Unique variance</strong> &#8212; the part of each variable the factors don&#8217;t explain. Unique to each variable. This is what makes FA different from PCA &#8212; FA explicitly models this measurement error.</div></div>
+    </div>
+    <div style="background:#111;border-radius:10px;padding:14px;margin-top:14px;border-left:4px solid #2563eb">
+      <div style="font-family:var(--mono);color:#7dd3fc;font-size:.86em;font-weight:700;margin-bottom:8px">&#128203; Worked Example: Tata Steel HR Study (TISS)</div>
+      <div style="color:#e2e8f0;font-size:.86em;line-height:2">
+        Survey: 20 questions on employee engagement at Tata Steel<br>
+        FA discovers 4 hidden factors:<br>
+        <span style="color:#c4b5fd">Factor 1 (Q3=.89, Q7=.84, Q12=.79):</span> "Work-Life Balance Satisfaction"<br>
+        <span style="color:#7dd3fc">Factor 2 (Q1=.92, Q5=.87, Q9=.81):</span> "Leadership Quality Perception"<br>
+        <span style="color:#86efac">Factor 3 (Q4=.85, Q8=.78, Q15=.72):</span> "Career Growth Opportunity"<br>
+        <span style="color:#fde68a">Factor 4 (Q6=.88, Q11=.83, Q18=.76):</span> "Team &amp; Culture Fit"<br>
+        <span style="color:#86efac;font-weight:700">&#8594; HR now targets interventions on these 4 dimensions instead of guessing across 20 questions</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"><span>types of factor analysis</span></div>
+  <div class="clust-tab-bar">
+    <div class="clust-tab active" onclick="showFATab('efa',this)">Exploratory FA</div>
+    <div class="clust-tab" onclick="showFATab('cfa',this)">Confirmatory FA</div>
+    <div class="clust-tab" onclick="showFATab('rot',this)">Rotation Methods</div>
+  </div>
+  <div class="clust-panel active" id="fat-efa">
+    <div class="story-block">
+      <div class="story-icon">&#128269;</div>
+      <div class="story-body">
+        <h3>Exploratory Factor Analysis (EFA) &#8212; "Let the data speak"</h3>
+        <p>You <em>don&#8217;t know</em> in advance how many factors exist or which variables load on which factor. EFA discovers the factor structure from scratch. Used at the beginning of research when you&#8217;re exploring a new domain.</p>
+        <p><strong>Example at RBI:</strong> A team with 50 macroeconomic indicators uses EFA to discover 5 underlying forces: "Credit Cycle", "Trade Dynamics", "Inflation Pressure", "Employment Health", and "Global Sentiment." These weren&#8217;t predefined &#8212; EFA found them from patterns in the data.</p>
+        <div class="success-strip">&#10003; Use EFA when: exploring new data, building a questionnaire, or discovering hidden structure in complex surveys.</div>
+      </div>
+    </div>
+  </div>
+  <div class="clust-panel" id="fat-cfa">
+    <div class="story-block">
+      <div class="story-icon">&#9989;</div>
+      <div class="story-body">
+        <h3>Confirmatory Factor Analysis (CFA) &#8212; "Test my theory"</h3>
+        <p>You <em>already have</em> a theory about factors &#8212; from prior research or expert knowledge. CFA tests whether your hypothesised factor structure fits the data. Uses fit indices (CFI, RMSEA, SRMR) to evaluate model quality.</p>
+        <p><strong>Example at SEBI:</strong> A researcher hypothesises that investor confidence is driven by 3 factors: "Market Transparency", "Regulatory Trust", and "Economic Outlook." They survey 2,000 retail investors and use CFA to confirm whether this 3-factor model fits. CFI &gt; 0.95 and RMSEA &lt; 0.06 confirm a good fit.</p>
+        <div class="info-strip">&#128202; <strong>Key fit indices:</strong> CFI &gt; 0.95 (good), RMSEA &lt; 0.06 (good), SRMR &lt; 0.08 (good). These tell you how well your hypothesised structure matches the actual data correlations.</div>
+      </div>
+    </div>
+  </div>
+  <div class="clust-panel" id="fat-rot">
+    <div class="story-block">
+      <div class="story-icon">&#128260;</div>
+      <div class="story-body">
+        <h3>Factor Rotation &#8212; Making Factors Interpretable</h3>
+        <p>Raw FA factors are often hard to interpret &#8212; every variable loads somewhat on every factor. <strong>Rotation</strong> rotates factor axes to make loadings more extreme (high or near-zero), making each factor "owned" by a clear set of variables.</p>
+        <p><strong>Varimax (orthogonal):</strong> Rotates so factors remain uncorrelated. Each variable loads strongly on ONE factor and weakly on others. Best when: "I believe the true factors are independent of each other." Example: Physical Health and Mental Health as independent wellness dimensions at Manipal Hospitals.</p>
+        <p><strong>Oblimin (oblique):</strong> Allows factors to correlate. Used when hidden factors are expected to relate to each other. Example: Work Satisfaction and Life Satisfaction are separate factors but correlated &#8212; oblique rotation handles this naturally in an ITC employee survey.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"><span>FA vs PCA &#8212; the definitive comparison</span></div>
+  <table class="cmp-table">
+    <thead><tr><th>Dimension</th><th>PCA</th><th>Factor Analysis</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Goal</strong></td><td>Maximise variance explained</td><td>Explain correlations via latent factors</td></tr>
+      <tr><td><strong>Causal model?</strong></td><td>No &#8212; purely mathematical</td><td>Yes &#8212; factors CAUSE observed correlations</td></tr>
+      <tr><td><strong>Error term?</strong></td><td>No &#8212; uses all variance</td><td>Yes &#8212; unique variance per variable</td></tr>
+      <tr><td><strong>Interpretability</strong></td><td>Moderate</td><td>High &#8212; factors get meaningful names</td></tr>
+      <tr><td><strong>Best for</strong></td><td>Feature reduction, preprocessing ML</td><td>Scale development, psychological constructs</td></tr>
+      <tr><td><strong>Indian example</strong></td><td>Compressing Sensex 30 stocks to 5 PCs</td><td>Finding 4 hidden HR factors from 20 survey Qs</td></tr>
+    </tbody>
+  </table>
+
+  <div class="challenge-toggle">
+    <div class="ch-header" onclick="toggleCh('ch_fa')">
+      <div class="ch-left"><div class="ch-icon">&#129513;</div>
+        <div><div class="ch-title">Think Like a Factor Analyst: The CIBIL Score Design</div><div class="ch-sub">What hidden factors drive creditworthiness?</div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px"><span class="ch-badge hard">+20 pts</span><span class="ch-arrow" id="ch_fa-arrow">&#9660;</span></div>
+    </div>
+    <div class="ch-body" id="ch_fa-body">
+      <p style="font-size:.93em;line-height:1.7;margin-bottom:12px">CIBIL uses 16 variables to assess creditworthiness. Before building a credit score, they run Factor Analysis. Which 3-factor model is most theoretically sensible?</p>
+      <div class="quiz-opt" onclick="checkQ('bt_fa',this,false)"><div class="marker">A</div>Factor 1: All loan amounts. Factor 2: All dates. Factor 3: All bank names.</div>
+      <div class="quiz-opt" onclick="checkQ('bt_fa',this,true)"><div class="marker">B</div>Factor 1: "Repayment Reliability" (payment history, days overdue, missed payments). Factor 2: "Debt Load" (total outstanding, credit utilisation, number of loans). Factor 3: "Credit Maturity" (age of oldest account, credit enquiries, types of credit used).</div>
+      <div class="quiz-opt" onclick="checkQ('bt_fa',this,false)"><div class="marker">C</div>Factor 1: Everything positive. Factor 2: Everything negative. Factor 3: Neutral variables.</div>
+      <div class="q-feedback" id="bt_fa-fb"></div>
+      <div style="margin-top:12px;padding:12px;background:#f5f3ff;border-radius:8px;font-size:.85em;line-height:1.7">
+        &#128161; Good factors are theoretically meaningful &#8212; they represent real constructs experts recognise. Option B maps directly to the credit industry&#8217;s own conceptual framework. The CIBIL scoring formula actually uses similar dimensions!
+      </div>
+    </div>
+  </div>
+
+  <div class="quiz-block">
+    <h4>&#10003; Knowledge Check &#8212; Factor Analysis</h4>
+    <div class="q-prompt">An Infosys HR team runs EFA on a 24-item engagement survey. Item Q8 ("I feel my work contributes to company goals") has a loading of <strong>0.78 on Factor 1 and 0.12 on Factor 2.</strong> What does this tell you?</div>
+    <div class="quiz-opt" onclick="checkQ('q2a',this,false)"><div class="marker">A</div>Q8 is the 78th most important question in the survey</div>
+    <div class="quiz-opt" onclick="checkQ('q2a',this,true)"><div class="marker">B</div>Q8 is strongly explained by Factor 1 (primarily measuring whatever Factor 1 represents &#8212; likely "Purpose &amp; Alignment") and almost unrelated to Factor 2. A clean, interpretable loading pattern &#8212; exactly what good FA looks like.</div>
+    <div class="quiz-opt" onclick="checkQ('q2a',this,false)"><div class="marker">C</div>78% of employees answered Q8 positively</div>
+    <div class="quiz-opt" onclick="checkQ('q2a',this,false)"><div class="marker">D</div>Factor 1 explains 78% of total variance in the dataset</div>
+    <div class="q-feedback" id="q2a-fb"></div>
+  </div>
+
+  <div class="mod-nav-btns">
+    <button class="btn btn-ghost" onclick="showModule(1)">&#8592; PCA</button>
+    <button class="btn" onclick="showModule(3)">&#9315; LDA &amp; Others &#8594;</button>
+  </div>
+</div>
+
+<!-- ═══ MODULE 3 — LDA & OTHERS ═══ -->
+<div class="module" id="mod3">
+  <div class="sec-title">LDA, ICA &amp; Autoencoders</div>
+  <p class="sec-sub">PCA and FA are unsupervised. Now meet the techniques that use class labels, statistical independence, or deep learning to reduce dimensions even smarter.</p>
+
+  <div class="clust-tab-bar">
+    <div class="clust-tab active" onclick="showLDATab('lda',this)">&#127919; LDA</div>
+    <div class="clust-tab" onclick="showLDATab('ica',this)">&#127925; ICA</div>
+    <div class="clust-tab" onclick="showLDATab('ae',this)">&#129504; Autoencoders</div>
+    <div class="clust-tab" onclick="showLDATab('kpca',this)">&#127744; Kernel PCA</div>
+  </div>
+
+  <div class="clust-panel active" id="ldat-lda">
+    <div style="background:white;border:2px solid var(--ink);border-radius:16px;padding:22px;margin:20px 0;box-shadow:4px 4px 0 var(--ink)">
+      <div style="font-size:1.4em;margin-bottom:10px">&#127919; LDA &#8212; The Supervised DR Master</div>
+      <p style="font-size:.93em;line-height:1.8;margin-bottom:14px">Imagine distinguishing three types of Indian customers: <em>Budget Shoppers</em>, <em>Value Seekers</em>, and <em>Premium Buyers</em>. PCA finds directions of maximum overall variance. LDA finds directions that <strong>maximise separation between these three groups</strong> while minimising spread within each group. It&#8217;s specifically designed to make classification easier.</p>
+    </div>
+    <div class="analogy-box">
+      <div class="ana-side ana-left"><h5>&#128300; PCA &#8212; Unsupervised</h5><p>Finds the angle that spreads all data the most &#8212; regardless of which class each point belongs to. Like a photographer choosing the angle showing the most overall detail.</p></div>
+      <div class="ana-side ana-right"><h5>&#127919; LDA &#8212; Supervised</h5><p>Finds the angle that best <em>separates the classes</em> &#8212; like arranging Indian spices in a row from mildest to hottest, so someone can instantly tell them apart.</p></div>
+    </div>
+    <div class="math-story">
+      <h4>&#128208; LDA Formula &#8212; Plain English</h4>
+      <div class="formula-display">Maximise J(w) = (w&#7488; &#183; S_B &#183; w) / (w&#7488; &#183; S_W &#183; w) &#8212; The Fisher Ratio</div>
+      <div class="formula-parts">
+        <div class="formula-part"><div class="fp-sym">S_B</div><div class="fp-desc"><strong>Between-class scatter</strong> &#8212; how far apart the class centres are from each other. We want this to be LARGE &#8212; classes spread far apart.</div></div>
+        <div class="formula-part"><div class="fp-sym">S_W</div><div class="fp-desc"><strong>Within-class scatter</strong> &#8212; how spread out points are within each class. We want this to be SMALL &#8212; tight, compact clusters per class.</div></div>
+        <div class="formula-part"><div class="fp-sym">J(w)</div><div class="fp-desc"><strong>The Fisher ratio</strong> &#8212; between-class spread divided by within-class spread. LDA finds the projection direction w that maximises this ratio. Big ratio = classes are easy to separate!</div></div>
+        <div class="formula-part"><div class="fp-sym">Max Components</div><div class="fp-desc"><strong>LDA produces at most (C&#8722;1) discriminant axes</strong> where C = number of classes. 3 customer types &#8594; max 2 LDA axes. Often far fewer dimensions than PCA needs!</div></div>
+      </div>
+      <div style="background:#111;border-radius:10px;padding:14px;margin-top:14px;border-left:4px solid var(--accent3)">
+        <div style="font-family:var(--mono);color:#86efac;font-size:.86em;font-weight:700;margin-bottom:8px">&#128722; Example: BigBasket Customer Segmentation</div>
+        <div style="color:#e2e8f0;font-size:.86em;line-height:2">
+          Input: 50 shopping behaviour features per customer<br>
+          Classes: Budget / Value / Premium (3 classes &#8594; max 2 LDA axes)<br>
+          LDA Axis 1: "Spend Level" &#8212; separates Budget from Premium<br>
+          LDA Axis 2: "Brand Loyalty" &#8212; separates Value seekers from the other two<br>
+          Result: <span style="color:#86efac">Classifier accuracy: 61% with PCA &#8594; 84% with LDA!</span>
+        </div>
+      </div>
+    </div>
+    <div class="flow-diagram">
+      <div style="color:#94a3b8;font-family:var(--mono);font-size:.65em;margin-bottom:14px;letter-spacing:.1em">LDA PIPELINE &#8212; FROM RAW DATA TO CLASSIFICATION</div>
+      <div class="flow-row">
+        <div class="flow-node"><div class="fn-icon">&#128202;</div><div class="fn-label">Raw Data</div><div class="fn-sub">50 features<br>Labeled classes</div></div>
+        <div class="flow-arrow">&#8594;</div>
+        <div class="flow-node active-node"><div class="fn-icon">&#128208;</div><div class="fn-label">Compute S_B, S_W</div><div class="fn-sub">Between &amp;<br>Within scatter</div></div>
+        <div class="flow-arrow">&#8594;</div>
+        <div class="flow-node active-node"><div class="fn-icon">&#128290;</div><div class="fn-label">Eigenvectors of S_W&#8315;&#185;S_B</div><div class="fn-sub">Find discriminant<br>directions</div></div>
+        <div class="flow-arrow">&#8594;</div>
+        <div class="flow-node active-node"><div class="fn-icon">&#128200;</div><div class="fn-label">Project to 2D</div><div class="fn-sub">50D &#8594; 2D<br>max separation</div></div>
+        <div class="flow-arrow">&#8594;</div>
+        <div class="flow-node result-node"><div class="fn-icon">&#127919;</div><div class="fn-label">Classify!</div><div class="fn-sub">84% accuracy<br>vs 61% PCA</div></div>
+      </div>
+    </div>
+    <div class="interactive">
+      <h4>&#127919; LDA vs PCA &#8212; Which Separates Better? <span class="tag">LIVE</span></h4>
+      <p style="font-size:.86em;color:#555;margin-bottom:14px">Same 3-class data projected with PCA (left) and LDA (right). LDA uses class labels to find the best separating direction &#8212; see the difference!</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div>
+          <div style="font-weight:700;font-size:.86em;margin-bottom:6px;text-align:center">&#128300; PCA Projection</div>
+          <div class="chart-box" style="padding:8px"><canvas id="pcaCompCanvas" height="200"></canvas></div>
+          <div style="text-align:center;font-size:.78em;color:var(--muted);font-family:var(--mono);margin-top:4px">Maximises variance &#8212; classes overlap</div>
+        </div>
+        <div>
+          <div style="font-weight:700;font-size:.86em;margin-bottom:6px;text-align:center">&#127919; LDA Projection</div>
+          <div class="chart-box" style="padding:8px"><canvas id="ldaCompCanvas" height="200"></canvas></div>
+          <div style="text-align:center;font-size:.78em;color:var(--muted);font-family:var(--mono);margin-top:4px">Maximises separation &#8212; clean clusters!</div>
+        </div>
+      </div>
+    </div>
+    <div class="quiz-block">
+      <h4>&#10003; Check &#8212; LDA</h4>
+      <div class="q-prompt">A railway ticketing model must classify passengers into 4 classes: General, Sleeper, 3AC, 1AC. How many Linear Discriminant axes can LDA produce at maximum?</div>
+      <div class="quiz-opt" onclick="checkQ('q3a',this,false)"><div class="marker">A</div>4 &#8212; one per class</div>
+      <div class="quiz-opt" onclick="checkQ('q3a',this,true)"><div class="marker">B</div>3 &#8212; LDA produces at most (C&#8722;1) = 4&#8722;1 = 3 discriminant axes</div>
+      <div class="quiz-opt" onclick="checkQ('q3a',this,false)"><div class="marker">C</div>Equal to the number of features in the dataset</div>
+      <div class="quiz-opt" onclick="checkQ('q3a',this,false)"><div class="marker">D</div>2 &#8212; LDA always produces exactly 2 axes</div>
+      <div class="q-feedback" id="q3a-fb"></div>
+    </div>
+  </div>
+
+  <div class="clust-panel" id="ldat-ica">
+    <div class="story-block">
+      <div class="story-icon">&#127925;</div>
+      <div class="story-body">
+        <h3>Independent Component Analysis (ICA) &#8212; "Unmixing the Cocktail Party"</h3>
+        <p>Imagine a party in Mumbai with 5 conversations happening simultaneously. You place 5 microphones around the room. Each microphone records a mixture of all 5 conversations. <strong>ICA separates these mixed recordings back into the original 5 individual conversations</strong> &#8212; without knowing what any conversation sounded like. This is the famous Cocktail Party Problem.</p>
+        <p><strong>Key idea:</strong> PCA finds uncorrelated components. ICA goes further &#8212; it finds statistically <em>independent</em> components (a much stronger condition). ICA assumes your data is a linear mixture of independent source signals and recovers those sources by maximising non-Gaussianity of each component.</p>
+        <div class="info-strip">&#128161; <strong>ICA vs PCA:</strong> PCA finds uncorrelated components maximising variance. ICA finds independent components maximising non-Gaussianity. ICA components are NOT ordered by importance &#8212; all are equally "important" original signals.</div>
+        <p><strong>Real Indian applications:</strong></p>
+        <p>&#129504; <strong>Neuroscience at NIMHANS Bangalore:</strong> EEG brain signals from 64 electrodes are mixtures of neural activity, eye-blink artefacts, muscle signals, and heartbeat noise. ICA separates them &#8212; extracting pure brain oscillations (alpha, beta, gamma waves) for epilepsy and schizophrenia research.</p>
+        <p>&#128225; <strong>ISRO Satellite Imagery:</strong> Multiple sensors each record a mixture of radar, thermal, and optical signals. ICA helps separate them into clean individual bands for geological and agricultural mapping.</p>
+        <p>&#128176; <strong>NSE Trading Analytics:</strong> Stock price movements reflect mixtures of sector trends, macroeconomic forces, and company-specific news. ICA attempts to decompose prices into independent market forces, helping quantitative traders isolate pure alpha signals.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="clust-panel" id="ldat-ae">
+    <div class="story-block">
+      <div class="story-icon">&#129504;</div>
+      <div class="story-body">
+        <h3>Autoencoders &#8212; Deep Learning Meets Dimensionality Reduction</h3>
+        <p>An autoencoder is a neural network that learns to compress data and then decompress it back. If the network can recreate your data from a tiny bottleneck, that bottleneck MUST contain the essential information &#8212; it&#8217;s a learned, <em>nonlinear</em> dimensionality reduction that PCA cannot match.</p>
+        <p><strong>Architecture:</strong> <em>Encoder</em> compresses input (say, 1000D) to a small bottleneck (say, 10D). <em>Decoder</em> tries to reconstruct the original 1000D from those 10 values. Training objective: minimise reconstruction error. The 10D bottleneck becomes the learned compressed representation.</p>
+        <div class="warn-strip">&#9889; <strong>Advantage over PCA:</strong> Autoencoders learn nonlinear representations. PCA only finds linear combinations. If data has nonlinear structure (like face images where lighting and pose interact nonlinearly), autoencoders vastly outperform PCA.</div>
+        <p><strong>Indian applications:</strong></p>
+        <p>&#127981; <strong>Mahindra Manufacturing:</strong> 200 factory sensors per machine. Autoencoder compresses to 8D "health signature". Anomalous signatures trigger predictive maintenance alerts &#8212; preventing crore-worth of downtime.</p>
+        <p>&#129658; <strong>Niramai Health Analytix:</strong> Thermal breast images (millions of pixels). Autoencoder compresses to a 64D health code. Reconstruction errors flag anomalous tissue &#8212; non-invasive cancer screening in Tier 2/3 cities without radiologists.</p>
+        <p>&#128248; <strong>Aadhaar Biometrics (UIDAI):</strong> Face images compressed to compact biometric codes for fast identity verification at massive scale across India.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="clust-panel" id="ldat-kpca">
+    <div class="story-block">
+      <div class="story-icon">&#127744;</div>
+      <div class="story-body">
+        <h3>Kernel PCA &#8212; "PCA for Curved Data"</h3>
+        <p>Standard PCA only finds linear patterns. But what if data lies on a curved surface &#8212; like a spiral or a donut shape? Linear PCA would fail. <strong>Kernel PCA maps data to a higher-dimensional space using a "kernel trick", then runs PCA there</strong> &#8212; discovering nonlinear structure that standard PCA misses.</p>
+        <p><strong>The Kernel Trick:</strong> Instead of actually computing coordinates in the high-D space (expensive!), the kernel function computes dot products directly: K(x,y) = &#966;(x)&#183;&#966;(y). Popular kernels: RBF/Gaussian (most common), Polynomial, Sigmoid. Different kernels capture different types of nonlinear structure.</p>
+        <div class="info-strip">&#128161; <strong>Common analogy:</strong> Imagine data in two concentric circles. PCA can&#8217;t separate inner from outer circle. Kernel PCA with RBF kernel "unfurls" the circles and separates them perfectly. The kernel is like a mathematical lens that reshapes how we measure distance.</div>
+        <p><strong>Indian example &#8212; DRDO Satellite Imagery:</strong> Land-use classification from multispectral satellite images. Spectral bands have complex nonlinear interactions. Kernel PCA with RBF kernel creates more separable representations for classifying forest, agriculture, urban, and water bodies &#8212; accuracy improving from 71% (linear PCA) to 88% (Kernel PCA).</p>
+        <p><strong>When to use Kernel PCA?</strong> When standard PCA + classifier doesn&#8217;t work well, when you suspect nonlinear structure, when working with images, biology, or signal data where relationships are curved in feature space.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="mod-nav-btns">
+    <button class="btn btn-ghost" onclick="showModule(2)">&#8592; Factor Analysis</button>
+    <button class="btn" onclick="showModule(4)">&#9316; t-SNE &amp; UMAP &#8594;</button>
+  </div>
+</div>
+
+<!-- ═══ MODULE 4 — t-SNE & UMAP ═══ -->
+<div class="module" id="mod4">
+  <div class="sec-title">t-SNE &amp; UMAP &#8212; Seeing the Unseen</div>
+  <p class="sec-sub">The "wow factor" techniques of dimensionality reduction. They create stunning 2D visualisations that reveal hidden clusters and structure &#8212; like an X-ray for your data.</p>
+
+  <div style="background:white;border:2px solid var(--ink);border-radius:16px;padding:22px;margin:20px 0;box-shadow:4px 4px 0 var(--ink)">
+    <div style="font-size:1.4em;margin-bottom:10px">&#128506; The Problem They Solve</div>
+    <p style="font-size:.93em;line-height:1.8;margin-bottom:14px">Imagine Aadhaar registration data for 10 million people: 50 features each. You suspect natural "population clusters" exist (rural vs urban, region-wise, age-income groups). But 50 dimensions can&#8217;t be visualised. PCA gives you 2D &#8212; but often shows a blob with no clear clusters. <strong>t-SNE and UMAP create 2D maps where similar people are placed near each other and dissimilar people are placed far apart</strong> &#8212; revealing beautiful, interpretable structure.</p>
+    <div class="warn-strip">&#9888;&#65039; <strong>Critical Warning:</strong> t-SNE and UMAP are for VISUALISATION ONLY. Never use their outputs as features for a predictive model &#8212; their coordinates have no stable predictive meaning and change every run. Use PCA/LDA/FA for feature reduction in ML pipelines.</div>
+  </div>
+
+  <div class="clust-tab-bar">
+    <div class="clust-tab active" onclick="showTSNETab('tsne',this)">&#128506; t-SNE</div>
+    <div class="clust-tab" onclick="showTSNETab('umap',this)">&#128640; UMAP</div>
+    <div class="clust-tab" onclick="showTSNETab('cmp',this)">&#9876;&#65039; t-SNE vs UMAP</div>
+  </div>
+
+  <div class="clust-panel active" id="tsnet-tsne">
+    <div class="theory-slide">
+      <div class="ts-tag">t-SNE &#8212; t-Distributed Stochastic Neighbor Embedding</div>
+      <h3>Core Idea: "Points that are similar in high-D should be neighbours in 2D"</h3>
+      <p>t-SNE converts distances between points into probabilities: nearby points have high probability of being "neighbours." Then it creates a 2D layout where these neighbourhood probabilities are preserved. Points sharing a neighbourhood in 50D will be placed close together in 2D.</p>
+      <div class="theory-bullets">
+        <div class="t-bullet"><strong>Step 1: Pairwise Similarities in High-D</strong>For every pair of points, compute similarity using Gaussian probability: p(j|i) = exp(&#8722;distance&#178;/2&#963;&#178;) / sum. Points close together get high probability. The &#963; (bandwidth) is tuned automatically using the "perplexity" parameter you set.</div>
+        <div class="t-bullet"><strong>Step 2: Random 2D Placement</strong>Place all points randomly in 2D. Compute pairwise similarities in 2D using t-distribution (heavy tails &#8212; this is the "t" in t-SNE). Why t-distribution? It prevents the "crowding problem" &#8212; all points squashing to the centre.</div>
+        <div class="t-bullet"><strong>Step 3: Gradient Descent</strong>Iteratively move 2D points to minimise the difference between high-D and 2D similarity distributions (using KL divergence). Similar points attract; dissimilar points repel. After ~1000 iterations, clusters emerge beautifully!</div>
+        <div class="t-bullet"><strong>Perplexity Parameter</strong>Controls how many neighbours each point "cares about." Perplexity=5: hyper-local structure. Perplexity=50: more global structure. Typical: 30&#8211;50. Always try multiple values &#8212; t-SNE output is sensitive to this.</div>
+      </div>
+    </div>
+    <div class="math-story">
+      <h4>&#128208; t-SNE Formula &#8212; Made Simple</h4>
+      <div class="formula-display">KL(P &#8214; Q) = &#8721;&#7522; &#8721;&#11388; p&#7522;&#11388; &#183; log(p&#7522;&#11388; / q&#7522;&#11388;) &#8594; Minimise this cost function!</div>
+      <div class="formula-parts">
+        <div class="formula-part"><div class="fp-sym">p&#7522;&#11388;</div><div class="fp-desc"><strong>Similarity in original high-D space</strong> &#8212; how similar are points i and j in 50 dimensions? Computed from distances using Gaussian distribution. Fixed throughout the algorithm.</div></div>
+        <div class="formula-part"><div class="fp-sym">q&#7522;&#11388;</div><div class="fp-desc"><strong>Similarity in 2D space</strong> &#8212; how close are points i and j in the current 2D layout? Computed using t-distribution (changes as we move points). This is what we optimise.</div></div>
+        <div class="formula-part"><div class="fp-sym">KL Divergence</div><div class="fp-desc"><strong>The mismatch</strong> between high-D and 2D similarities. KL=0 means perfect preservation. We minimise KL by adjusting the 2D positions via gradient descent. The t-distribution in q prevents points crowding in the centre.</div></div>
+      </div>
+      <div style="background:#111;border-radius:10px;padding:14px;margin-top:14px;border-left:4px solid var(--gold)">
+        <div style="font-family:var(--mono);color:#fde68a;font-size:.86em;font-weight:700;margin-bottom:8px">&#129516; Example: Single-Cell Genomics at IISc Bangalore</div>
+        <div style="color:#e2e8f0;font-size:.86em;line-height:2">
+          Input: 2,000 cells &#215; 20,000 gene expression values<br>
+          Goal: Identify which cell type each cell belongs to<br>
+          t-SNE output: <span style="color:#fde68a">A 2D map where 15 distinct islands appear</span> &#8212; each island = a cell type cluster<br>
+          Discovery: Two unexpected sub-clusters within T-cells &#8212; a rare regulatory T-cell subtype never seen before<br>
+          <span style="color:#86efac">This discovery was published in Nature &#8212; t-SNE enabled a biological breakthrough!</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="clust-panel" id="tsnet-umap">
+    <div class="theory-slide">
+      <div class="ts-tag">UMAP &#8212; Uniform Manifold Approximation and Projection</div>
+      <h3>UMAP: Faster, Better, More Principled than t-SNE</h3>
+      <p>UMAP is based on Riemannian geometry and algebraic topology. It assumes your data lies on a "manifold" &#8212; a curved lower-dimensional surface embedded in high-D space. UMAP "unrolls" this manifold into a flat 2D map. Think of peeling an orange skin and laying it flat &#8212; but for data.</p>
+      <div class="theory-bullets">
+        <div class="t-bullet"><strong>Step 1: Build a Graph</strong>For each point, find k nearest neighbours and build a weighted graph (network). Points that are closer get higher edge weights. This graph represents the high-D structure we want to preserve.</div>
+        <div class="t-bullet"><strong>Step 2: Optimise 2D Layout</strong>Create a 2D graph layout that matches the high-D graph. Uses cross-entropy instead of KL divergence &#8212; allows more aggressive attraction for similar points and repulsion for dissimilar ones. Better global structure preservation than t-SNE.</div>
+        <div class="t-bullet"><strong>n_neighbors Parameter</strong>Like perplexity in t-SNE. Controls local vs global balance. Low (5): preserves very local structure, many small clusters. High (50): smoother, more global. Default: 15. More stable than t-SNE&#8217;s perplexity.</div>
+        <div class="t-bullet"><strong>Speed Advantage</strong>UMAP is 10&#8211;100&#215; faster than t-SNE on large datasets. t-SNE on 1M points: hours. UMAP: minutes. This makes UMAP practical for production data exploration at the scale of Ola, Swiggy, or IRCTC.</div>
+      </div>
+    </div>
+    <div style="background:#0f172a;border-radius:14px;padding:20px;margin:16px 0;border:2px solid #1e293b">
+      <div style="color:#94a3b8;font-family:var(--mono);font-size:.65em;margin-bottom:14px;letter-spacing:.1em">UMAP vs t-SNE &#8212; AT A GLANCE</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div style="background:#1e293b;border-radius:10px;padding:14px;border-left:3px solid #86efac">
+          <div style="font-family:var(--mono);font-size:.7em;color:#86efac;margin-bottom:8px">&#10003; UMAP WINS</div>
+          <div style="font-size:.82em;color:#e2e8f0;line-height:1.9">Much faster (minutes vs hours)<br>Preserves global structure better<br>Works on massive datasets<br>Deterministic (same result each run)<br>Can project NEW points<br>Supports non-Euclidean metrics</div>
+        </div>
+        <div style="background:#1e293b;border-radius:10px;padding:14px;border-left:3px solid #fde68a">
+          <div style="font-family:var(--mono);font-size:.7em;color:#fde68a;margin-bottom:8px">&#9889; t-SNE STILL WINS</div>
+          <div style="font-size:.82em;color:#e2e8f0;line-height:1.9">Slightly better local cluster separation<br>More established in academic papers<br>More widely supported in bio tools<br>Better understood mathematically<br>Older literature uses it consistently</div>
+        </div>
+      </div>
+      <div style="margin-top:14px;background:#14532d;border-radius:8px;padding:12px;border-left:4px solid #16a34a">
+        <div style="font-family:var(--mono);font-size:.7em;color:#86efac;margin-bottom:6px">&#127919; PRACTICAL RECOMMENDATION</div>
+        <div style="font-size:.84em;color:#e2e8f0;line-height:1.7">Start with UMAP. It&#8217;s faster, more scalable, and gives comparable quality. Switch to t-SNE only if reviewers specifically require it, or if you&#8217;re in a domain (like single-cell biology) where t-SNE is the established standard.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="clust-panel" id="tsnet-cmp">
+    <table class="cmp-table">
+      <thead><tr><th>Criterion</th><th>t-SNE</th><th>UMAP</th><th>PCA (baseline)</th></tr></thead>
+      <tbody>
+        <tr><td>Speed (100K points)</td><td>~30 min</td><td>~2 min</td><td>&lt;10 sec</td></tr>
+        <tr><td>Global structure</td><td>Poor</td><td>Good</td><td>Excellent</td></tr>
+        <tr><td>Local clusters</td><td>Excellent</td><td>Excellent</td><td>Good</td></tr>
+        <tr><td>Reproducible?</td><td>No (stochastic)</td><td>Yes (with seed)</td><td>Yes</td></tr>
+        <tr><td>Transform new points?</td><td>No</td><td>Yes</td><td>Yes</td></tr>
+        <tr><td>Large datasets (1M+)?</td><td>Struggles</td><td>Excellent</td><td>Excellent</td></tr>
+        <tr><td>Interpretable axes?</td><td>No</td><td>No</td><td>Yes (% variance)</td></tr>
+        <tr><td>Use for ML pipeline?</td><td>NEVER</td><td>NEVER</td><td>Yes</td></tr>
+        <tr><td>Best Indian use case</td><td>Cell biology plots, NLP embeddings</td><td>Customer mapping at Swiggy scale</td><td>Stock market compression, preprocessing</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="challenge-toggle">
+    <div class="ch-header" onclick="toggleCh('ch_tsne')">
+      <div class="ch-left"><div class="ch-icon">&#128373;&#65039;</div>
+        <div><div class="ch-title">The Mysterious t-SNE Cluster</div><div class="ch-sub">A data scientist sees something unexpected in the plot&#8230;</div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px"><span class="ch-badge hard">+20 pts</span><span class="ch-arrow" id="ch_tsne-arrow">&#9660;</span></div>
+    </div>
+    <div class="ch-body" id="ch_tsne-body">
+      <p style="font-size:.93em;line-height:1.7;margin-bottom:12px">A Swiggy data scientist runs t-SNE and gets beautiful clusters. Her manager says: <strong>"Great! Now let&#8217;s use the t-SNE coordinates as inputs to our revenue prediction model."</strong> Is this a good idea?</p>
+      <div class="quiz-opt" onclick="checkQ('bt_tsne',this,false)"><div class="marker">A</div>Yes &#8212; the t-SNE coordinates clearly capture restaurant similarity, so they&#8217;ll make great features.</div>
+      <div class="quiz-opt" onclick="checkQ('bt_tsne',this,true)"><div class="marker">B</div>No &#8212; t-SNE coordinates have no stable meaning. Run it again with a different seed and you get completely different coordinates. They don&#8217;t generalise to new restaurants either. Use the discovery to engineer real features manually instead.</div>
+      <div class="quiz-opt" onclick="checkQ('bt_tsne',this,false)"><div class="marker">C</div>Yes, but only if you fix the random seed to make it reproducible.</div>
+      <div class="q-feedback" id="bt_tsne-fb"></div>
+      <div style="margin-top:12px;padding:12px;background:#fff7ed;border-radius:8px;font-size:.85em;line-height:1.7">
+        &#128161; <strong>The right workflow:</strong> (1) Use t-SNE/UMAP to EXPLORE and DISCOVER structure visually. (2) Take those discoveries and create proper engineered features. (3) Use PCA/LDA (not t-SNE) for dimension reduction in ML pipelines. t-SNE is a <em>compass</em>, not a <em>vehicle</em>.
+      </div>
+    </div>
+  </div>
+
+  <div class="quiz-block">
+    <h4>&#10003; Knowledge Check &#8212; t-SNE &amp; UMAP</h4>
+    <div class="q-prompt">Ola&#8217;s data team runs t-SNE on 5M customer records (80 features). The plot shows 6 clusters. A team member says: "Cluster 1 is 3&#215; farther from Cluster 3 than from Cluster 2 in the plot, so customers in 1 and 3 are 3&#215; more different." Is this correct?</div>
+    <div class="quiz-opt" onclick="checkQ('q4a',this,false)"><div class="marker">A</div>Yes &#8212; distances in t-SNE plots are directly proportional to dissimilarity in original feature space</div>
+    <div class="quiz-opt" onclick="checkQ('q4a',this,true)"><div class="marker">B</div>No &#8212; t-SNE distorts global distances. You can trust that clusters are meaningfully different, but inter-cluster distances in the 2D plot don&#8217;t have precise numerical meaning. Never read exact distance ratios from t-SNE plots.</div>
+    <div class="quiz-opt" onclick="checkQ('q4a',this,false)"><div class="marker">C</div>Partially &#8212; distances are reliable within clusters but not between clusters</div>
+    <div class="quiz-opt" onclick="checkQ('q4a',this,false)"><div class="marker">D</div>Yes, but only if perplexity was set to 50 or higher</div>
+    <div class="q-feedback" id="q4a-fb"></div>
+  </div>
+
+  <div class="mod-nav-btns">
+    <button class="btn btn-ghost" onclick="showModule(3)">&#8592; LDA &amp; Others</button>
+    <button class="btn" onclick="showModule(5)">&#127942; Final Challenge &#8594;</button>
+  </div>
+</div>
+
+<!-- ═══ MODULE 5 — FINAL CHALLENGE ═══ -->
+<div class="module" id="mod5">
+  <div id="completionCheck">
+    <div class="sec-title">Final Boss Challenge</div>
+    <p class="sec-sub">Prove your mastery. Five real-world Indian business scenarios. Choose the right technique each time.</p>
+
+    <div class="quiz-block">
+      <h4>&#127919; Challenge 1 &#8212; The Pharma Researcher</h4>
+      <div class="q-prompt">Dr. Sharma at Sun Pharmaceuticals has gene expression data: 200 patient samples &#215; 15,000 genes. She wants to find hidden biological pathways to understand drug resistance &#8212; NOT predicting a specific outcome, just exploring. Which technique?</div>
+      <div class="quiz-opt" onclick="checkQ('fc1',this,false)"><div class="marker">A</div>LDA &#8212; it will maximise separation between drug-resistant and drug-sensitive patients</div>
+      <div class="quiz-opt" onclick="checkQ('fc1',this,false)"><div class="marker">B</div>t-SNE &#8212; it&#8217;s perfect for compressing 15,000 genes into 2 features for her model</div>
+      <div class="quiz-opt" onclick="checkQ('fc1',this,true)"><div class="marker">C</div>PCA first (compress 15,000 &#8594; 50 components, removing noise) then Factor Analysis (identify interpretable biological pathway factors). PCA handles the scale; FA finds meaningful hidden structure.</div>
+      <div class="quiz-opt" onclick="checkQ('fc1',this,false)"><div class="marker">D</div>No dimensionality reduction &#8212; use all 15,000 genes to avoid information loss</div>
+      <div class="q-feedback" id="fc1-fb"></div>
+    </div>
+
+    <div class="quiz-block">
+      <h4>&#127919; Challenge 2 &#8212; The Bank Fraud Team</h4>
+      <div class="q-prompt">ICICI Bank wants to improve their fraud detection model. They have 300 transaction features and 3 class labels: "Genuine", "Fraudulent", "Disputed". Which DR technique should they use in the ML pipeline?</div>
+      <div class="quiz-opt" onclick="checkQ('fc2',this,false)"><div class="marker">A</div>t-SNE &#8212; it will beautifully separate fraud from genuine in 2D</div>
+      <div class="quiz-opt" onclick="checkQ('fc2',this,true)"><div class="marker">B</div>LDA &#8212; it uses class labels (Genuine/Fraudulent/Disputed) to find the 2 dimensions (C&#8722;1=2) that maximally separate these 3 classes. Should dramatically improve classifier accuracy vs PCA.</div>
+      <div class="quiz-opt" onclick="checkQ('fc2',this,false)"><div class="marker">C</div>PCA &#8212; it&#8217;s the standard pre-processing tool and will work fine here</div>
+      <div class="quiz-opt" onclick="checkQ('fc2',this,false)"><div class="marker">D</div>ICA &#8212; it will separate the independent "fraud signal" from genuine transaction noise</div>
+      <div class="q-feedback" id="fc2-fb"></div>
+    </div>
+
+    <div class="quiz-block">
+      <h4>&#127919; Challenge 3 &#8212; The Edtech Startup</h4>
+      <div class="q-prompt">UpGrad has 1 million learner records with 80 behaviour features. The founder wants to understand "types" of learners to design better features. Primary goal: exploration and insight, not prediction. Best approach?</div>
+      <div class="quiz-opt" onclick="checkQ('fc3',this,false)"><div class="marker">A</div>Factor Analysis &#8212; it will find hidden "learner personality factors" driving behaviour</div>
+      <div class="quiz-opt" onclick="checkQ('fc3',this,true)"><div class="marker">B</div>UMAP for visualisation (at 1M users, t-SNE would take hours). Then Clustering (K-Means/DBSCAN) on the UMAP plot to identify and describe learner archetypes. Factor Analysis can complement to explain what each cluster "means."</div>
+      <div class="quiz-opt" onclick="checkQ('fc3',this,false)"><div class="marker">C</div>PCA &#8212; reduce to 2 components and plot them; PCA is always the first choice</div>
+      <div class="quiz-opt" onclick="checkQ('fc3',this,false)"><div class="marker">D</div>LDA &#8212; use dropout rate as the label to find dimensions separating at-risk vs engaged learners</div>
+      <div class="q-feedback" id="fc3-fb"></div>
+    </div>
+
+    <div class="quiz-block">
+      <h4>&#127919; Challenge 4 &#8212; The Management Consultant</h4>
+      <div class="q-prompt">McKinsey India conducted a 40-question employee wellbeing survey across 50 Indian companies (5,000 respondents). They want to create a "Wellbeing Index" &#8212; a few scores that summarise wellbeing across meaningful dimensions. Which technique is specifically designed for this?</div>
+      <div class="quiz-opt" onclick="checkQ('fc4',this,true)"><div class="marker">A</div>Confirmatory Factor Analysis &#8212; they likely have a theoretical wellbeing model (Physical, Mental, Social, Financial). CFA tests whether the 40 questions fit this 4-factor structure. Factor scores become the Wellbeing Index dimensions.</div>
+      <div class="quiz-opt" onclick="checkQ('fc4',this,false)"><div class="marker">B</div>PCA &#8212; take the first principal component as the "Wellbeing Index"</div>
+      <div class="quiz-opt" onclick="checkQ('fc4',this,false)"><div class="marker">C</div>t-SNE &#8212; visualise the 5000 employees in 2D and identify happy vs unhappy clusters</div>
+      <div class="quiz-opt" onclick="checkQ('fc4',this,false)"><div class="marker">D</div>LDA &#8212; classify employees as "High Wellbeing" vs "Low Wellbeing" using the 40 questions</div>
+      <div class="q-feedback" id="fc4-fb"></div>
+    </div>
+
+    <div class="quiz-block">
+      <h4>&#127919; Challenge 5 &#8212; The ISRO Engineer (BOSS LEVEL)</h4>
+      <div class="q-prompt">ISRO&#8217;s Cartosat-3 captures hyperspectral images with 200 spectral bands per pixel. Objectives: (1) Compress for storage. (2) Create features that best separate land, water, forest, and urban areas. Two objectives! What&#8217;s the optimal two-step approach?</div>
+      <div class="quiz-opt" onclick="checkQ('fc5',this,false)"><div class="marker">A</div>Step 1: t-SNE for compression. Step 2: t-SNE again for classification features.</div>
+      <div class="quiz-opt" onclick="checkQ('fc5',this,false)"><div class="marker">B</div>Step 1: PCA to reduce 200 bands to 20 components. Step 2: PCA again on those 20 for classification.</div>
+      <div class="quiz-opt" onclick="checkQ('fc5',this,true)"><div class="marker">C</div>Step 1: PCA (200 spectral bands &#8594; 20 PCs, retaining 95% spectral variance &#8212; handles compression). Step 2: LDA on those 20 PCs using known land-cover labels &#8594; maximally separates land/water/forest/urban. PCA handles scale; LDA handles discrimination.</div>
+      <div class="quiz-opt" onclick="checkQ('fc5',this,false)"><div class="marker">D</div>Skip DR entirely &#8212; deep learning CNNs work directly on raw hyperspectral data.</div>
+      <div class="q-feedback" id="fc5-fb"></div>
+    </div>
+
+    <div style="text-align:center;margin-top:32px">
+      <button class="btn btn-warn" onclick="checkCompletion()" style="font-size:1.1em;padding:14px 36px">
+        &#127942; See My Final Score &amp; Badge!
+      </button>
+    </div>
+  </div>
+
+  <div id="trophyScreen" style="display:none">
+    <div class="trophy-screen">
+      <div class="big-trophy">&#127942;</div>
+      <h2>Session 2.4 Complete!</h2>
+      <p style="color:var(--muted);font-size:.95em">You&#8217;ve mastered the art of seeing less &#8212; and understanding more.</p>
+      <span id="finalScore"></span>
+      <div class="final-breakdown" id="breakdownCards"></div>
+      <div style="background:linear-gradient(135deg,#1e1b4b,#312e81);border-radius:16px;padding:22px;margin-top:24px;color:white;text-align:left;max-width:600px;margin-inline:auto">
+        <div style="font-family:var(--mono);font-size:.7em;color:#a5b4fc;margin-bottom:12px;letter-spacing:.1em">THE DR DECISION CHEAT SHEET</div>
+        <div style="font-size:.88em;line-height:2.1;color:#c7d2fe">
+          &#128204; <strong>Labels available?</strong> &#8594; LDA (for classification) or Supervised Autoencoder<br>
+          &#128204; <strong>Visualisation only?</strong> &#8594; UMAP (large data) or t-SNE (small/medium data)<br>
+          &#128204; <strong>Survey / latent constructs?</strong> &#8594; Factor Analysis (EFA or CFA)<br>
+          &#128204; <strong>Nonlinear structure?</strong> &#8594; Kernel PCA or Autoencoder<br>
+          &#128204; <strong>Signal separation?</strong> &#8594; ICA (audio, EEG, sensor mixing)<br>
+          &#128204; <strong>Recommendation systems?</strong> &#8594; SVD / Matrix Factorisation<br>
+          &#128204; <strong>General preprocessing?</strong> &#8594; PCA (your reliable, interpretable default!)
+        </div>
+      </div>
+      <div style="margin-top:24px;padding:16px;background:#f0fdf4;border-radius:12px;max-width:600px;margin-inline:auto">
+        <p style="color:#166534;font-size:.9em;font-weight:700">&#127891; Session 2 Complete!</p>
+        <p style="color:#14532d;font-size:.86em;margin-top:6px">You&#8217;ve now mastered Classification, Regression, Clustering, and Dimensionality Reduction &#8212; the four pillars of Machine Learning for Data-Driven Decision Making.</p>
+        <p style="color:#14532d;font-size:.86em;margin-top:6px">&#128640; <strong>Next: Session 3 &#8212; Model Evaluation, Validation &amp; Deployment</strong></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="mod-nav-btns">
+    <button class="btn btn-ghost" onclick="showModule(4)">&#8592; t-SNE &amp; UMAP</button>
+    <div></div>
+  </div>
+</div>
+
+</div><!-- end page-wrap -->
+<script>
+// ─── SCORING ──────────────────────────────────────────────────
+let totalPts=0;
+const maxPts=350;
+const answered={};
+
+function addPts(n){
+  totalPts=Math.min(totalPts+n,maxPts);
+  document.getElementById('sc-pts').textContent=totalPts;
+  document.getElementById('sc-prog').style.width=(totalPts/maxPts*100)+'%';
+  checkBadges();
+}
+function checkBadges(){
+  if(totalPts>=50)document.getElementById('b1').classList.add('earned');
+  if(totalPts>=100)document.getElementById('b2').classList.add('earned');
+  if(totalPts>=150)document.getElementById('b3').classList.add('earned');
+  if(totalPts>=220)document.getElementById('b4').classList.add('earned');
+  if(totalPts>=290)document.getElementById('b5').classList.add('earned');
+}
+function checkQ(id,el,correct){
+  if(answered[id])return;
+  answered[id]=true;
+  el.parentElement.querySelectorAll('.quiz-opt').forEach(o=>o.style.pointerEvents='none');
+  const fb=document.getElementById(id+'-fb');
+  if(correct){
+    el.classList.add('correct');
+    el.querySelector('.marker').textContent='&#10003;';
+    if(fb){fb.className='q-feedback ok';fb.style.display='block';fb.innerHTML='&#127881; Correct! Great thinking. +20 points earned.';}
+    addPts(20);
+  }else{
+    el.classList.add('incorrect');
+    el.querySelector('.marker').textContent='&#10007;';
+    if(fb){fb.className='q-feedback no';fb.style.display='block';fb.innerHTML='Not quite &#8212; review the section above and try to spot why the other option is better. You&#8217;ll get the next one!';}
+  }
+}
+
+// ─── MODULE NAVIGATION ────────────────────────────────────────
+function showModule(idx){
+  document.querySelectorAll('.module').forEach((m,i)=>m.classList.toggle('active',i===idx));
+  document.querySelectorAll('.mod-tab').forEach((t,i)=>t.classList.toggle('active',i===idx));
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(idx===0){setTimeout(initCurseChart,100);}
+  if(idx===1){setTimeout(()=>{initScreePlot();initCurseChart();},100);}
+  if(idx===3){setTimeout(initLDACharts,100);}
+}
+
+// ─── DIM CARD DATA ────────────────────────────────────────────
+const dimCardData={
+  pca:{title:'&#128300; PCA &#8212; Principal Component Analysis',color:'#7c3aed',formula:'Z = X &#183; W &#8212; Projects data onto eigenvectors of covariance matrix. Components ordered by variance explained.',desc:'PCA finds the directions (principal components) of maximum variance in your data. It creates a new set of uncorrelated features that are linear combinations of the originals, ordered by how much variance they explain. PC1 explains the most, PC2 the second most, etc.',pros:'No hyperparameters | Fast and deterministic | Works on any numeric dataset | Components ordered by importance | Gold standard preprocessing',cons:'Linear only &#8212; misses curved patterns | Hard to interpret without domain knowledge | Sensitive to scale (must standardise first) | May discard low-variance but discriminative features',usecase:'NSE/BSE: 30 Sensex stocks compressed to 3&#8211;5 principal components (representing sector clusters: IT, Banking, FMCG, Energy). Reduces noise from correlated stocks. Used by FII portfolio managers for risk decomposition and factor attribution.',when:'When you have many correlated features and want to reduce them for modelling, visualisation, or noise removal. Use as default preprocessing before applying linear models on large feature sets.'},
+  fa:{title:'&#129513; Factor Analysis',color:'#2563eb',formula:'X = L &#183; F + &#949; &#8212; Observed variables = Loadings &#215; Latent Factors + Unique Error',desc:'Factor Analysis assumes hidden (latent) variables cause observed correlations. Unlike PCA, FA has a causal story &#8212; factors CAUSE variables to move together. It separates common variance (shared across variables) from unique variance (specific to each variable).',pros:'Highly interpretable &#8212; factors get real-world names | Separates signal from unique noise | Theory-testable with CFA | Classic in psychology, HR, economics | Handles measurement error explicitly',cons:'Must specify number of factors | Requires subjective interpretation | Rotation choice affects results | Sensitive to sample size | Not directly for prediction tasks',usecase:'IIM Calcutta: 45-question leadership assessment. FA discovers 5 hidden dimensions: Strategic Vision, Emotional Intelligence, Execution Drive, Stakeholder Management, Resilience. Reduces 45 scores to 5 interpretable leadership dimensions for talent benchmarking.',when:'When you believe observed variables are driven by hidden constructs. Classic use: questionnaires, surveys, psychological scales, macroeconomic indicator analysis, brand perception studies.'},
+  lda:{title:'&#127919; LDA &#8212; Linear Discriminant Analysis',color:'#16a34a',formula:'Maximise J(w) = (w&#7488;S_Bw) / (w&#7488;S_Ww) &#8212; Between-class variance over Within-class variance (Fisher Ratio)',desc:'LDA is supervised dimensionality reduction. It uses class labels to find projection directions that maximally separate different classes while keeping same-class points close together. Produces at most C&#8722;1 components for C classes.',pros:'Uses label information &#8212; beats PCA for classification | Very fast and interpretable | Natural for multi-class problems | Components directly maximise class separation | Can also function as a standalone classifier',cons:'Linear only (assumes linear class boundaries) | Assumes Gaussian distribution per class | Assumes equal covariance matrices | Sensitive to outliers | At most C&#8722;1 discriminant dimensions',usecase:'Myntra customer classification: 4 customer types (Budget, Value, Brand, Premium) &#215; 60 shopping features. LDA produces 3 discriminant axes (C&#8722;1=3). Classifier accuracy jumps from 67% (PCA) to 89% (LDA preprocessing) because LDA optimises for separation directly.',when:'When you have labelled data and want to reduce dimensions specifically to improve classification. Always try LDA before PCA when labels are available &#8212; it almost always gives better downstream classification.'},
+  tsne:{title:'&#128506; t-SNE &#8212; t-Distributed Stochastic Neighbor Embedding',color:'#d97706',formula:'Minimise KL(P||Q) = &#8721; p&#7522;&#11388; log(p&#7522;&#11388;/q&#7522;&#11388;) &#8212; Match high-D and 2D similarity distributions',desc:'t-SNE converts pairwise distances to probabilities and creates a 2D map where similar points are near each other. Uses a t-distribution in 2D to prevent crowding. Produces stunning visualisations but coordinates have no stable numerical meaning between runs.',pros:'Reveals complex nonlinear cluster structure | Beautiful, interpretable 2D visualisations | Handles very high dimensions well | Great for exploratory analysis | Proven in genomics, NLP, and computer vision',cons:'Not reproducible (stochastic) | Cannot transform new unseen points | Distances between clusters not meaningful | Very slow on large data (&gt;100K) | NEVER use coordinates as ML features',usecase:'AIIMS cancer research: 3,000 tumour biopsies &#215; 5,000 gene expressions. t-SNE plot reveals 8 distinct cancer subtypes &#8212; 3 previously unknown. Each island of dots = a biologically distinct tumour type. Led to personalised treatment protocol development.',when:'When you want to VISUALISE high-dimensional data for exploration and hypothesis generation. Classic use: single-cell genomics, NLP embedding visualisation, anomaly exploration. NOT for ML pipelines.'},
+  umap:{title:'&#128640; UMAP &#8212; Uniform Manifold Approximation &amp; Projection',color:'#e84c3d',formula:'Minimise cross-entropy between high-D graph adjacency weights and 2D fuzzy set memberships',desc:'UMAP uses topological concepts to model data as a weighted graph and creates a 2D layout matching the high-D graph. Generally faster, more scalable, and better at preserving global structure than t-SNE. Becoming the modern standard for large-scale visualisation.',pros:'10&#8211;100&#215; faster than t-SNE | Can transform new points (unlike t-SNE) | Better global structure preservation | Deterministic with fixed seed | Scales to millions of points | Supports custom distance metrics',cons:'More hyperparameters | Less established in some academic fields | Global distances still not fully reliable | Coordinates not usable as ML features | Topological theory hard to explain to executives',usecase:'Swiggy customer mapping: 5 million users &#215; 80 behaviour features. UMAP runs in 15 minutes vs t-SNE which would take 8+ hours. Reveals 12 customer archetypes on a 2D map &#8212; used to design targeted promotional campaigns and UI personalisation.',when:'When you need to visualise very large datasets. Use instead of t-SNE when data &gt; 100K points, when you need reproducibility, when you want to see global structure, or when you need to project new incoming data points.'},
+  svd:{title:'&#9881;&#65039; SVD &#8212; Singular Value Decomposition',color:'#0d9488',formula:'X = U &#183; &#931; &#183; V&#7488; &#8212; Decompose into left singular vectors, singular values, right singular vectors',desc:'SVD factorises the data matrix X into three matrices. Truncated SVD keeps only the top-k singular values/vectors, compressing the data. Also called Latent Semantic Analysis (LSA) in text mining &#8212; it discovers latent topics in document-term matrices. Powers most recommendation systems.',pros:'Handles sparse matrices (perfect for text and ratings) | Backbone of recommendation systems | Mathematically optimal low-rank approximation | Works even when features &gt; samples | Efficient for sparse data',cons:'Less interpretable than PCA/FA | Singular vectors hard to name meaningfully | Replaced by neural methods in modern NLP | Can be slow for very large dense matrices | Requires choosing rank k carefully',usecase:'Netflix/Hotstar recommendation: User-movie rating matrix (millions&#215;thousands) is mostly empty. SVD decomposes into latent "taste factors" and "movie style" vectors. Predict ratings for unseen movies. The Netflix Prize ($1M award) was won using SVD variants as the core algorithm.',when:'When working with sparse user-item matrices (recommendation), large text corpora (LSA), or any task where the data is a sparse matrix. SVD is more efficient than PCA for sparse data because it avoids forming the covariance matrix.'}
+};
+
+let selectedDimCard=null;
+function showDimCard(id,btn){
+  const panel=document.getElementById('dimDetailPanel');
+  const content=document.getElementById('dimDetailContent');
+  const d=dimCardData[id];
+  if(!d)return;
+  document.querySelectorAll('.dim-card').forEach(c=>c.classList.remove('selected'));
+  if(selectedDimCard===id){panel.classList.remove('show');selectedDimCard=null;return;}
+  btn.classList.add('selected');
+  selectedDimCard=id;
+  const pros=d.pros.split(' | ').map(p=>'<li style="margin-bottom:5px">'+p+'</li>').join('');
+  const cons=d.cons.split(' | ').map(p=>'<li style="margin-bottom:5px">'+p+'</li>').join('');
+  content.innerHTML=`
+    <div style="font-family:var(--mono);font-size:.66em;letter-spacing:.12em;color:${d.color};text-transform:uppercase;margin-bottom:10px">Algorithm Deep Dive</div>
+    <h3 style="font-size:1.2em;font-weight:800;margin-bottom:12px;color:white">${d.title}</h3>
+    <div style="background:#1a1a1a;border-radius:10px;padding:11px 14px;font-family:var(--mono);font-size:.82em;color:#c4b5fd;margin:11px 0;border-left:3px solid ${d.color}">${d.formula}</div>
+    <p style="color:#c7d2fe;font-size:.9em;line-height:1.75;margin-bottom:12px">${d.desc}</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+      <div style="background:rgba(22,163,74,.12);border-radius:8px;padding:11px;border-left:3px solid #16a34a">
+        <div style="font-family:var(--mono);font-size:.66em;color:#86efac;text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px">Strengths</div>
+        <ul style="font-size:.82em;color:#c7d2fe;line-height:1.7;padding-left:14px">${pros}</ul>
+      </div>
+      <div style="background:rgba(220,38,38,.1);border-radius:8px;padding:11px;border-left:3px solid #dc2626">
+        <div style="font-family:var(--mono);font-size:.66em;color:#fca5a5;text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px">Limitations</div>
+        <ul style="font-size:.82em;color:#c7d2fe;line-height:1.7;padding-left:14px">${cons}</ul>
+      </div>
+    </div>
+    <div style="background:#0a1628;border-radius:8px;padding:12px;border-left:4px solid ${d.color};margin-bottom:10px">
+      <div style="font-family:var(--mono);font-size:.66em;color:${d.color};text-transform:uppercase;margin-bottom:6px">&#127465;&#127475; Indian Use Case</div>
+      <div style="font-size:.86em;color:#e2e8f0;line-height:1.7">${d.usecase}</div>
+    </div>
+    <div style="background:#111827;border-radius:8px;padding:10px 12px">
+      <div style="font-family:var(--mono);font-size:.66em;color:#a5b4fc;margin-bottom:4px">USE WHEN</div>
+      <div style="font-size:.85em;color:#c7d2fe;line-height:1.65">${d.when}</div>
+    </div>`;
+  panel.classList.add('show');
+  panel.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+// ─── TAB HELPERS ──────────────────────────────────────────────
+function switchTabGroup(prefix,id,btn){
+  document.querySelectorAll('[id^="'+prefix+'"]').forEach(el=>el.classList.remove('active'));
+  const t=document.getElementById(prefix+id);
+  if(t)t.classList.add('active');
+  btn.closest('.clust-tab-bar').querySelectorAll('.clust-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+}
+function showFATab(id,btn){switchTabGroup('fat-',id,btn);}
+function showLDATab(id,btn){switchTabGroup('ldat-',id,btn);if(id==='lda')setTimeout(initLDACharts,100);}
+function showTSNETab(id,btn){switchTabGroup('tsnet-',id,btn);}
+
+// ─── CHALLENGE TOGGLES ────────────────────────────────────────
+function toggleCh(id){
+  document.getElementById(id+'-body').classList.toggle('open');
+  document.getElementById(id+'-arrow').classList.toggle('open');
+}
+
+// ─── CURSE OF DIMENSIONALITY ──────────────────────────────────
+let curseChart=null;
+function initCurseChart(){
+  const canvas=document.getElementById('curseCanvas');
+  if(!canvas)return;
+  if(curseChart){curseChart.destroy();curseChart=null;}
+  curseChart=new Chart(canvas,{
+    type:'line',
+    data:{labels:[],datasets:[{label:'Sparsity Index',data:[],fill:true,backgroundColor:'rgba(124,58,237,.12)',borderColor:'#7c3aed',borderWidth:2.5,pointRadius:0,tension:0.4}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{title:{display:true,text:'Number of Dimensions',font:{size:10}}},y:{title:{display:true,text:'Sparsity (higher = worse)',font:{size:10}},min:0,max:100}}}
+  });
+  updateCurse();
+}
+function updateCurse(){
+  const dims=+document.getElementById('dimSlider').value;
+  const samp=+document.getElementById('sampSlider').value;
+  document.getElementById('dimVal').textContent=dims;
+  document.getElementById('sampVal').textContent=samp.toLocaleString('en-IN');
+  const spd=(samp/dims).toFixed(0);
+  document.getElementById('spdDisplay').textContent=spd;
+  const sp=document.getElementById('sparsityDisplay');
+  const rel=document.getElementById('reliabilityDisplay');
+  const verdict=document.getElementById('curse-verdict');
+  if(dims<=5){sp.textContent='VERY LOW';sp.style.color='#86efac';rel.textContent='Excellent';rel.style.color='#86efac';if(verdict)verdict.innerHTML='<span style="color:#86efac">Healthy! '+dims+' dimensions with '+samp.toLocaleString('en-IN')+' samples is a strong ratio. Your model should generalise well.</span>';}
+  else if(dims<=15){sp.textContent='LOW';sp.style.color='#fde68a';rel.textContent='Good';rel.style.color='#fde68a';if(verdict)verdict.innerHTML='<span style="color:#fde68a">Manageable. Models may still work well. Consider regularisation or mild DR if accuracy suffers.</span>';}
+  else if(dims<=30){sp.textContent='MODERATE';sp.style.color='#fb923c';rel.textContent='Risky';rel.style.color='#fb923c';if(verdict)verdict.innerHTML='<span style="color:#fb923c">Caution! With '+dims+' dimensions &amp; '+samp.toLocaleString('en-IN')+' samples, models risk overfitting. Apply PCA or regularisation!</span>';}
+  else{sp.textContent='HIGH';sp.style.color='#f87171';rel.textContent='Dangerous';rel.style.color='#f87171';if(verdict)verdict.innerHTML='<span style="color:#f87171">Curse is severe! '+dims+' dimensions with '+samp+' samples = extreme sparsity. MUST reduce dimensions before modelling.</span>';}
+  if(curseChart){
+    const labels=Array.from({length:dims},(_,i)=>i+1);
+    const data=labels.map(d=>Math.min(97,Math.max(2,100-Math.pow(samp/d,0.32)*9)));
+    curseChart.data.labels=labels;
+    curseChart.data.datasets[0].data=data;
+    curseChart.update('none');
+  }
+}
+
+// ─── PCA SCREE PLOT ───────────────────────────────────────────
+const eigenvalues=[8.4,5.2,3.1,2.0,1.4,0.9,0.6,0.4,0.25,0.15];
+const totalVar=eigenvalues.reduce((a,b)=>a+b,0);
+let screeChart=null;
+function initScreePlot(){
+  const canvas=document.getElementById('screeCanvas');
+  if(!canvas||screeChart)return;
+  const pcts=eigenvalues.map(e=>+(e/totalVar*100).toFixed(1));
+  let cum=0;
+  const cumPcts=pcts.map(p=>{cum+=p;return +cum.toFixed(1);});
+  screeChart=new Chart(canvas,{
+    type:'bar',
+    data:{
+      labels:eigenvalues.map((_,i)=>'PC'+(i+1)),
+      datasets:[
+        {label:'% Variance',data:pcts,backgroundColor:'rgba(124,58,237,.65)',borderColor:'#7c3aed',borderWidth:2,yAxisID:'y'},
+        {label:'Cumulative %',data:cumPcts,type:'line',fill:false,borderColor:'#d97706',borderWidth:2.5,pointRadius:5,pointBackgroundColor:'#d97706',tension:0.3,yAxisID:'y'}
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{size:9}}}},
+      scales:{y:{min:0,max:105,title:{display:true,text:'% Variance Explained',font:{size:10}}},x:{ticks:{font:{size:9}}}}}
+  });
+  updatePCA();
+}
+function updatePCA(){
+  const k=+document.getElementById('pcaSlider').value;
+  document.getElementById('pcaK').textContent=k;
+  const cumVar=eigenvalues.slice(0,k).reduce((a,b)=>a+b,0)/totalVar*100;
+  document.getElementById('varExplained').textContent=cumVar.toFixed(1)+'%';
+  document.getElementById('comprRatio').textContent=k+' / 10 PCs';
+  const verdict=document.getElementById('pca-verdict');
+  const barsDiv=document.getElementById('varianceBars');
+  let barsHTML='';
+  eigenvalues.forEach((e,i)=>{
+    const pct=(e/totalVar*100);
+    const kept=i<k;
+    barsHTML+=`<div class="var-bar-wrap">
+      <div class="var-bar-label"><span style="color:${kept?'var(--accent)':'#aaa'}">PC${i+1}${kept?' &#10003;':''}</span><span style="font-family:var(--mono);font-size:.75em;color:${kept?'var(--accent)':'#aaa'}">${pct.toFixed(1)}%</span></div>
+      <div class="var-bar"><div class="var-bar-fill" style="width:${pct*3.6}%;background:${kept?'var(--accent)':'#d1d5db'}"></div></div>
+    </div>`;
+  });
+  if(barsDiv)barsDiv.innerHTML=barsHTML;
+  if(verdict){
+    if(cumVar>=95)verdict.innerHTML='<span style="color:#86efac">Excellent! 95%+ variance captured. Further components add noise, not signal. Stop here.</span>';
+    else if(cumVar>=85)verdict.innerHTML='<span style="color:#fde68a">Good! 85%+ captured. One or two more components could help for high-stakes models.</span>';
+    else if(cumVar>=70)verdict.innerHTML='<span style="color:#fb923c">Moderate. 15&#8211;30% variance lost. Consider keeping more components.</span>';
+    else verdict.innerHTML='<span style="color:#f87171">Low. Over 30% variance discarded. Model may lose critical information!</span>';
+  }
+}
+
+// ─── LDA vs PCA DEMO ──────────────────────────────────────────
+let pcaCompChart=null,ldaCompChart=null;
+function initLDACharts(){
+  const pcaC=document.getElementById('pcaCompCanvas');
+  const ldaC=document.getElementById('ldaCompCanvas');
+  if(!pcaC||!ldaC)return;
+  if(pcaCompChart){pcaCompChart.destroy();pcaCompChart=null;}
+  if(ldaCompChart){ldaCompChart.destroy();ldaCompChart=null;}
+  const rng=(cx,cy,sx,sy,n)=>Array.from({length:n},()=>({x:cx+(Math.random()-.5)*sx,y:cy+(Math.random()-.5)*sy}));
+  // PCA: overlapping (variance maximised but classes not separated)
+  pcaCompChart=new Chart(pcaC,{type:'scatter',data:{datasets:[
+    {label:'Budget',data:rng(1,3,4,4,30),backgroundColor:'rgba(37,99,235,.65)',pointRadius:4},
+    {label:'Value',data:rng(3,2,4,4,30),backgroundColor:'rgba(22,163,74,.65)',pointRadius:4},
+    {label:'Premium',data:rng(2,1,4,4,30),backgroundColor:'rgba(220,38,38,.65)',pointRadius:4}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{size:9},boxWidth:12}},tooltip:{enabled:false}},scales:{x:{title:{display:true,text:'PC1',font:{size:9}}},y:{title:{display:true,text:'PC2',font:{size:9}}}}}});
+  // LDA: well-separated clusters
+  ldaCompChart=new Chart(ldaC,{type:'scatter',data:{datasets:[
+    {label:'Budget',data:rng(-4,0,1.4,1.4,30),backgroundColor:'rgba(37,99,235,.85)',pointRadius:4},
+    {label:'Value',data:rng(0,3,1.4,1.4,30),backgroundColor:'rgba(22,163,74,.85)',pointRadius:4},
+    {label:'Premium',data:rng(4,0,1.4,1.4,30),backgroundColor:'rgba(220,38,38,.85)',pointRadius:4}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{size:9},boxWidth:12}},tooltip:{enabled:false}},scales:{x:{title:{display:true,text:'LD1',font:{size:9}}},y:{title:{display:true,text:'LD2',font:{size:9}}}}}});
+}
+
+// ─── COMPLETION ───────────────────────────────────────────────
+function checkCompletion(){
+  document.getElementById('completionCheck').style.display='none';
+  document.getElementById('trophyScreen').style.display='block';
+  document.getElementById('finalScore').textContent=totalPts+' / '+maxPts+' pts';
+  const modules=[{icon:'&#127744;',label:'Curse of Dim.'},{icon:'&#128300;',label:'PCA'},{icon:'&#129513;',label:'Factor Analysis'},{icon:'&#127919;',label:'LDA & Others'},{icon:'&#128506;',label:'t-SNE & UMAP'}];
+  document.getElementById('breakdownCards').innerHTML=modules.map(m=>`<div class="fb-card"><div class="icon">${m.icon}</div><div class="label">${m.label}</div></div>`).join('')+`<div class="fb-card"><div class="icon" style="font-family:var(--mono);font-size:1.2em">${totalPts}</div><div class="label">Total Score</div></div>`;
+  if(totalPts>=300)document.getElementById('b6').classList.add('earned');
+  celebrate();
+}
+
+function celebrate(){
+  const e=['&#127881;','&#11088;','&#10024;','&#127775;','&#127882;','&#128161;','&#127942;','&#128300;','&#128293;','&#128142;'];
+  for(let i=0;i<20;i++){
+    setTimeout(()=>{
+      const el=document.createElement('div');
+      el.className='confetti-piece';
+      el.innerHTML=e[Math.floor(Math.random()*e.length)];
+      el.style.left=Math.random()*100+'vw';
+      el.style.animationDuration=(1.4+Math.random()*1.6)+'s';
+      el.style.fontSize=(0.9+Math.random()*.9)+'em';
+      document.body.appendChild(el);
+      setTimeout(()=>el.remove(),3000);
+    },i*80);
+  }
+}
+
+// ─── PARTICLES ────────────────────────────────────────────────
+function renderParticles(){
+  const c=document.getElementById('particles');
+  if(!c)return;
+  c.width=window.innerWidth;c.height=window.innerHeight;
+  const ctx=c.getContext('2d');
+  const dots=Array.from({length:30},()=>({x:Math.random()*c.width,y:Math.random()*c.height,vx:(Math.random()-.5)*.22,vy:(Math.random()-.5)*.22,r:.8+Math.random()*1.5}));
+  (function draw(){
+    ctx.clearRect(0,0,c.width,c.height);
+    dots.forEach(d=>{
+      d.x+=d.vx;d.y+=d.vy;
+      if(d.x<0)d.x=c.width;if(d.x>c.width)d.x=0;
+      if(d.y<0)d.y=c.height;if(d.y>c.height)d.y=0;
+      ctx.beginPath();ctx.arc(d.x,d.y,d.r,0,Math.PI*2);
+      ctx.fillStyle='#7c3aed';ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  })();
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  renderParticles();
+  setTimeout(()=>{initCurseChart();},200);
+});
+window.addEventListener('resize',()=>{
+  const c=document.getElementById('particles');
+  if(c){c.width=window.innerWidth;c.height=window.innerHeight;}
+});
+</script>
+</body>
+</html>

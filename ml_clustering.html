@@ -1,0 +1,2059 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ML Session 2.3 — Clustering | Impeccker Consulting</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Bricolage+Grotesque:wght@300;400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0d0d0d;--paper:#faf8f3;--cream:#f2ede3;
+  --accent:#7c3aed;--accent2:#2563eb;--accent3:#16a34a;
+  --gold:#d97706;--red:#e84c3d;--teal:#0d9488;
+  --muted:#6b6b6b;--border:#d4cfc4;--card:#fff;
+  --mono:"Space Mono",monospace;--sans:"Bricolage Grotesque",sans-serif;
+  --c1:#7c3aed;--c2:#2563eb;--c3:#16a34a;--c4:#d97706;--c5:#e84c3d;--c6:#0d9488
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--sans);background:var(--paper);color:var(--ink);min-height:100vh;overflow-x:hidden}
+#particles{position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.15}
+#scoreboard{position:fixed;top:16px;right:16px;background:var(--ink);color:var(--paper);border-radius:16px;padding:16px 20px;z-index:999;min-width:190px;box-shadow:4px 4px 0 var(--accent);font-family:var(--mono);font-size:.76em}
+#scoreboard .label{color:#888;font-size:.72em;letter-spacing:.1em;text-transform:uppercase}
+#scoreboard .big-score{font-size:1.9em;font-weight:700;color:var(--accent);line-height:1}
+.badges-row{display:flex;gap:5px;flex-wrap:wrap;margin-top:9px}
+.badge{width:30px;height:30px;border-radius:50%;background:#333;border:2px solid #555;display:flex;align-items:center;justify-content:center;font-size:.85em;transition:all .3s;filter:grayscale(1)}
+.badge.earned{filter:none;border-color:var(--gold);background:#222;transform:scale(1.15)}
+.prog-bar{height:4px;background:#333;border-radius:4px;margin-top:9px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--gold));transition:width .5s;border-radius:4px}
+.page-wrap{max-width:960px;margin:0 auto;padding:20px 20px 80px;position:relative;z-index:1}
+.hero{text-align:center;padding:44px 20px 32px;border-bottom:2px solid var(--ink);margin-bottom:36px}
+.hero .kicker{font-family:var(--mono);font-size:.72em;letter-spacing:.15em;color:var(--accent);text-transform:uppercase;margin-bottom:10px}
+.hero h1{font-size:clamp(1.9em,5vw,3.3em);font-weight:800;line-height:1.05;letter-spacing:-.02em}
+.hero h1 span{color:var(--accent)}
+.hero .sub{font-size:1em;color:var(--muted);margin-top:12px;max-width:540px;margin-inline:auto;line-height:1.65}
+.session-pills{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:18px}
+.pill{font-family:var(--mono);font-size:.72em;border:1.5px solid var(--border);border-radius:100px;padding:4px 13px;color:var(--muted)}
+.mod-nav{display:flex;border:2px solid var(--ink);border-radius:12px;overflow:hidden;margin-bottom:32px;flex-wrap:wrap}
+.mod-tab{flex:1;min-width:80px;padding:12px 5px;text-align:center;font-weight:600;font-size:.78em;cursor:pointer;border-right:2px solid var(--ink);background:white;transition:all .2s;line-height:1.3}
+.mod-tab:last-child{border-right:none}
+.mod-tab:hover{background:var(--cream)}
+.mod-tab.active{background:var(--ink);color:white}
+.mod-tab .num{font-family:var(--mono);font-size:1.1em;display:block}
+.module{display:none;animation:fadeSlide .3s ease}
+.module.active{display:block}
+@keyframes fadeSlide{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.sec-title{font-size:1.8em;font-weight:800;letter-spacing:-.02em;border-left:6px solid var(--accent);padding-left:14px;margin-bottom:5px}
+.sec-sub{color:var(--muted);margin-bottom:24px;font-size:.97em}
+.theory-slide{background:linear-gradient(135deg,#1e1b4b 0%,#1e3a5f 100%);color:white;border-radius:18px;padding:28px 32px;margin:20px 0;position:relative;overflow:hidden;border:2px solid #3730a3}
+.theory-slide .ts-tag{font-family:var(--mono);font-size:.65em;letter-spacing:.15em;color:#a5b4fc;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.theory-slide .ts-tag::before{content:"";width:30px;height:2px;background:#a5b4fc;display:block}
+.theory-slide h3{font-size:1.3em;font-weight:800;margin-bottom:14px;color:white}
+.theory-slide p{color:#c7d2fe;line-height:1.75;margin-bottom:12px;font-size:.94em}
+.theory-slide p:last-child{margin-bottom:0}
+.theory-slide strong{color:white}
+.theory-bullets{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.t-bullet{background:rgba(255,255,255,.07);border-radius:10px;padding:12px 14px;border-left:3px solid #818cf8;font-size:.88em;line-height:1.6;color:#c7d2fe}
+.t-bullet strong{color:#a5b4fc;display:block;margin-bottom:4px;font-size:.85em;text-transform:uppercase;letter-spacing:.06em}
+.story-block{display:grid;grid-template-columns:64px 1fr;gap:16px;background:var(--card);border:2px solid var(--ink);border-radius:16px;padding:22px;margin-bottom:18px;box-shadow:4px 4px 0 var(--ink)}
+.story-icon{font-size:2.6em;display:flex;align-items:flex-start;justify-content:center;padding-top:2px}
+.story-body h3{font-size:1.15em;font-weight:800;margin-bottom:7px}
+.story-body p{color:#444;line-height:1.72;margin-bottom:9px;font-size:.95em}
+.story-body p:last-child{margin-bottom:0}
+.math-story{background:var(--ink);color:var(--paper);border-radius:16px;padding:24px;margin:20px 0;position:relative;overflow:hidden}
+.math-story::before{content:"ALGORITHM DECODED";position:absolute;top:13px;right:18px;font-family:var(--mono);font-size:.6em;color:var(--accent);letter-spacing:.1em}
+.math-story h4{font-size:1em;color:var(--gold);margin-bottom:11px;font-weight:700}
+.formula-display{background:#1a1a1a;border-radius:10px;padding:13px 16px;font-family:var(--mono);font-size:1em;color:#7dd3fc;margin:11px 0;border-left:3px solid var(--accent)}
+.formula-parts{display:grid;gap:9px;margin-top:12px}
+.formula-part{display:flex;gap:11px;align-items:flex-start;background:#1a1a1a;border-radius:8px;padding:10px 12px}
+.fp-sym{font-family:var(--mono);color:#7dd3fc;min-width:90px;font-weight:700;font-size:.88em;padding-top:1px}
+.fp-desc{color:#ccc;font-size:.86em;line-height:1.65}
+.fp-desc strong{color:var(--paper)}
+.interactive{background:var(--cream);border:2px dashed var(--border);border-radius:16px;padding:24px;margin:20px 0}
+.interactive h4{font-size:1em;font-weight:700;margin-bottom:12px}
+.interactive h4 .tag{display:inline-block;background:var(--accent);color:white;font-size:.6em;padding:2px 9px;border-radius:100px;vertical-align:middle;margin-left:7px;font-family:var(--mono)}
+.slider-wrap{margin:12px 0}
+.slider-label{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-weight:600;font-size:.86em}
+.slider-val{font-family:var(--mono);background:var(--ink);color:var(--paper);padding:2px 9px;border-radius:6px;font-size:.81em}
+input[type=range]{width:100%;-webkit-appearance:none;height:6px;background:var(--border);border-radius:6px;outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--ink);cursor:pointer;border:3px solid white;box-shadow:0 0 0 2px var(--ink);transition:transform .2s}
+input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
+.btn{display:inline-flex;align-items:center;gap:6px;font-family:var(--sans);font-weight:700;font-size:.9em;padding:10px 20px;border:2px solid var(--ink);border-radius:10px;cursor:pointer;transition:all .2s;background:var(--ink);color:white}
+.btn:hover{transform:translateY(-2px);box-shadow:3px 3px 0 var(--accent)}
+.btn:active{transform:translateY(0);box-shadow:none}
+.btn-ghost{background:transparent;color:var(--ink)}
+.btn-ghost:hover{background:var(--cream);box-shadow:3px 3px 0 var(--ink)}
+.chart-box{background:white;border:2px solid var(--border);border-radius:12px;padding:12px;margin:12px 0}
+.quiz-block{background:#f5f0ff;border:2px solid var(--accent);border-radius:16px;padding:20px;margin:20px 0}
+.quiz-block h4{font-weight:700;margin-bottom:4px;color:#4c1d95}
+.quiz-block .q-prompt{font-size:.93em;color:var(--ink);margin:9px 0 13px;line-height:1.65}
+.quiz-opt{background:white;border:2px solid var(--border);border-radius:10px;padding:12px 15px;margin:6px 0;cursor:pointer;transition:all .2s;font-size:.91em;display:flex;align-items:flex-start;gap:10px;line-height:1.5}
+.quiz-opt:hover{border-color:var(--accent);background:#f5f0ff}
+.quiz-opt.correct{background:#dcfce7;border-color:var(--accent3)}
+.quiz-opt.incorrect{background:#fee2e2;border-color:var(--red)}
+.quiz-opt .marker{width:23px;height:23px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:.71em;flex-shrink:0;margin-top:1px}
+.q-feedback{margin-top:10px;padding:11px 14px;border-radius:10px;font-size:.88em;line-height:1.6;display:none}
+.q-feedback.ok{background:#dcfce7;color:#166534;border-left:4px solid var(--accent3)}
+.q-feedback.no{background:#fee2e2;color:#991b1b;border-left:4px solid var(--red)}
+.info-strip{background:#eff6ff;border-left:4px solid var(--accent2);padding:12px 15px;border-radius:6px;margin:11px 0;font-size:.9em;line-height:1.72}
+.warn-strip{background:#fff7ed;border-left:4px solid var(--gold);padding:12px 15px;border-radius:6px;margin:11px 0;font-size:.9em;line-height:1.72}
+.success-strip{background:#f0fdf4;border-left:4px solid var(--accent3);padding:12px 15px;border-radius:6px;margin:11px 0;font-size:.9em;line-height:1.72}
+.purple-strip{background:#f5f3ff;border-left:4px solid var(--accent);padding:12px 15px;border-radius:6px;margin:11px 0;font-size:.9em;line-height:1.72}
+.challenge-toggle{border:2px solid var(--ink);border-radius:14px;margin:12px 0;overflow:hidden;box-shadow:3px 3px 0 var(--ink);transition:box-shadow .2s}
+.challenge-toggle:hover{box-shadow:5px 5px 0 var(--accent)}
+.ch-header{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;cursor:pointer;background:white;user-select:none}
+.ch-header:hover{background:var(--cream)}
+.ch-left{display:flex;align-items:center;gap:13px}
+.ch-icon{font-size:1.8em}
+.ch-title{font-weight:800;font-size:1em}
+.ch-sub{color:var(--muted);font-size:.81em;margin-top:2px}
+.ch-badge{font-family:var(--mono);font-size:.65em;padding:3px 10px;border-radius:100px;border:1.5px solid}
+.ch-badge.hard{border-color:var(--red);color:var(--red)}
+.ch-badge.med{border-color:var(--gold);color:var(--gold)}
+.ch-arrow{font-size:1.1em;transition:transform .3s}
+.ch-arrow.open{transform:rotate(180deg)}
+.ch-body{display:none;padding:20px;border-top:2px solid var(--border);background:var(--cream)}
+.ch-body.open{display:block}
+.cmp-table{width:100%;border-collapse:collapse;margin:16px 0;border-radius:12px;overflow:hidden;border:2px solid var(--ink)}
+.cmp-table th{background:var(--ink);color:var(--paper);padding:12px 14px;text-align:left;font-family:var(--mono);font-size:.76em}
+.cmp-table td{padding:10px 14px;border-bottom:1px solid var(--border);font-size:.86em}
+.cmp-table tr:last-child td{border-bottom:none}
+.cmp-table tr:nth-child(even) td{background:var(--cream)}
+.divider{display:flex;align-items:center;gap:12px;margin:24px 0}
+.divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--border)}
+.divider span{font-family:var(--mono);font-size:.7em;color:var(--muted);letter-spacing:.1em;text-transform:uppercase}
+.mod-nav-btns{display:flex;justify-content:space-between;margin-top:40px;padding-top:20px;border-top:2px solid var(--border)}
+.clust-tab-bar{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0 10px}
+.clust-tab{font-family:var(--mono);font-size:.72em;padding:6px 14px;border:2px solid var(--border);border-radius:8px;background:white;cursor:pointer;transition:all .2s;font-weight:600}
+.clust-tab:hover{border-color:var(--ink);background:var(--cream)}
+.clust-tab.active{background:var(--ink);color:white;border-color:var(--ink)}
+.clust-panel{display:none}.clust-panel.active{display:block;animation:fadeSlide .3s ease}
+.flow-diagram{background:#0f172a;border-radius:14px;padding:20px;margin:16px 0;border:2px solid #1e293b;overflow-x:auto}
+.flow-row{display:flex;align-items:center;gap:0;min-width:560px}
+.flow-node{background:#1e293b;border:2px solid #334155;border-radius:10px;padding:10px 12px;text-align:center;font-size:.78em;min-width:90px;flex-shrink:0}
+.flow-node .fn-icon{font-size:1.3em;margin-bottom:3px}
+.flow-node .fn-label{font-weight:700;color:#e2e8f0;font-size:.82em}
+.flow-node .fn-sub{color:#94a3b8;font-size:.72em;margin-top:2px;line-height:1.3}
+.flow-node.active-node{background:#2d1b69;border-color:var(--accent)}
+.flow-node.result-node{background:#14532d;border-color:#16a34a}
+.flow-arrow{color:#475569;font-size:1.3em;padding:0 3px;flex-shrink:0}
+.dataset-box{background:var(--ink);color:var(--paper);border-radius:16px;padding:22px 26px;margin:20px 0;position:relative;overflow:hidden}
+.dataset-box::before{content:"LIVE DATASET";position:absolute;top:13px;right:18px;font-family:var(--mono);font-size:.6em;color:var(--gold);letter-spacing:.12em}
+.dataset-box h4{font-size:1em;color:var(--gold);margin-bottom:8px;font-weight:700}
+.ds-context{color:#bbb;font-size:.88em;line-height:1.7;margin-bottom:14px}
+.data-table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:.76em;margin-bottom:10px}
+.data-table th{background:#1f1f1f;color:var(--gold);padding:9px 11px;text-align:left;border-bottom:1px solid #333;white-space:nowrap}
+.data-table td{padding:8px 11px;border-bottom:1px solid #222;color:#ddd}
+.data-table td.hi{color:#7dd3fc;font-weight:700}
+.data-table td.c1{color:#c4b5fd;font-weight:700}
+.data-table td.c2{color:#93c5fd;font-weight:700}
+.data-table td.c3{color:#86efac;font-weight:700}
+.data-table td.c4{color:#fde68a;font-weight:700}
+.data-table td.c5{color:#fca5a5;font-weight:700}
+.analogy-box{display:grid;grid-template-columns:1fr 1fr;border:2px solid var(--ink);border-radius:14px;overflow:hidden;margin:16px 0}
+.ana-side{padding:18px}
+.ana-side:first-child{border-right:2px solid var(--ink)}
+.ana-side h5{font-weight:700;font-size:.81em;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+.ana-side p{font-size:.86em;line-height:1.72;color:#444}
+.ana-left{background:#fef9c3}
+.ana-right{background:#dbeafe}
+.clust-type-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin:20px 0}
+.clust-card{border:2px solid var(--ink);border-radius:14px;padding:18px;background:white;box-shadow:3px 3px 0 var(--ink);cursor:pointer;transition:all .22s;position:relative;overflow:hidden}
+.clust-card:hover{transform:translateY(-3px);box-shadow:5px 5px 0 var(--ink)}
+.clust-card.selected{background:var(--ink);color:white}
+.clust-card .cc-icon{font-size:2em;margin-bottom:8px}
+.clust-card .cc-tag{font-family:var(--mono);font-size:.62em;letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px}
+.clust-card .cc-name{font-weight:800;font-size:1em;margin-bottom:6px}
+.clust-card .cc-desc{font-size:.82em;line-height:1.6;color:#555}
+.clust-card.selected .cc-desc{color:#aaa}
+.clust-detail{background:var(--ink);color:white;border-radius:16px;padding:24px;margin-top:16px;display:none;animation:fadeSlide .3s ease}
+.clust-detail.show{display:block}
+.step-timeline{border-left:3px solid var(--accent);padding-left:20px;margin:16px 0}
+.step-item{margin-bottom:18px;position:relative}
+.step-item::before{content:"";position:absolute;left:-26px;top:6px;width:12px;height:12px;border-radius:50%;background:var(--accent)}
+.step-num{font-family:var(--mono);font-size:.68em;color:var(--accent);font-weight:700;letter-spacing:.1em;margin-bottom:3px}
+.step-title{font-weight:700;margin-bottom:4px;font-size:.97em}
+.step-desc{font-size:.86em;color:#555;line-height:1.65}
+.trophy-screen{text-align:center;padding:52px 20px}
+.trophy-screen .big-trophy{font-size:4.5em;margin-bottom:16px;animation:bounce 1s infinite alternate}
+@keyframes bounce{from{transform:translateY(0)}to{transform:translateY(-13px)}}
+.trophy-screen h2{font-size:2.2em;font-weight:800;margin-bottom:10px}
+#finalScore{font-family:var(--mono);font-size:2.6em;font-weight:700;color:var(--accent);margin:20px 0;display:block}
+.final-breakdown{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;max-width:580px;margin:20px auto}
+.fb-card{background:white;border:2px solid var(--border);border-radius:10px;padding:13px;text-align:center}
+.fb-card .icon{font-size:1.8em}
+.fb-card .label{font-size:.76em;color:var(--muted);margin-top:4px}
+.confetti-piece{position:fixed;pointer-events:none;z-index:9999;font-size:1.1em;animation:fall linear forwards}
+@keyframes fall{0%{transform:translateY(-20px) rotate(0deg);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}
+.cluster-visual{border:2px solid var(--border);border-radius:12px;overflow:hidden;background:white;margin:16px 0}
+.cluster-visual-title{background:var(--ink);color:var(--paper);font-family:var(--mono);font-size:.7em;padding:8px 14px;letter-spacing:.08em}
+/* Elbow chart styles */
+.elbow-wrap{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+/* Comparison grid */
+.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}
+.compare-card{border:2px solid var(--border);border-radius:12px;padding:16px}
+.compare-card h5{font-weight:800;margin-bottom:8px;font-size:.95em}
+.compare-card p{font-size:.84em;color:#555;line-height:1.65}
+/* Use case strip */
+.use-case-strip{background:linear-gradient(135deg,#1e1b4b,#0f172a);border-radius:14px;padding:20px;margin:16px 0;border:1px solid #3730a3}
+.uc-tag{font-family:var(--mono);font-size:.65em;color:#a5b4fc;letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px}
+.uc-title{font-size:1.05em;font-weight:800;color:white;margin-bottom:10px}
+.uc-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.uc-item{background:rgba(255,255,255,.06);border-radius:8px;padding:11px;border-left:3px solid #818cf8}
+.uc-item .uc-org{font-family:var(--mono);font-size:.68em;color:#a5b4fc;margin-bottom:4px;font-weight:700}
+.uc-item .uc-desc{font-size:.83em;color:#c7d2fe;line-height:1.65}
+/* cluster colour chips */
+.chip{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:middle}
+@media(max-width:640px){
+  #scoreboard{top:auto;bottom:12px;right:12px;min-width:150px}
+  .analogy-box,.theory-bullets,.elbow-wrap,.compare-grid,.uc-grid{grid-template-columns:1fr}
+  .ana-side:first-child{border-right:none;border-bottom:2px solid var(--ink)}
+  .story-block{grid-template-columns:1fr}
+  .story-icon{display:none}
+  .clust-type-grid{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+<canvas id="particles"></canvas>
+
+<div id="scoreboard">
+  <div class="label">Your Score</div>
+  <div class="big-score" id="sc-pts">0</div>
+  <div style="color:#888;font-size:.68em;margin-top:1px">/ 400 pts</div>
+  <div class="prog-bar"><div class="prog-fill" id="sc-prog" style="width:0%"></div></div>
+  <div class="badges-row">
+    <div class="badge" id="b1" title="Cluster Spotter">🔵</div>
+    <div class="badge" id="b2" title="K-Means Master">⭕</div>
+    <div class="badge" id="b3" title="Density Detective">🔍</div>
+    <div class="badge" id="b4" title="Hierarchy Hero">🌳</div>
+    <div class="badge" id="b5" title="Distribution Guru">🎲</div>
+    <div class="badge" id="b6" title="Clustering Champion">🏆</div>
+  </div>
+</div>
+
+<div class="page-wrap">
+<div style="display:flex;align-items:center;justify-content:space-between;padding:18px 0 22px;border-bottom:2px solid var(--ink);margin-bottom:0">
+  <div id="logo-placeholder">
+    <img src="data:image/png;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCADNAbMDASIAAhEBAxEB/8QAHAABAAIDAQEBAAAAAAAAAAAAAAYHAwQFAggB/8QASBAAAQQBAgQCBgcFBgUBCQAAAQACAwQFBhEHEiExE0EUIlFhcYEIIzJSkaGxFRY2QsEkM2Jyc7I0gpPR4VUYJkNEVmNkdJL/xAAbAQEAAgMBAQAAAAAAAAAAAAAAAgMBBAUGB//EADYRAAICAQICCAUEAgAHAAAAAAABAgMEESESMQUTFDJBYXGxUYGRocEVItHhM/AGNEJSU3Lx/9oADAMBAAIRAxEAPwD4yREQBERAEREAREQBERAEREAREQBERAEREAREQBEXqJj5ZGxxtL3uOzWgbklAGNc94Yxpc49AANyV+Oa5ri1wLSOhBHUL6J4ZcM6WkdH2deavrtksQwGatVf2bsNwT71QOTndkcxZsRRnexO5zGAdtz0AVk65QScvEpqvha5KO+m3zNRoLnBrQST0AHmv2Rj43lkjHMc07FrhsQvojhVwroac0zPrTWsLTIyBz69WUdG9OhcD577bKhc7dkzGdtXhHs+zKXBjevfyCTrlBJy8RVfC2UlDfT3NBoLiAAST2AW9bw+VqVWWrOPtQwP7PfEQPxX0PwE4LxRxQ6k1XXD5HbOr1HjcD2FwXT4xPhh1A+nJXjkpvaGvhc0cpGy6OH0Tbkxb10+Bzb+maa7uqW/xfwPlZZGQyvjdIyJ7mN+04NJA+Kk2t9LHEu9PoF0uOkPQ+cR+65b/AAlvVG37eKvV47EdyItZG8dCQCSPnstF0Tjb1U9nyOn1sXX1kd0QZZGwyuidK2NxY07OcB0ClevdKHEyuv4/mkx8jj8Yjv8AZPuWThXbrfteXF3445atqM7MeNwX9APy3WHRKNvVz2ZlWxlDjjuiGIpdrrShxTv2hjw6ShIfnEfYVEVG2qVU3Ca0aMwnGyKlF7MIiKsmEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBfQn0Z+Fvpcker89W+oad6cLx9s+T1X/ArQUutdVxidjhjahD7D/I+xv5L7QjZVxeM5ImNhrVo+jQNg1oC6fR+IrH1k+SOD010i6I9TV3pfYo36XOqW1cJU03XkLZp3CSUA/wAnUbKO/Ro4YenTs1ZnK+9eM/2SJ46OcNwSQtWvhZ+LPGa3YnLn4inLs53kWA9gV9P069bHUI4IGNiggYAAOgAAV1FParndPuo08vJ/T8WONX32t/mUp9LbU4oaZradgftJdPO7lPZrSOiif0a+FrshYi1Zna/9ljO9SJ4+2ehDvgsD8bY4tcbrEgc84mlIN3dwA3bdvz2X1BQqV6NOGnUibFBCwMYwDoAFmintd7tl3UYy8n9OxI48O+1v5amUANAa0AADYAeSofjf/FB+H9FfKobjf/FB+H9F6XC/yHnMbvkFhkj8OSvYjEteUcsjD5j/ALqu9RYuxpXPQ26bi6uXeJXk933T71P0u0ocxipcVZ23cCYHn+R+x2Kq6a6NWTX1sF+5fc9J0bmumfBLuv7G2bFexC2XlE1K5HzPaeoO/f5hVpqLFTaYz0Fuvu6sXiWu/wBoGx2PvCl2iZJjireFtDlnx0p5Qe5aSV0rVODLY6XFWujJOsbvNj+m3yXPtxl0lhRuh347Pz0Nuu54WS6pdx/k2hZhtU453sbLVvQgyR+XUdfnuqw1rp9+Ev8APEfEpTEuhkHYdT6vxCmeijPHj7uAtt2tUH843+6fYupPUr5bHS4q3sGyD6p5/wDhv8ilmMuksKN0f8kdn56GYXvCyXW+5L7alMItrK0Z8dkJqdhpbJG4g7+fvWqvKneCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiALPRq2LtyKpVidLNK4NYxo3JKwK9foqaI/aebdqi9DvWpn+zE9jJ2P6qyqt2zUF4lGTfHHqlZLki9eD+jq+jNHVqDWA2ZB4k8m3VxPXY/Dda/GvOy4nSL6tMg3b721omDuec8v8AVTvt7lWzqf718UjZkaH0MIDEWnsZjyuafkF6O+PVUqqHN7Hh8Szr8mWTdyju/wAI63CDSEOkdJV6xYPS5miSw7brzEDcLDxu1C7A6GtCvIW3bY8GsB3LiQpyqvy9J2s+KkNeUNkxODa2Y+YfI4OG3y2WL49VSqq+b2/kYk+05byLuUd3+EdLgho5mk9IxeNGBfufW2Xee5U+QAAADoAi2qalVBQXgc/KyJZFsrJeIVDcb/4oPw/or5VDcb/4oPw/ot/D/wAhnG75AEBIO4RF1zoGHJBtbMVNQxt3a/atcaB02PQOK27UZhsOb7DuF+1/Dka+rP1hmHK4ez2FCx4pxskcXzV/qpne0gDY/MFcfHr7JmSrXdnuvVc0dG2faMZTfejs/Q18iwR3qmfjGxi+puNA+1GQfWPwWeyzwrDg3oN92n3eS/azo93wzjmglaWSD2ghZJ45BWHi/wB5C8xkf4NzyH5hZqr7JmOK7tm69VzMWT7RjKT70PYjHEbFftDFszEDB49fZljbu9vQAqt1ddR7GyFkrQ6KQcjwR5FVVqzEOwuZlqdTF9qJ5/maR3XnencHqLusiv2y9zs9FZXW18Eua9jkoiLhHVCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgM9GtLduQ1IGl0szwxgHmSvu/hdp2HTGisfjI2cjxGHy/5yBuvlz6NOlzn+IENqaMmtQHjF23TmBGwX2V5bLtdE07ux+h5X/iPK0UaF6v8GhqC6zH4maw87bDlHxJ2H6rQ0PiX4vCxiwAbk3r2H+bne38Nl7zEf7RytekNnwRHnsN+W7fzC7YAA2HZdKK47XL4bL8nAnLqsdVrnLd+nh/JoahvHG4a1dazxHxROc1g7uIHZc/QuFbh8OQSXzWZX2JHHvu9xdt8t9llyzTey9WkCQ2Bwnedujh1GxXaA2GwWYrjtcvhsvyYnLqsdVrnLd+ngERFsGmFQ3G/wDig/D+ivlUNxv/AIoPw/otrD/yGxjd8gCIi650AulADar7F7Wjl5Hjbq53q8p/ULmraxkvhWm77bO9Xr5de61sup2Q1jzW69UX49nBPR8nszVIIOxXUqbWISepkc3w3knsBuWn89lr5WEx2ebps/r0XnGzCKxyuJ5H+qVXkQ7RSpw5rdev+7EqZdTa4y5PZms9pY8tPcHZcbiNQ9P07DkW9ZqZ8NwH3D5qS5eLw7POG7B/X5rDVYywyalKAY7MZjO/luOhVPSFKzcN6c9NUW4lrxsla+jKTRbWWpvoZKxTkHrQyFv4Faq+eHsAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIikvDHT0+p9bY7FQM5g6UPk/yNO5WUm3ojEpKKbZ9Q/Rj0wMDw/jvStHj5IickjqGkDYfkrNymQqY2m+3dnZDCwbuc47BYJ5sfp/B88rmV6dSL4AABfP8AHqvIcVuKdbFUw4afpSc8zAf7xvUbnbuCvRytWJXGqO8jw0aJdJXzvntBePkvA+hMdFC4uuxjd04BLj5gdl7yd+rj6xntTMiZvsC47bnyCxZK9SweIfatythrwM3JcdgAF8/4vVeQ4q8VYKcDpIsHQd4waD0eWkEb+1TuyFQlBbyZTiYTy5Stk9IR8fTwPoHFRxuabbS5xmHMC7uAfJeszk6OIoSXshYZBBGN3OcdgvGVyFLB4mW7dlZDXgZzOcTsAAvjzjRxPyGs8pJVqyPgxUTiGRg7eJt03O3cFRycqOLDhXeJ4HR0+kLXJ7QX+6Fmah+khDWycsOJxLbNZh2bJISC5c7/ANpi7/8AT8B/5yvnlFxXnZD/AOo9WuiMNLTq0fQb/pMZE/Z0/XHxeVE9R8WINQ2/TMjiS2b2RyEBVQizDpDJg9YzZOPReJHlWiwTrnF/+mzf9X/wn78Yv/02b/q/+FXyK39WzP8AyMn+n43/AGItnA5zE5smCuXVrY7RyO6P+B9q3ntdG8tcCHAqmopHxSNkjeWPad2uB2IKs3R+om52FtC84NyEbfq5D0Eo6dD1+0u10V03JyVWQ+fJ/wAnMz+i0l1lK+RKXb3abfsNezoNz1K5zmuY8tcNnArJHG+WGxSDjG+aMta7fYtdsdj+K5enMyMrJLib5bHlKznMB7CYNJHt79F1p5scXIVNi0jLk/wc+OM76XZDdrmiQO57tJh3aHRnl6n7RXOIcx2x3DgshhNiCei97oy8bsIOxDwQQfxC5Wl81+2GOx98eFlYBt16eKB8+6SzY4uT1Fi0jLdP8BYzvp62G7XNHD4q48GevmomBsdgeG/b743/AKKDK4cvRGTwVzHSMc6YNMkDfY9oKqB7XMe5jhs5p2I9hXkul8Xs2TJLk90eh6Ov66hN81seURFyzeCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAL6U+iNpdtele1bdi5N/q673fdG/MV87YehYymUrY+rGZJrEgYxo7ndfTXGDUcHDThpj9G4V4jvTQcpLSN2Du4n47lbWJpGTslyj7+BzukeKyCohzn9l4shH0juJ8ucyUmnMRMW0K7uWV7T/AHjh7/Yp79FTTLMTpSfUVpnhzWyQC77g6gr5p0riZs9qSjiog5z7U7WE9+hPUr6V46asj0JoGnpPEva25NAISWnYxt5di78QrqLdbJX2eHv4GtmUKNMMOnbi9lzZX/0iuJ0mfyUmn8RMRj4HbSvadvEcO4+RVjfRZ02MPo2TN22Na+4fEY53kzb/AML5n0nirOoNT08fE10sliYc/mSN9yV9M8btWV9AaDraZxDhHbmhEbAP5WdnH80x7NbJZFnh7+BjNoUaYYVO3F7LmyufpIcSpM7lH6dxcxFCu7aVzT/eOH9FSi/Xuc95e4kuJ3JPmvxaVlkrJOUubOrRRCitVwWyCIigXBERAEREAWStPLWsMnheWSRuDmuHkQsaIC4dPZaPP4lt2PZt2AAWGDuf8SifEis+hnoMzR5omTgODm9PrATuuBpTMy4PLx22buiPqzR/fb7FZesMdFl9KzmB3iNib6VW5eu467hdzr+24ThLv17rzXj9Dl9V2XJ4o92e3zPOnMyzO45l1mzbkBAnYPM/eAUT4iVpcXqGDMVHlhtAStLenK4AAhcDTOWmwuXitxnZoPLK37zNxuFZuq8dFm9GvkpgPDGC1Xce/Lt6wWHe83D4Jd+G681/QVXZsnij3Z+560zm483RZfi2Zdg2FiMezr63zUB4i4tuO1HI+EH0eyPGYdunrdwubpvLzYXKx3IhzNB2kjJ6PaehBVkcQMfFmdHMyVN3iNrfXREDvG47EfIqE73mYmku/X91/RONXZsjWPdn9n/ZUiIi450QiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiL0xrnvaxgJc47ADzQFu/Row1Rubvayy27KOEh8UOI6Fx3H5KCcSNT29W6tuZe0/cPeWxAdgwdB+SsTiHcbonhTitEUph6beb6VeIHUxyAEA/NU3XhksWI4Im80kjgxo9pJ2Ctm9IqCNeuPFN2P0Xp/ZdX0YcJBWkymuMk1voeNhc1hd98AHoq04jams6s1bcy873Fj3kQtP8rN+gVpcUbjNEcJMLois3wb96Jtm6WnqD2IKoyNjpJGsYCXOOwAWbHpFQI0x4pytfjsvRfyXd9F/C1q82T1pkvq6+Oj2jc7sSQQVWvEzVNnV2rbeVmc7w3P2hYT0a33fgrO4oXxofhTidCUpm+mWmeNeLe/K7Zw/VUWlktIqtfP1MUQ4pyufjsvRfyERFSbYREQBERAEREAREQBWbwhzYmY7BWSC5m764P8wO/M1VktrE3ZsdkYLtd5bJE8OBCux7nTYporurVkHFnQ1tinYbUtumdi3m52Efdd1CmnB3NslbJgbjgQd3wbnvuNnMHyXrirXizWmsZqmlGAwt5ZuvUb7Ab/PcKucTenxuRgvV3cssLw9pVqn2a/ijy90/6K+HrqtJc/ydHXGIdhdTW6ZZyx85fF72EnZTXgvmY7Hi6ZvEPZK0mDnPQA/ab/Ve+LVavmdOY3VNEmVxAjmIHQD1j+R3CrXGXJaGQguwOLZIZA8bH2HfZYcuz3ax5e6f9GUuur0fP8o2tU4qTC5+5jJDuYH7AjzBG4/IrmKz+LNVmb09itZU4mNbLEGW+X+V522B/AhVgqLIqMmlyLYSco6sIiKBIIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCmXCLFR3tWR3rTQaWMb6XZ5h0LGnsoarAqWoNPcLHmCdjcnlpeVwB9bwCNtvxCyiMuWhHtf52XUWqbeQe8uj5jHCD5RgnlH4Lt8FcLFlNXstXBtToRusvefs8zRzNBPv2UFU/hyUOnuFhqVZWuuZuQPkLT60TWO22+YWU99WYkv26I4fEjUsuq9X3sw8uEU0hMTCfsN9i7PBHDw39YR5K81pxuL2sW+btydv1KgasSrka+neFEkNWVn7SzL3Q2AD1EGwI/NE9XqzEo6R4Y+hG+IWfsak1XcyVh/MObwovcxvRv5KPoii3qTSSWiCIiGQiIgCIiAIiIAiIgCIiAsXhZahy2LyOkr27o52GaIk9i0A7D57FV/brzVLMlawwxyxu5XNPcFbOCvyYzL1rsbi3wpGudt5t3G4Uh4osqz5mLNVJA5mTj8dzR/Ie235Kxy4oLyIJaS9Tu8J77cthsloy3OGMsxH0XcfzHfm/oVXWRrPp37FSTfmhkcw/I7LPgslYxGXrZGq7llgfzNP5H8ipNxWjp2crBnMcY/Rb0Q6N784HrE/NZlLigtea9glwyfmdfhLZgzGFy2jL23hzxuswEnr4jW7Bo+arq9VmpXJqlhhZNC8se0+RC29NZOTDZ6lk49968zXkDzAPUKUcZKtX94YcxUkY5mUgbaeGn7L3dSFFvWPoZ5MgyIigSCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAvTnvcAHOcQ0bAE9gvKIAv0ucQGlxIHYE9l+IgC9Oc5wAc4kAbDc9l5RAEREAREQBERAEREAREQBERAEREAXt8kj2ta97nBo2aCewXhEAXt0sjo2xukcWM+y0noPgvCIAvck0soaJJXvDRs0OcTsPcvCIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiIAiIgCIiAIiICYcM6GKyNi5WvxwyzkMMDJCQT9rm22I9y6+tsXpzHYLrBDBel2dA1jnbkb9SdyVwuFm3741t/uO/RdPjEALOKI867v6LpQlHsUnwrVNLXTffVmlKL7Sv3PTTXTwIEisbA6PwlvBw3pLMsr3jd4jc31D7Ntit2vw/w0Dd7V0ve9x5WOkDOm/TuO6pjgXygppbPx1Ra8qpScdd15MqxFZVzh1XmuRilbdEzf65sndo9o2HVb37h4AMMLLEkzmj1nNlaXD5bLP6dkcXC1o/Vb+nxI9sp4eLUqdF2tV4Q4TLCt4hkgkaHxye1pJH49FNqmhcFLj68ws2JfFaPXjLSAT5bbKurEttsdcV+5eBZZkV1wU5PZlXorYi0Np6vtXfaE0zh/PM1rvkNlF9baPOHh9NpPklrb7PDh6zD179O3Tuszw7YQc2tlz0aenqYjk1ylwp7kPRS3Q2j5M8HWrMjoKbTtzNHrPPu6KWDRumpnOpxStMre5ZMC/wDDlWK8S2yKkuT5atLX01MzyIQejKmRdvWGAlwOQEJf4kEg5on+0e/3ruaI0SMrVbkMjI+Ku4/Vtb3dt333HQKEaLJ2dWluSlbCMONvYhCK2n6N03ca+vXexsjfOGYOd+Gyg2qNLW8Legg5mztsf3PLvufiNlK3FsqjxPl8U9fYjXfCb4Vz+hHkVn4bQOPqUxYzE3NLtu5heGxt925HdZchoHFZCt4uKnEchOzeR/Own3kDcKxYF7Wum/w1Wv05kXlVJ8/n4fU4/CnI4mCd9G5Cw2rEgbC97OYD3bLb4v1YI61OdsMUcznuY4xt2BA38lG8HQmxevqdCxymSG01ruU7j2qVcZf+Dp/6z/1KshviTTS2a9fEhLbIi0+aZWSKxtLaKxt/A07tl1kzWAXENIAaASPMe5cLP6Zjj1THh8RMbBk28weTtvuR8Vr2YttcIzktpci2N8JycU91zIsitWHQ2BxtZjshaEkjh18SQMG/u6dQuVq3Q8FbHPyGKlc8Rt53xlwI5fa0gdVOWFdGLbXLnutV8uZGOTXJpa8/p9Sv0Uy4fabxucrWpLk72yxOAbE1wBcNu/VSSPh9hX7zts2CzbpGS0dfZvslWDdbDjgtvVCzKqrlwye5VKDqdgpHrvDVMNkYoajn8r4g4teQS07keXwXP0tTF/UFKsfsulaXfAEbrXnXKE3B80XRmpRUlyJborRMNirHkMwHOZKOaKuDsXN6esT5BSP0vRlEOpvnxsZadi0Nc/b4ndaXErLyY3ENq1R4T7ZLWub/ACxt2GwVVEkncncrpXzhhy6qEU2ube+/kaVUZZK6yUmk+SW2xaeZ0ZiMrSFnDmOGV25Y5jy6OT3dT0Va5WhZxl6SlbYGTRn1gDut/T2pMnhA9lSQGJ/UxvG43+a9RMyOrdRknZ08xBefJrRsN1qXzqt0cI6S8UuXyNiqM69VKWq+5xEVrwaJ0/j6zHXZxI5w+1NIGAn3DbfZc/Uegq5pOt4aZz3hpd4fMHNcP8JA6n3KUsG6Kba5c1qtfpzMRyq21vz+n1K4RS/QOnMdmfShfsOjlhdytia4Au/FSWLh7hZniwL00UAHVryG9fiRso1Yd1sOsitvVGZ5NcJcEnuVWitDJaAxstZ3oEz2zbHwiHhzHn2EgdFXEdKZ+TFAD60y+Ft799lC/GsoaU1z5eJKq6FuvC+RrIrUqaJweOpsdkpmvlPRxkkDW83sHTr3XP1XoSvDjpcjip/VjjMr43O3aWgbnlIHVWSwboxb05b6arVfLmQWVW3pr/H1K7RWfh9DYO5jK0/pU0rpgA5zHN2a72bbKJ4XCUrOr5MRbtGKBjnN8TcDcghVzxrIKMpLaXInG6EnJLw5kcU54TXMbFkJqdyJjp7AAhc9vMARvv0XvW2k8bicNJbqPn8SKRrSHkEEHf2BR/Qf8W4//U/oVJ1WY1yU1utPMipwvrbi9voSbjFUrwOx00UMcUkrX8/INgdiozp3TGSzdeWxVa0QxbgucdtztvsFMeMjWPkw7Hnla5zw4+wcwUl0rj6uLxEEGMkFmGd/O95ePtEbEdB0W88NX5s61slqayyHVjRm93sUhPGYZnxO7scQVY+j8VpWxpIT3jCZuV3judIQ5p68uwWhr7TuFxz689W/zy2LPLKzna4MBBO/l5rty8PcO6qX17lk7xGRrw4Fjth8Fq0Y9inJKKlot919eZfbbBxjq2tWVXKGiVwZ9kE7fBeVJtB4SjmsrNVuTOZyMJY1pALjuB5qXt4d4eWXxPTLEMTOjw/YdfjtsoVYd1sHZBapehKzJrrlwSe5VSK1LmgMRNAW1J3seejHtkD2k+w7Doqzu1Jqt6SnKwiVj+Qj3qF+NZRpxrny8fYlVdC3Xh8DXRWPprh/BJQZby0z2ve0PETSAGt/xEjot+XRGnrDTJDYI8Pq5sMrX7/krYYF80mlz5bpP6FcsuqLe/LyZVKLqaqp18fnrNSqXmGPl5ebv1aCfzKLWshKuThLmti+ElOKkuTOrws/jKt/ld+i6vGP/iMT/wDru/osHCOg6bLz5Frnk0w0cjW783Pzee/T7K7vFDCvt4iHKSS+j+hs5ORzft7kdjv7l0YUz7BKWm2qfyWqNOVse1JeX8HI4Sj6rMf6cf6lRvWc80uprxkkc4smc1u/kATsrB0Bp6XHYaS3HMLRvxt9VjdhHtv3O/fquJrHSDhnq8jr7WHJWHeo9mxj33PXr1WbqprBrfm/vpoYrsj2qa8l9tSSNmmGga9kSOExx3V/n3aFXWgZJG6xxxa4gul2d7xsVa4w037Eiwm7+WOv4Hjcg69Qd9t+3T2qF6L0o6HVc8jbzZTi5hu1jOsnTy69O6szKLeOlab6Jc/EjjWw4bH5sycXo2tr0nBoBEj2/Ldy6XCJoOmbJ37Wh/tCz8R8LLkMBJdkc6v6Hzy7ObuH9+m+/Q9VrcJHFumLBDS4m2BsPgFcq5LpN6+OvsypzTwdvDT3RWeRkkdkZpHPJfz782/VWlBbmyHDqWa31e+jIHE+fLzAFadjhqyS+bDsg8ROdzGLwfW29m/MsmvszTxWDdhqbozNLH4JjadzGzY9/eVq0UzxYzlbsmmvVsvtsje4Rr3aafodzSsUEOlaUL5Gw1zXcZJC7l23J3O659XA6Jo3YrtfLQ+NE8Pb/ah3HtWlw9y1PK4EYO25omiaWBjnbGVhO/T3hYJOGTHTl7MlIyMnfwzBu4D2b8yvaldVW6oKWi080/qVJquyanJrV6+p44q3cbbxtVle3XnnExP1TgdmnddnXFh+N0g6OoOQOYyLdvk3YkqB67w2Nw1uGGhaEriz61hO5a5TfTmQpar05+z7T2mz4fhyxA7O6b7Ob1VNdkrbLYy0UpLTy122+ZbOCrhW47xTKpqWrFSy2zWmdFM07h7T1ClujslfzmsqEuUtPsOh3LObbp0K7+L4eVKV8Wbls2YWet4fh8gHs3O/ZR/UGUxWL1lXvYZoc2A7zcjvUefPl9y1ZY9mPpKzbfl4/QuV0LdVD4czb4u3bBvVqPMfAEYl29riXblRLD5rKYhzzjrklfn+0G9irSzGGx2ssfDZqWm7jq2Zg5i3v6rhv5ErWxmkcLp+nPYy87Jht/eyDkaB7AN+pWzk4ttl0rYv9r3112Kab4QrVbW620IFpq1Pb1pQtWZHSzSWml7j3J3Vt53DY7NGJuQa8mGVzo2NeBz9+nvUB0FgYMpl35elM6GGnOHMrkcz3Dp57hSDibFbZjIMlFLJUlrTFzeuxdvv2IUsSPBi2WSjxLVeJjIfFfCEXo9GYeKOXt4/HV8dQrmvVlZsZWdB/kC4fCJg/bNucdZGVyG/NzVJtP5ejq/DSUr0bTY5dpogdi4/fZ1XCp1odC6tgbZtCatbiLHnl5TGCR1PU9ks4VfDJT1hqvl5aeQhq6pU6aS0+vmSvP4bS+TttkzGSjissYGmM2A3l6exZq8+m8VifQK+WqvrRseOV0wc482/T8SuXqTR1bUVhl+vc8Fz2jeVjOdkg8j0PRcXKaFxuJwlmxdyX1wbvE9zeQE+zbckq67rqpTsjWtHrv8AFP5ldfVzUYOb1Wm3p8jgaH5TrSAs+z4pLfhzLv8AFmeaFuMiikcxha6TYH+bcdVq8LMIbduTLNsD+ySBvhBu7n9jv36KRa+09Llcc26+b0Y0oXHle3cP8++/uWtTTN4M2uWq+2pbZZFZUU/g/voVRPNLO/nmkc92225K6uirTampqUr+xla38SAuMvTHOY9r2nZzTuD7CuYno9Tea1WhY/FunNJRqWg31KznRv8Advy7Ktlauk9QUM9jhjci6MWSwRvZK7YTjYDcHfoVrXeG1eSy59a3PXi36Ruh5z+PN1XWyMaeZPr6N9ea8UzQpujjx6q3bTk/iiA4fE38tOYaFd0zgNzt5Ke8LsVJUmyBtxuhtxvbC5ru4aS0ldqIYTRmNO7/AAydnFhd9bMR5bb9AofpvVYdq+zdybvDr3vVdy9Aw7t5XfLZV1VwxLq3ZLfXdfD+yU5yyK5qC2028zm8RrU9jVl2OV5LIX8kbT/KNh0Up4PWrElK7Wc8mKB7HRj2FxO/4rpak0PBqG2MlVvNgdI0F7w3nbJ7wQei2KdXGaHwb3WJw5+/MSfVdO4b7ADfyV1GPZRkddZ3Vq9fj/OpXbdC2nq4d5+Hw/8AhBZK8VfiWyKL7IvMPT3vC7HFiSRtHGxNeRG4PLmjsTuFpaGw8uoM1PmzZ5XV7IlMQbu5/XfbupJr7T82SwzbUk3ovoMbjyvbuH77Hod+/RV01TeFbJLZtfbXUnZOKyYJ/B/fQ5HCaaV1S9CXksjfG5g9hJduotkrHoGtLFoN3EV1z9vg/dWDoPTs2LxbrUUvpXpjWP2Y3YM236b79T1XGzuAx2K1XBdzNoOqXZHvcwjlMe5369fel9U1h1N/F/fTQVWReTYvJfYkLxp3WNGNr52ucDu1gkDZYydtxse/ZcLUuJ1BgcFPDjsnJPjNi2WEj1o2kdd/cujkNEUMp4N3A3mVABv4kW7mv7bEHfcLf1K9uF0ZYq5G6Z5n1nQse/7UriDt079FfZXKyMp3LRpd5PZ/zqVwmoOMa3qte6/A43Bof2C717zx/oVBdRDbUtsf/fP6qW8IcjXhfboSSNZNK5r4eY7BxG/RdjJ8Po7+ZlyXpb68T3h74nR9vb63MtfqZ5GLDq9+FvXy1LesjVfLj2100PGuh/7jf8tf/aoNoHrq7H/6n9CrP1JhnZPAzUo5BFC1jHRy9HN2YPPY+ahXDDBOt5mW82x1oPH1bW7l++49vTsp51M3kQit9VH7Iji2RVMm/Bv3Olxr7Yv4SfqFv8JAP3WsHf8A+Yf/ALAsnEzDS5PFMuvkNY0muPK9u4fuR579CtXg/ZgkwtmgHj0hsxfyeZaQBuFbKLh0i+Lx10+aehWpKWGtPDT3K0yH/HT/AOof1VwcOWD9xYjv3ZMopqnQM+OidkDkYnxyTEBpYQRv19qnmnsTNh8HFjG+JZbyuBlawAet7BuqOj8a1Xyi1uk/uti3Luh1SafivcpvTI31PRH/AOS39VYnGJz48BXa15DXWTzAefQri4XSLq+tzV9OD3VOWfYR+s/7J5dt+h6+3yUr4gYebMYCQyOdU9ELp/XbuH7A9O/RKKLOy27fD7cxbbDr69/9ZHODT3EZGMuJYAxwHsO5WhqiCM8WPCIHIbUW4/8A5Uj4Y4aShiH5GKQ2TbG3Ixu3Jyk9zuuJxMpSY3UlfUAlPNPKHiFzdi0s5fPfqFiyqawYSa21b+T0ELIvKkl8Edfi3dmgwdetCeRk8hMm3nt0AUN4bkjVUIBIBjk39/qFWDOzH62082NkzQ87P9Xq6F+3Xcb9QtPAaG/YNo5F930l7WODGhnJtuCD3PXotiyiy7KjdDeLa+XLb5FUbY1UOuW0lqQHXP8AFNz/AJP9jUTXO/703N/8H+xqLnZ//NWf+z9zdxf8EPRexyq9mzX5vR7EsPN9rkeW7/HZeprtydnJNbnlb918hI/Na6LULzYhvXYWckNyxGwfytkIC8y2rUz2vlszSOb2LnkkLCiA2/2lkdtv2hb/AOs7/usUVq1FI6SOzMx7vtOa8gn5rCiA2X3b048KS5Yka7pyulJB/NW9oLEz4XT7YLXrSWJRMOQEhoI2VMDodwu/W1lqavCyGHLzNYwbNHK07D5hbeFfCi3jmtTXyapWw4YvQ29ZVc7p+4yCbJ2HRzgvj5Z3dlF5HvkcXve57j3LjuVuZjL5LLzNmyVuSy9o2aXbdB8lorWm4uT4eRdFNLfmeo3vjeHxvcxw7Fp2IW47MZZ0fhnJWy32eM7/ALrRRRJHp73yOLnvc5x7kncr9hllhfzxSPjcPNriCvCIDdmy2TmZyS5C09vbYynZaSIgM9W5bqHetamhP+B5H6L1bvXbf/E255vc+QkLWRAZYLFiuSYJ5Yie5Y8t/Rep7ludvLPanlaPJ8hcPzWBEB7hllheHwyPjcOzmuIK/Zppp3880r5He17iT+axogNurkshVby171iJvsbIQPwWOzbtWTvYszTf53l36rAiAy17Nivv4FiWLfvyPLd/wWSW/elYWSXLD2nuHSuI/VayIAiIgP1rnNcHNJaR2IPULejzOWjj5GZK2G+zxStBEBknnmnfzzzSSu9r3En81jREBuVcpkqreWvfsxN7crZCB+Cw2bVm07ms2JZj7XvLv1WFEBlgsWK5JgnliJ7ljy39F7lvXZWFktyxI092ulJH6rXRAbMV69EwMiuWI2js1srgP1WOexPYIM88spHm95d+qxIgNunkshTHLVu2IR7GSED8FitW7Vp3NZsSzH2veXfqsKID0xzmODmOLXDsQditl+SyL2cjr9pzfYZnEfqtREBsC9dEfhC5Y5NtuXxDtt8N14gs2K7i6CeWInuWPLd/wWJEBsTXrszCya5Ykae7XSEhY6889eTxIJpIn/eY4g/ksaIDZtZC/aAFm5YmA7B8hIX6MlkWgAX7QA7ATO/7rVRAZm27TZzO2zMJT3eJDzH5r3JkL8jCyS7Ze09w6VxB/NayIDYhu3IGckNuxE37rJCB+SOmntzxts2ZZAXAbveXbAn3rXRAWnDoep6DXnxuUtwSujaS+I7tcfkupgNOTY6V9q7k7Np5byh0znBkY2O53PuVS4/K5HHnelbkg/ylZcjncvkI/Du35pmexx6LfryaK2pKv9y89tfjp/ZqzptlrFz2flubGuLda9qq9ZqHeBzmtYfbytDf1CLiotKc3OTlLmzYjFRSivA//9k=" style="max-height:60px;width:auto;object-fit:contain;transition:all .2s" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform=''" alt="Impeccker Consulting">
+  </div>
+  <div style="font-family:var(--mono);font-size:.72em;color:var(--muted);text-align:right">
+    <div style="font-weight:700;color:var(--ink)">Session 2.3</div>
+    <div>Machine Learning for<br>Data-Driven Decision Making</div>
+  </div>
+</div>
+
+<div class="hero">
+  <div class="kicker">Session 2 &middot; Module 3 of 4</div>
+  <h1>The Art &amp; Science of<br><span>Clustering</span></h1>
+  <div class="sub">Find hidden patterns in unlabelled data — from customer segments to disease subtypes. Master 4 major families of clustering with live playgrounds, Indian examples, and zero jargon.</div>
+  <div class="session-pills">
+    <div class="pill">2.1 Classification &#10003;</div>
+    <div class="pill">2.2 Regression &#10003;</div>
+    <div class="pill" style="background:var(--ink);color:white;border-color:var(--ink)">2.3 Clustering &#8592; You are here</div>
+    <div class="pill">2.4 Dimensionality Reduction</div>
+  </div>
+</div>
+
+<div class="mod-nav">
+  <div class="mod-tab active" onclick="showModule(0)"><span class="num">&#9312;</span>What is Clustering?</div>
+  <div class="mod-tab" onclick="showModule(1)"><span class="num">&#9313;</span>Centroid-Based</div>
+  <div class="mod-tab" onclick="showModule(2)"><span class="num">&#9314;</span>Density-Based</div>
+  <div class="mod-tab" onclick="showModule(3)"><span class="num">&#9315;</span>Connectivity-Based</div>
+  <div class="mod-tab" onclick="showModule(4)"><span class="num">&#9316;</span>Distribution-Based</div>
+  <div class="mod-tab" onclick="showModule(5)"><span class="num">&#127942;</span>Final Challenge</div>
+</div>
+
+<!-- MODULE 0 — WHAT IS CLUSTERING? -->
+<div class="module active" id="mod0">
+  <div class="sec-title">What is Clustering?</div>
+  <p class="sec-sub">Clustering is <em>Unsupervised Learning</em> — no labels, no right answers. You hand the algorithm raw data and ask: <strong>"Do you see any natural groups?"</strong></p>
+
+  <div style="background:white;border:2px solid var(--ink);border-radius:16px;padding:22px;margin:20px 0;box-shadow:4px 4px 0 var(--ink)">
+    <div style="font-size:1.4em;margin-bottom:10px">🏪 Start Here: The New Meesho Seller Dilemma</div>
+    <p style="font-size:.93em;color:#333;line-height:1.8;margin-bottom:14px">Meesho has 12 lakh active sellers. Their Head of Growth asks: <strong>"Who are our different types of sellers? We can't send the same offer to everyone."</strong> But nobody has labelled the sellers into categories — there's no column that says "Premium Seller" or "Casual Reseller." The data just has: order volume, average selling price, return rate, category spread, active days per month. <strong>Clustering's job: look at this raw data and automatically discover natural seller groups.</strong></p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div style="background:#fef3c7;border-radius:10px;padding:14px;border-left:4px solid var(--gold)">
+        <div style="font-weight:800;color:#92400e;margin-bottom:7px">⚠️ Supervised Learning (needs labels)</div>
+        <div style="font-size:.85em;color:#78350f;line-height:1.7">Regression: predict flat price → needs past prices (labels!)<br>Classification: is this fraud? → needs historical fraud labels!<br>Both require: someone labelled examples first. Labels are expensive to get. Sometimes impossible.</div>
+      </div>
+      <div style="background:#f0fdf4;border-radius:10px;padding:14px;border-left:4px solid var(--accent3)">
+        <div style="font-weight:800;color:#14532d;margin-bottom:7px">✅ Unsupervised Learning — Clustering</div>
+        <div style="font-size:.85em;color:#166534;line-height:1.7">No labels needed! Just give raw data.<br>The algorithm finds structure that already exists in the data.<br>Works on new domains where no expert has labelled anything yet. Discovers what you didn't know to look for.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="theory-slide">
+    <div class="ts-tag">Theory — The Big Picture</div>
+    <h3>Clustering in Plain English: "Find data points that are similar to each other and different from everything else"</h3>
+    <p>A cluster is a group of data points where members are <strong>similar within</strong> the group but <strong>dissimilar to</strong> other groups. The algorithm uses a mathematical measure of "distance" or "similarity" to figure out what belongs together.</p>
+    <div class="theory-bullets">
+      <div class="t-bullet"><strong>No Labels Required</strong>Unlike classification (which learns from labelled examples), clustering discovers structure from scratch. You don't need to know the categories beforehand. This is revolutionary for exploratory data analysis.</div>
+      <div class="t-bullet"><strong>Distance = Similarity</strong>Most clustering algorithms use a distance metric. Small distance = similar = same cluster. Large distance = different = different clusters. Euclidean distance (straight line) is most common, but others exist for text, images, time-series.</div>
+      <div class="t-bullet"><strong>What is a "Good" Cluster?</strong>High Intra-cluster cohesion: points within a cluster are close together. High Inter-cluster separation: different clusters are far apart. A good clustering has tight, well-separated groups.</div>
+      <div class="t-bullet"><strong>Not One-Size-Fits-All</strong>Data can be clustered in infinitely many ways. The "correct" clustering depends on your goal. Customer data might cluster differently for marketing vs fraud detection. The algorithm is a tool — interpretation is human judgment.</div>
+    </div>
+  </div>
+
+  <div class="divider"><span>the 4 clustering families</span></div>
+  <p style="font-size:.93em;color:#444;margin-bottom:16px;line-height:1.7">Click each family to see what makes it unique. We'll explore each deeply in the following modules.</p>
+
+  <div class="clust-type-grid" id="clustTypeGrid">
+    <div class="clust-card" style="border-top:5px solid var(--c1)" onclick="showClustCard('centroid',this)">
+      <div class="cc-icon">⭕</div>
+      <div class="cc-tag" style="color:var(--c1)">Family 1</div>
+      <div class="cc-name">Centroid-Based</div>
+      <div class="cc-desc">Groups defined by their centre point. Assign each point to nearest centre. Classic algorithm: K-Means.</div>
+    </div>
+    <div class="clust-card" style="border-top:5px solid var(--c2)" onclick="showClustCard('density',this)">
+      <div class="cc-icon">🌌</div>
+      <div class="cc-tag" style="color:var(--c2)">Family 2</div>
+      <div class="cc-name">Density-Based</div>
+      <div class="cc-desc">Groups defined by dense regions separated by sparse space. Finds odd shapes, handles noise. Classic: DBSCAN.</div>
+    </div>
+    <div class="clust-card" style="border-top:5px solid var(--c3)" onclick="showClustCard('hierarchy',this)">
+      <div class="cc-icon">🌳</div>
+      <div class="cc-tag" style="color:var(--c3)">Family 3</div>
+      <div class="cc-name">Connectivity-Based</div>
+      <div class="cc-desc">Groups defined by connectivity/proximity tree. Creates a full hierarchy — zoom in or out. Classic: Hierarchical/Agglomerative.</div>
+    </div>
+    <div class="clust-card" style="border-top:5px solid var(--c4)" onclick="showClustCard('distribution',this)">
+      <div class="cc-icon">🎲</div>
+      <div class="cc-tag" style="color:var(--c4)">Family 4</div>
+      <div class="cc-name">Distribution-Based</div>
+      <div class="cc-desc">Groups defined by statistical probability distributions. Soft assignment — each point belongs to all clusters with different probabilities. Classic: GMM.</div>
+    </div>
+  </div>
+
+  <div class="clust-detail" id="clustDetailPanel">
+    <div id="clustDetailContent"></div>
+  </div>
+
+  <div class="divider"><span>supervised vs unsupervised — the definitive comparison</span></div>
+  <table class="cmp-table">
+    <thead><tr><th>Dimension</th><th>Supervised (Classification/Regression)</th><th>Unsupervised (Clustering)</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Training data needed</strong></td><td>Labelled: (features, answer) pairs</td><td>Unlabelled: features only, no answers</td></tr>
+      <tr><td><strong>Goal</strong></td><td>Learn mapping from features to known labels</td><td>Discover unknown structure in data</td></tr>
+      <tr><td><strong>Indian example 1</strong></td><td>Predict CIBIL score → needs historical scores</td><td>Discover borrower types → no labels needed</td></tr>
+      <tr><td><strong>Indian example 2</strong></td><td>Classify cancer as benign/malignant → needs pathologist labels</td><td>Discover cancer subtypes → no prior classification needed</td></tr>
+      <tr><td><strong>Evaluation</strong></td><td>Clear: accuracy, RMSE vs actual labels</td><td>Tricky: inertia, silhouette score, domain judgment</td></tr>
+      <tr><td><strong>When to use</strong></td><td>You know what categories/values to predict</td><td>Exploring unknown structure, no label budget, EDA</td></tr>
+    </tbody>
+  </table>
+
+  <div class="divider"><span>real-world clustering applications</span></div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin:16px 0">
+    <div style="background:white;border:2px solid var(--ink);border-radius:12px;padding:16px;box-shadow:3px 3px 0 var(--c1)">
+      <div style="font-size:1.8em;margin-bottom:8px">🛍️</div>
+      <div style="font-weight:800;margin-bottom:6px;font-size:.9em">Customer Segmentation</div>
+      <div style="font-size:.82em;color:#555;line-height:1.6">Amazon India segments 45Cr customers into behavioural clusters for personalised marketing campaigns</div>
+    </div>
+    <div style="background:white;border:2px solid var(--ink);border-radius:12px;padding:16px;box-shadow:3px 3px 0 var(--c2)">
+      <div style="font-size:1.8em;margin-bottom:8px">🦠</div>
+      <div style="font-weight:800;margin-bottom:6px;font-size:.9em">Disease Sub-typing</div>
+      <div style="font-size:.82em;color:#555;line-height:1.6">AIIMS clusters cancer patients by gene expression to discover treatment-relevant subtypes nobody knew existed</div>
+    </div>
+    <div style="background:white;border:2px solid var(--ink);border-radius:12px;padding:16px;box-shadow:3px 3px 0 var(--c3)">
+      <div style="font-size:1.8em;margin-bottom:8px">🗺️</div>
+      <div style="font-weight:800;margin-bottom:6px;font-size:.9em">Urban Planning</div>
+      <div style="font-size:.82em;color:#555;line-height:1.6">BEST (Mumbai buses) clusters transit demand zones to optimise route frequency and stop placement</div>
+    </div>
+    <div style="background:white;border:2px solid var(--ink);border-radius:12px;padding:16px;box-shadow:3px 3px 0 var(--c4)">
+      <div style="font-size:1.8em;margin-bottom:8px">🕵️</div>
+      <div style="font-weight:800;margin-bottom:6px;font-size:.9em">Anomaly Detection</div>
+      <div style="font-size:.82em;color:#555;line-height:1.6">UPI fraud: transactions that don't fit any normal cluster get flagged as potentially fraudulent</div>
+    </div>
+    <div style="background:white;border:2px solid var(--ink);border-radius:12px;padding:16px;box-shadow:3px 3px 0 var(--c5)">
+      <div style="font-size:1.8em;margin-bottom:8px">📰</div>
+      <div style="font-weight:800;margin-bottom:6px;font-size:.9em">Document Grouping</div>
+      <div style="font-size:.82em;color:#555;line-height:1.6">Google News clusters thousands of articles about the same event so you see one story, not 200 duplicates</div>
+    </div>
+    <div style="background:white;border:2px solid var(--ink);border-radius:12px;padding:16px;box-shadow:3px 3px 0 var(--c6)">
+      <div style="font-size:1.8em;margin-bottom:8px">📊</div>
+      <div style="font-weight:800;margin-bottom:6px;font-size:.9em">Market Research</div>
+      <div style="font-size:.82em;color:#555;line-height:1.6">Hindustan Unilever discovers distinct rural consumer segments from survey data to tailor sachets and pricing</div>
+    </div>
+  </div>
+
+  <div class="quiz-block">
+    <h4>✓ Quick Check — Module 0</h4>
+    <div class="q-prompt">Nykaa has 2 crore customers with purchase history but <strong>no pre-defined customer categories</strong>. They want to understand who their different types of customers are. Which approach is most appropriate?</div>
+    <div class="quiz-opt" onclick="checkQ('q0a',this,false)"><div class="marker">A</div>Classification — train a model to classify customers into categories</div>
+    <div class="quiz-opt" onclick="checkQ('q0a',this,true)"><div class="marker">B</div>Clustering — discover natural customer groups from purchase behaviour without needing predefined categories</div>
+    <div class="quiz-opt" onclick="checkQ('q0a',this,false)"><div class="marker">C</div>Regression — predict how much each customer will spend next month</div>
+    <div class="quiz-opt" onclick="checkQ('q0a',this,false)"><div class="marker">D</div>Supervised learning — impossible without labelled data</div>
+    <div class="q-feedback" id="q0a-fb"></div>
+  </div>
+
+  <div class="mod-nav-btns">
+    <div></div>
+    <button class="btn" onclick="showModule(1)">&#9313; Centroid-Based Clustering &#8594;</button>
+  </div>
+</div>
+
+<!-- MODULE 1 — CENTROID-BASED CLUSTERING -->
+<div class="module" id="mod1">
+  <div class="sec-title">Family 1: Centroid-Based Clustering</div>
+  <p class="sec-sub">The most popular clustering family. Define each cluster by its <em>centre point</em> (centroid). Every point belongs to the cluster of its nearest centroid.</p>
+
+  <div class="story-block">
+    <div class="story-icon">⭕</div>
+    <div class="story-body">
+      <h3>The City Pizza War Analogy</h3>
+      <p>Three pizza chains (Domino's, Pizza Hut, La Pino'z) are entering Pune and each wants to open exactly ONE branch. Where should each go? They all want to be closest to the maximum number of people — and no two should fight over the same customers. <strong>That's exactly the K-Means problem.</strong> Each pizza shop is a centroid. Each customer goes to their nearest shop. The shops iteratively move to the average location of their current customers until nobody moves anymore.</p>
+      <p>Result: three non-overlapping zones, each served by the nearest branch — a perfect partition of the city.</p>
+    </div>
+  </div>
+
+  <div class="theory-slide">
+    <div class="ts-tag">K-Means — The Algorithm</div>
+    <h3>K-Means: "Assign to nearest centre, then update centre, repeat"</h3>
+    <p>K-Means is an iterative algorithm. You specify K (number of clusters). It alternates between two steps until convergence. It's simple, fast, and scales to millions of points — making it the world's most-used clustering algorithm.</p>
+    <div class="theory-bullets">
+      <div class="t-bullet"><strong>Objective Function</strong>Minimise "Inertia" = sum of squared distances from each point to its cluster's centroid. Lower inertia = tighter, more compact clusters. K-Means finds a local minimum of this function.</div>
+      <div class="t-bullet"><strong>K-Means++ Initialisation</strong>Regular K-Means randomly places centroids (bad — random starts can give terrible results). K-Means++ places first centroid randomly, then each subsequent centroid far from existing ones. Much better convergence and final quality.</div>
+      <div class="t-bullet"><strong>Scale Your Features First!</strong>If one feature is in ₹ Lakhs (range 0-500) and another is in years (range 1-30), the ₹ feature will dominate distance calculations. Always StandardScaler or MinMaxScaler before K-Means.</div>
+      <div class="t-bullet"><strong>Assumptions</strong>Clusters are: (1) roughly spherical, (2) roughly equal size, (3) roughly equal density. K-Means struggles with elongated, crescent, or highly unequal clusters. Know these limitations!</div>
+    </div>
+  </div>
+
+  <div class="divider"><span>k-means step by step — the algorithm visualised</span></div>
+
+  <div class="flow-diagram">
+    <div style="font-family:var(--mono);font-size:.68em;color:#64748b;margin-bottom:12px">K-MEANS DATAFLOW — SWIGGY CUSTOMER SEGMENTATION (DELHI NCR)</div>
+    <div class="flow-row">
+      <div class="flow-node active-node"><div class="fn-icon">📊</div><div class="fn-label">Raw Data</div><div class="fn-sub">5L Delhi Swiggy users, order frequency + avg spend</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node"><div class="fn-icon">⚖️</div><div class="fn-label">Scale Features</div><div class="fn-sub">StandardScaler: mean=0, std=1</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node"><div class="fn-icon">🎯</div><div class="fn-label">Place K Centroids</div><div class="fn-sub">K-Means++: 4 smart starting points</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node"><div class="fn-icon">📏</div><div class="fn-label">Assign Points</div><div class="fn-sub">Each user → nearest centroid</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node"><div class="fn-icon">🔄</div><div class="fn-label">Update Centroids</div><div class="fn-sub">Move to mean of assigned points</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node result-node"><div class="fn-icon">✅</div><div class="fn-label">Converged!</div><div class="fn-sub">4 stable customer segments discovered</div></div>
+    </div>
+  </div>
+
+  <div class="step-timeline">
+    <div class="step-item">
+      <div class="step-num">ITERATION 1</div>
+      <div class="step-title">Step 1 — Random Initialisation (K-Means++)</div>
+      <div class="step-desc">Place 4 centroids: C1=(low spend, low freq), C2=(low spend, high freq), C3=(high spend, low freq), C4=(high spend, high freq). These are starting guesses — not yet meaningful segments.</div>
+    </div>
+    <div class="step-item">
+      <div class="step-num">ITERATION 1–15</div>
+      <div class="step-title">Step 2 — Assignment: Each point → nearest centroid</div>
+      <div class="step-desc">Calculate Euclidean distance from every user to all 4 centroids. A user with ₹250 avg spend and 3 orders/week is closest to C2 (medium spend, high freq). Assign them to Cluster 2. Repeat for all 5 lakh users.</div>
+    </div>
+    <div class="step-item">
+      <div class="step-num">ITERATION 1–15</div>
+      <div class="step-title">Step 3 — Update: Move centroid to average of its points</div>
+      <div class="step-desc">Cluster 2 now contains 1.2 lakh users. Compute average spend and average frequency across all 1.2L users. Move C2 to that average point. The centroid "migrates" toward the true centre of its group.</div>
+    </div>
+    <div class="step-item">
+      <div class="step-num">CONVERGED (iteration 15)</div>
+      <div class="step-title">Step 4 — Repeat until centroids stop moving</div>
+      <div class="step-desc">After 15 iterations, centroids barely move (change < 0.001). Stop. Four segments discovered: 🔴 Luxury Weekenders, 🔵 Daily Budget Eaters, 🟡 Occasional Splurgers, 🟢 Regular Mid-Spenders.</div>
+    </div>
+  </div>
+
+  <div class="math-story">
+    <h4>📐 K-Means Formula — Every Symbol Decoded</h4>
+    <p style="color:#aaa;font-size:.86em;margin-bottom:14px">The maths is simple: find centres that minimise the total distance from all points to their assigned centre.</p>
+    <div class="formula-display">Inertia = Σ (for each cluster k) Σ (for each point i in k) distance(pointᵢ, centroid_k)²</div>
+    <div class="formula-parts">
+      <div class="formula-part"><div class="fp-sym">Inertia</div><div class="fp-desc"><strong>The score to minimise.</strong> Sum of all squared distances from every point to its cluster centre. Smaller inertia = tighter, more compact clusters. K-Means is literally minimising this number.</div></div>
+      <div class="formula-part"><div class="fp-sym">distance²</div><div class="fp-desc"><strong>Squared Euclidean distance.</strong> For 2D: √[(x₁-x₂)² + (y₁-y₂)²]. Squaring penalises large distances more — one outlier far away counts more than many points slightly off. This is why K-Means hates outliers.</div></div>
+      <div class="formula-part"><div class="fp-sym">centroid_k</div><div class="fp-desc"><strong>The mean of all points in cluster k.</strong> centroid_k = (average of all x-values in cluster k, average of all y-values in cluster k). This is why it's called K-<em>Means</em> — the centroids ARE the means.</div></div>
+      <div class="formula-part"><div class="fp-sym">K</div><div class="fp-desc"><strong>Number of clusters — YOU choose this.</strong> This is K-Means' biggest challenge. Too small K → over-simplified segments. Too large K → trivial micro-segments. Use the Elbow Method or Silhouette Score to find the right K.</div></div>
+    </div>
+    <div style="background:#111;border-radius:10px;padding:14px;margin-top:14px;border-left:4px solid var(--gold)">
+      <div style="font-family:var(--mono);color:#fde68a;font-size:.86em;font-weight:700;margin-bottom:8px">🧮 Worked Example — Meesho Seller Segmentation</div>
+      <div style="color:#e2e8f0;font-size:.86em;line-height:2">
+        <strong>3 sellers, K=2, 2 features:</strong> [Orders/month, Avg Price ₹]<br>
+        Seller A: [200, 350] &nbsp; Seller B: [210, 320] &nbsp; Seller C: [5, 900]<br>
+        Centroid 1 starts at [200, 350] → distance from A: 0, B: √(100+900)≈31.6, C: √(38025+302500)≈583<br>
+        Centroid 2 starts at [5, 900] → A and B much closer to C1, C closer to C2<br>
+        <strong>After convergence:</strong> Cluster 1 = {A, B} [High-volume budget sellers], Cluster 2 = {C} [Low-volume premium seller]<br>
+        <span style="color:#fde68a">Inertia = (0² + 0²) + (31.6²) + (0² + 0²) = 998. Perfect separation!</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"><span>the elbow method — how to choose K</span></div>
+
+  <div class="interactive">
+    <h4>🎮 Elbow Method Playground <span class="tag">LIVE</span></h4>
+    <p style="font-size:.86em;color:#555;margin-bottom:14px">Drag K from 1 to 10 and watch inertia drop. The "elbow" is where adding more clusters gives diminishing returns — that's your optimal K. This is Nykaa's actual problem: how many customer segments is "just right"?</p>
+    <div class="elbow-wrap">
+      <div>
+        <div class="slider-wrap">
+          <div class="slider-label"><span>K (number of clusters)</span><span class="slider-val" id="kVal">3</span></div>
+          <input type="range" min="1" max="10" value="3" step="1" id="kSlider" oninput="updateElbow()">
+        </div>
+        <div style="background:#111;border-radius:10px;padding:14px;margin-top:8px">
+          <div style="color:#7dd3fc;font-family:var(--mono);font-size:.74em;margin-bottom:8px">LIVE METRICS</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div style="background:#1a1a1a;border-radius:8px;padding:10px;text-align:center">
+              <div style="font-family:var(--mono);font-size:1.2em;font-weight:700;color:#fde68a" id="inertia-display">--</div>
+              <div style="font-size:.68em;color:#888;margin-top:2px">Inertia</div>
+            </div>
+            <div style="background:#1a1a1a;border-radius:8px;padding:10px;text-align:center">
+              <div style="font-family:var(--mono);font-size:1.2em;font-weight:700;color:#86efac" id="silhouette-display">--</div>
+              <div style="font-size:.68em;color:#888;margin-top:2px">Silhouette Score</div>
+            </div>
+          </div>
+          <div id="elbow-verdict" style="margin-top:8px;font-size:.8em;padding:8px;background:#1e293b;border-radius:6px;color:#94a3b8;line-height:1.5"></div>
+        </div>
+        <div style="margin-top:12px;font-size:.82em;color:#555;line-height:1.7;background:var(--cream);border-radius:8px;padding:12px">
+          <strong>Silhouette Score</strong> ranges from -1 to +1. Close to +1 = well-separated clusters. Near 0 = overlapping. Negative = misclassified. Always cross-check inertia with silhouette for the best K.
+        </div>
+      </div>
+      <div class="chart-box" style="padding:8px">
+        <canvas id="elbowChart" height="240"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"><span>k-means live cluster visualiser</span></div>
+
+  <div class="interactive">
+    <h4>🎯 K-Means Visualiser <span class="tag">INTERACTIVE</span></h4>
+    <p style="font-size:.86em;color:#555;margin-bottom:14px">Swiggy Delhi customers plotted by order frequency vs average spend. Click "Run K-Means" to watch the algorithm find natural segments. Change K and see how segmentation changes.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start">
+      <div>
+        <div class="slider-wrap">
+          <div class="slider-label"><span>K clusters</span><span class="slider-val" id="kmK">4</span></div>
+          <input type="range" min="2" max="6" value="4" step="1" id="kmKSlider" oninput="document.getElementById('kmK').textContent=this.value">
+        </div>
+        <button class="btn" style="margin-top:8px;width:100%" onclick="runKMeans()">▶ Run K-Means</button>
+        <div id="kmResults" style="margin-top:10px;font-size:.82em;line-height:1.8;color:#444"></div>
+      </div>
+      <div class="chart-box" style="padding:8px">
+        <canvas id="kmVisChart" height="280"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"><span>k-means variants — beyond the classic</span></div>
+
+  <div class="clust-tab-bar">
+    <div class="clust-tab active" onclick="showTab('km','classic',this)">Classic K-Means</div>
+    <div class="clust-tab" onclick="showTab('km','kmedoids',this)">K-Medoids</div>
+    <div class="clust-tab" onclick="showTab('km','minibatch',this)">Mini-Batch K-Means</div>
+    <div class="clust-tab" onclick="showTab('km','kmedians',this)">K-Medians</div>
+  </div>
+
+  <div class="clust-panel active" id="km-classic">
+    <div class="use-case-strip">
+      <div class="uc-tag">Classic K-Means — When to Use</div>
+      <div class="uc-title">The workhorse: large data, spherical clusters, continuous features</div>
+      <div class="uc-grid">
+        <div class="uc-item"><div class="uc-org">Amazon India — Customer Segmentation</div><div class="uc-desc">45 crore users segmented by purchase frequency, category mix, return rate, review behaviour. K=7 segments drive personalised homepage content for each user group.</div></div>
+        <div class="uc-item"><div class="uc-org">Ola — Driver Supply Zones</div><div class="uc-desc">GPS trip data K-Means clustered into demand hotspots. Drivers routed to zones with high predicted demand clusters, reducing wait times by 18% in Bangalore trials.</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="clust-panel" id="km-kmedoids">
+    <div class="use-case-strip">
+      <div class="uc-tag">K-Medoids (PAM) — Outlier-Robust K-Means</div>
+      <div class="uc-title">Centroid = an actual data point, not a mathematical average. Robust to outliers.</div>
+      <div class="uc-grid">
+        <div class="uc-item"><div class="uc-org">Key Difference</div><div class="uc-desc">K-Means: centroid is the mathematical mean (may not exist in dataset). K-Medoids: centroid is an actual data point (the "most central" member). Much more interpretable — "Cluster X is most like this actual customer."</div></div>
+        <div class="uc-item"><div class="uc-org">HDFC Bank — Fraud Profiling</div><div class="uc-desc">K-Medoids clusters transaction patterns. Each cluster's representative is an actual real transaction — fraud investigators can examine the "archetypal fraud transaction" for each discovered fraud type.</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="clust-panel" id="km-minibatch">
+    <div class="use-case-strip">
+      <div class="uc-tag">Mini-Batch K-Means — For Massive Scale</div>
+      <div class="uc-title">Uses random mini-batches of data each iteration. 3-10x faster than regular K-Means, slightly less accurate.</div>
+      <div class="uc-grid">
+        <div class="uc-item"><div class="uc-org">Why It Matters</div><div class="uc-desc">Classic K-Means loads ALL data each iteration — impossible for 100M records. Mini-Batch K-Means uses 1,000-10,000 random samples per iteration. Converges faster. Slightly worse inertia but 10x speed.</div></div>
+        <div class="uc-item"><div class="uc-org">Flipkart — Real-time Personalisation</div><div class="uc-desc">During Big Billion Days sale, 1 crore new users join in 4 hours. Mini-Batch K-Means segments them in real-time, serving personalised deals within minutes of first interaction.</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="clust-panel" id="km-kmedians">
+    <div class="use-case-strip">
+      <div class="uc-tag">K-Medians — Median Instead of Mean</div>
+      <div class="uc-title">Centroid is the median of cluster points. More robust to outliers than K-Means, uses L1 distance.</div>
+      <div class="uc-grid">
+        <div class="uc-item"><div class="uc-org">When to Use</div><div class="uc-desc">Income data, property prices, salary data — all have extreme outliers. Billionaires skew means. K-Medians uses median income as cluster centre, giving more realistic segment profiles for policy analysis.</div></div>
+        <div class="uc-item"><div class="uc-org">RBI — Household Income Segmentation</div><div class="uc-desc">NSO survey data clustering using K-Medians. Billionaire households don't drag "affluent" cluster centre upward. Honest income bands for targeted government scheme eligibility.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"><span>k-means — strengths, limitations, and when NOT to use</span></div>
+
+  <div class="compare-grid">
+    <div class="compare-card" style="border-color:var(--accent3)">
+      <h5 style="color:var(--accent3)">✅ K-Means Strengths</h5>
+      <p>Lightning fast: O(n × K × iterations). Scales to millions of records. Works great with spherical, similar-size clusters. Produces clear, interpretable segment centres. Easy to explain: "Cluster 3's average customer orders 5x/week and spends ₹400."</p>
+    </div>
+    <div class="compare-card" style="border-color:var(--red)">
+      <h5 style="color:var(--red)">⚠️ K-Means Limitations</h5>
+      <p>Must pre-specify K — and wrong K gives meaningless segments. Struggles with non-spherical clusters (crescents, rings, S-shapes). Sensitive to outliers (one extreme point pulls centroid far). Random initialisation can give different results each run. All clusters treated as equal size and density.</p>
+    </div>
+  </div>
+
+  <div class="warn-strip">⚡ <strong>K-Means Failure Case — The Ring Problem:</strong> If your data has two concentric rings (inner ring = one cluster, outer ring = another), K-Means will fail completely. It splits the circles by straight lines, mixing inner and outer ring members. This is where density-based clustering (Module 2) shines.</div>
+
+  <div class="dataset-box">
+    <h4>🛍️ Meesho Seller Dataset — 12 Sellers, K=3 Clusters Found</h4>
+    <div class="ds-context">After K-Means with K=3, three seller archetypes emerge. See how tight each cluster is (small within-cluster distances = good segmentation).</div>
+    <div style="overflow-x:auto">
+    <table class="data-table">
+      <thead><tr><th>Seller</th><th>Orders/Month</th><th>Avg Price ₹</th><th>Return %</th><th>Categories</th><th>Cluster</th><th>Segment Name</th></tr></thead>
+      <tbody>
+        <tr><td>Rekha Fashions</td><td class="hi">320</td><td>280</td><td>8%</td><td>3</td><td class="c1">● 1</td><td class="c1">Power Seller</td></tr>
+        <tr><td>Star Boutique</td><td class="hi">280</td><td>310</td><td>6%</td><td>4</td><td class="c1">● 1</td><td class="c1">Power Seller</td></tr>
+        <tr><td>Delhi Crafts</td><td class="hi">350</td><td>250</td><td>10%</td><td>5</td><td class="c1">● 1</td><td class="c1">Power Seller</td></tr>
+        <tr><td>Sunita Home</td><td class="hi">45</td><td>180</td><td>15%</td><td>2</td><td class="c2">● 2</td><td class="c2">Casual Reseller</td></tr>
+        <tr><td>Priya Gifts</td><td class="hi">60</td><td>200</td><td>12%</td><td>1</td><td class="c2">● 2</td><td class="c2">Casual Reseller</td></tr>
+        <tr><td>Krishna Store</td><td class="hi">38</td><td>160</td><td>18%</td><td>2</td><td class="c2">● 2</td><td class="c2">Casual Reseller</td></tr>
+        <tr><td>Luxury Silks</td><td class="hi">8</td><td>2800</td><td>3%</td><td>1</td><td class="c3">● 3</td><td class="c3">Premium Boutique</td></tr>
+        <tr><td>Zardozi House</td><td class="hi">12</td><td>3200</td><td>2%</td><td>2</td><td class="c3">● 3</td><td class="c3">Premium Boutique</td></tr>
+        <tr><td>Bridal Gallery</td><td class="hi">6</td><td>4500</td><td>1%</td><td>1</td><td class="c3">● 3</td><td class="c3">Premium Boutique</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <div style="margin-top:12px;padding:12px 14px;background:#0a1628;border-radius:8px;font-size:.84em;color:#93c5fd;line-height:1.8">
+      💡 <strong>Cluster Interpretation:</strong> K-Means found 3 natural seller types without being told they exist!<br>
+      <span style="color:#c4b5fd">● Cluster 1 (Power Sellers)</span>: High volume, medium price → priority onboarding support & logistics discounts<br>
+      <span style="color:#93c5fd">● Cluster 2 (Casual Resellers)</span>: Low volume, low price → automated self-serve tools & tutorials<br>
+      <span style="color:#86efac">● Cluster 3 (Premium Boutiques)</span>: Very low volume, very high price → white-glove service & photography assistance
+    </div>
+  </div>
+
+  <div class="challenge-toggle">
+    <div class="ch-header" onclick="toggleCh('ch_kmeans')">
+      <div class="ch-left"><div class="ch-icon">🧩</div>
+        <div><div class="ch-title">Brain Teaser: Why does K-Means sometimes give different results?</div><div class="ch-sub">A data scientist ran K-Means 5 times on the same data and got 5 different segmentations. Bug or feature?</div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px"><span class="ch-badge med">+15 pts</span><span class="ch-arrow" id="ch_kmeans-arrow">▼</span></div>
+    </div>
+    <div class="ch-body" id="ch_kmeans-body">
+      <p style="font-size:.93em;line-height:1.7;margin-bottom:12px">A Flipkart data scientist ran K-Means with K=4 on customer data. First run: inertia=1,230. Second run (same data, same K): inertia=1,450. Third run: inertia=1,190. Is the algorithm broken?</p>
+      <div class="quiz-opt" onclick="checkQ('bt_kmeans',this,false)"><div class="marker">A</div>Yes — a correct algorithm should always give the same answer on the same data. This indicates a bug.</div>
+      <div class="quiz-opt" onclick="checkQ('bt_kmeans',this,true)"><div class="marker">B</div>No — K-Means uses random initialisation each run, so it can converge to different local minima. This is expected. Always run multiple times (n_init=10) and keep the lowest inertia result. K-Means++ helps but doesn't fully solve this.</div>
+      <div class="quiz-opt" onclick="checkQ('bt_kmeans',this,false)"><div class="marker">C</div>No — the different inertias mean different K values were used.</div>
+      <div class="q-feedback" id="bt_kmeans-fb"></div>
+      <div style="margin-top:12px;padding:12px;background:#eff6ff;border-radius:8px;font-size:.85em;line-height:1.7">
+        💡 <strong>Fix:</strong> In Python's scikit-learn, set <code style="background:#dbeafe;padding:1px 5px;border-radius:4px">n_init=10</code> (run 10 times, keep best) and <code style="background:#dbeafe;padding:1px 5px;border-radius:4px">init='k-means++'</code>. K-Means is non-deterministic. The run with lowest inertia is kept. This is standard practice — not a flaw to worry about.
+      </div>
+    </div>
+  </div>
+
+  <div class="quiz-block">
+    <h4>✓ Knowledge Check — Centroid-Based Clustering</h4>
+    <div class="q-prompt">Britannia wants to segment 500 biscuit SKUs by sales velocity and profit margin using K-Means. After standardising features, K=4 gives inertia=8,200 and K=5 gives inertia=8,150. K=6 gives inertia=8,100. What should Britannia do?</div>
+    <div class="quiz-opt" onclick="checkQ('q1a',this,false)"><div class="marker">A</div>Always choose K=6 since it gives the lowest inertia — more clusters always improve the model.</div>
+    <div class="quiz-opt" onclick="checkQ('q1a',this,true)"><div class="marker">B</div>Use K=4 or K=5. Inertia drops from K=4 to K=5 are tiny (50 and 50 points) — classic elbow. Adding more clusters gives negligible tighter clusters but more complexity to interpret and act on.</div>
+    <div class="quiz-opt" onclick="checkQ('q1a',this,false)"><div class="marker">C</div>Use K=6 always because higher K = better separation = better model.</div>
+    <div class="quiz-opt" onclick="checkQ('q1a',this,false)"><div class="marker">D</div>None — K-Means is inappropriate for product segmentation.</div>
+    <div class="q-feedback" id="q1a-fb"></div>
+  </div>
+
+  <div class="mod-nav-btns">
+    <button class="btn btn-ghost" onclick="showModule(0)">← What is Clustering?</button>
+    <button class="btn" onclick="showModule(2)">&#9314; Density-Based &#8594;</button>
+  </div>
+</div>
+
+<!-- MODULE 2 — DENSITY-BASED CLUSTERING -->
+<div class="module" id="mod2">
+  <div class="sec-title">Family 2: Density-Based Clustering</div>
+  <p class="sec-sub">Don't define clusters by their centres — define them by <em>dense regions of space</em> separated by sparse space. Find any shape, handle noise automatically.</p>
+
+  <div class="story-block">
+    <div class="story-icon">🌌</div>
+    <div class="story-body">
+      <h3>The Mumbai Local Train Crowd Analogy</h3>
+      <p>Imagine plotting every person standing on a Mumbai local train platform at rush hour. You'll see: <strong>dense crowds near entry gates</strong>, <strong>another dense crowd near the escalator</strong>, <strong>sparse space in between</strong>, and a few <strong>isolated people standing at the far ends</strong>. DBSCAN works exactly like your eyes: "wherever I see a dense crowd, that's a cluster. The sparse space between crowds is the boundary. The isolated people at the far ends? They're <em>noise</em> — they don't fit any cluster."</p>
+      <p>K-Means would have forced ALL people into K groups — even the isolated stragglers. DBSCAN says "some points just don't belong to any cluster" — and that's perfectly fine.</p>
+    </div>
+  </div>
+
+  <div class="theory-slide">
+    <div class="ts-tag">DBSCAN — Density-Based Spatial Clustering of Applications with Noise</div>
+    <h3>DBSCAN: "A cluster is a dense region. Noise is what's left over."</h3>
+    <p>DBSCAN needs only two parameters: <strong>ε (epsilon)</strong> — how far to look for neighbours, and <strong>MinPts</strong> — minimum neighbours to be called "dense." It requires no pre-specified K. It discovers clusters of any shape. It explicitly labels outliers as noise (label = -1).</p>
+    <div class="theory-bullets">
+      <div class="t-bullet"><strong>Three Point Types</strong>Core Point: has ≥ MinPts neighbours within ε radius. Border Point: within ε of a core point but fewer than MinPts neighbours itself. Noise Point: not within ε of any core point. Noise = outlier = cluster label -1.</div>
+      <div class="t-bullet"><strong>Density-Reachability</strong>Point A is "density-connected" to B if there's a chain of core points linking them. All density-connected core points form a cluster. Border points attach to their core point's cluster. Noise is left out.</div>
+      <div class="t-bullet"><strong>No K Needed!</strong>You don't specify how many clusters to find. The algorithm discovers whatever number of dense regions exist. Result could be 3 clusters, or 17, or 1. This is DBSCAN's superpower for exploratory analysis.</div>
+      <div class="t-bullet"><strong>Scale Your Features</strong>ε is in the actual distance units. If features aren't scaled, ε has no meaningful interpretation. Always StandardScaler first, then choose ε as a fraction of the standardised space (rule of thumb: start with 0.3–0.5).</div>
+    </div>
+  </div>
+
+  <div class="divider"><span>dbscan step by step — explained with chai stalls in delhi</span></div>
+
+  <div style="background:#0f172a;border-radius:14px;padding:22px;margin:16px 0;border:2px solid #1e293b">
+    <div style="font-family:var(--mono);font-size:.68em;color:#64748b;margin-bottom:14px">DBSCAN MENTAL MODEL — CHAI STALLS IN CONNAUGHT PLACE, DELHI</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;font-size:.84em">
+      <div style="background:#2d1b69;border-radius:10px;padding:14px;border:1px solid #7c3aed">
+        <div style="color:#c4b5fd;font-family:var(--mono);font-size:.72em;margin-bottom:8px;font-weight:700">ε = 50 metres, MinPts = 3</div>
+        <div style="color:#e2e8f0;line-height:1.75">Think of each chai stall as a data point. Draw a 50m circle around any stall. If 3+ other stalls fall in that circle → it's a <strong style="color:#c4b5fd">Core Stall</strong> (dense area).</div>
+      </div>
+      <div style="background:#1e3a5f;border-radius:10px;padding:14px;border:1px solid #2563eb">
+        <div style="color:#93c5fd;font-family:var(--mono);font-size:.72em;margin-bottom:8px;font-weight:700">Border Stalls</div>
+        <div style="color:#e2e8f0;line-height:1.75">A stall within 50m of a core stall but itself has fewer than 3 nearby stalls = <strong style="color:#93c5fd">Border Stall</strong>. It's part of the cluster but on the edge of the dense area.</div>
+      </div>
+      <div style="background:#1c1917;border-radius:10px;padding:14px;border:1px solid #57534e">
+        <div style="color:#d6d3d1;font-family:var(--mono);font-size:.72em;margin-bottom:8px;font-weight:700">Noise Stalls</div>
+        <div style="color:#e2e8f0;line-height:1.75">A stall far from all other stalls → <strong style="color:#fca5a5">Noise</strong>. It's an outlier. Not in any cluster. DBSCAN explicitly marks these — extremely useful for anomaly detection!</div>
+      </div>
+    </div>
+    <div style="margin-top:14px;display:grid;grid-template-columns:1fr;gap:8px">
+      <div style="background:#1e293b;border-radius:8px;padding:12px;font-size:.84em;color:#e2e8f0;line-height:1.8">
+        <strong style="color:#fde68a">Result:</strong> DBSCAN finds: 📍 Cluster 1 = CP Inner Circle stalls (dense, 18 stalls), 📍 Cluster 2 = CP Outer Circle stalls (medium density, 12 stalls), 📍 Cluster 3 = Janpath market stalls (dense, 9 stalls). ⚠️ Noise = 4 isolated stalls in alleys — these might be interesting! Why are they isolated? Parking restrictions? Police harassment? Worth investigating.
+      </div>
+    </div>
+  </div>
+
+  <div class="flow-diagram">
+    <div style="font-family:var(--mono);font-size:.68em;color:#64748b;margin-bottom:12px">DBSCAN DATAFLOW — UPI FRAUD TRANSACTION DETECTION (NPCI)</div>
+    <div class="flow-row">
+      <div class="flow-node active-node"><div class="fn-icon">💳</div><div class="fn-label">UPI Transactions</div><div class="fn-sub">10 crore/day: amount, time, merchant, location</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node"><div class="fn-icon">⚖️</div><div class="fn-label">Scale Features</div><div class="fn-sub">Normalise amount, time, location to [0,1]</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node"><div class="fn-icon">🎯</div><div class="fn-label">Set ε, MinPts</div><div class="fn-sub">ε=0.1, MinPts=50 (dense = normal transactions)</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node"><div class="fn-icon">🔍</div><div class="fn-label">Label Points</div><div class="fn-sub">Core/Border/Noise per transaction</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node result-node"><div class="fn-icon">🚨</div><div class="fn-label">Noise = Fraud?</div><div class="fn-sub">Unusual transactions → human review queue</div></div>
+    </div>
+  </div>
+
+  <div class="math-story">
+    <h4>🔢 DBSCAN Parameters — Decoded Simply</h4>
+    <p style="color:#aaa;font-size:.86em;margin-bottom:14px">DBSCAN has only two parameters but choosing them correctly determines success. Here's how to think about each.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+      <div style="background:#1a1a1a;border-radius:10px;padding:14px;border-left:4px solid var(--accent)">
+        <div style="font-family:var(--mono);color:#c4b5fd;font-size:.78em;font-weight:700;margin-bottom:8px">ε (epsilon) — Neighbourhood Radius</div>
+        <div style="color:#e2e8f0;font-size:.86em;line-height:1.8">How far to look for neighbours. Too small: everything is noise. Too large: everything merges into one cluster.<br><br><strong style="color:#a5b4fc">How to choose:</strong> Plot the k-distance graph (distance to k-th nearest neighbour for each point). Find the "knee" in the curve. That distance is your ε.</div>
+      </div>
+      <div style="background:#1a1a1a;border-radius:10px;padding:14px;border-left:4px solid var(--gold)">
+        <div style="font-family:var(--mono);color:#fde68a;font-size:.78em;font-weight:700;margin-bottom:8px">MinPts — Minimum Neighbours for Dense</div>
+        <div style="color:#e2e8f0;font-size:.86em;line-height:1.8">How many points must be within ε to call the region "dense." Too small: lots of false core points. Too large: everything becomes noise.<br><br><strong style="color:#fde68a">Rule of thumb:</strong> MinPts ≥ number of features + 1. For 2D data: MinPts = 3–4. For 10D data: MinPts = 11–15. Higher MinPts = stricter definition of "dense."</div>
+      </div>
+    </div>
+    <div style="background:#111;border-radius:10px;padding:14px;border-left:4px solid var(--accent3)">
+      <div style="font-family:var(--mono);color:#86efac;font-size:.86em;font-weight:700;margin-bottom:8px">🏥 Worked Example: AIIMS Patient Clustering</div>
+      <div style="color:#e2e8f0;font-size:.86em;line-height:2">
+        <strong>Dataset:</strong> 50,000 diabetes patients, features: HbA1c level, BMI, age, fasting glucose, insulin resistance<br>
+        <strong>After standardisation:</strong> all features on same scale. Set ε=0.5, MinPts=5<br>
+        <strong>DBSCAN finds:</strong> Cluster 1 (18,000 pts) = Type 2 early stage (dense region in low HbA1c, high BMI space)<br>
+        Cluster 2 (12,000 pts) = Insulin-resistant adolescents (dense in high insulin, low age space)<br>
+        Cluster 3 (8,000 pts) = Elderly late-stage (dense in very high HbA1c, older age space)<br>
+        <span style="color:#fca5a5">⚠️ 2,000 pts labelled NOISE</span> → These patients don't fit any known diabetic profile → <strong style="color:#86efac">prioritise for specialist review!</strong>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"><span>interactive — tune ε and minpts yourself</span></div>
+
+  <div class="interactive">
+    <h4>🎯 DBSCAN Core / Border / Noise Simulator <span class="tag">INTERACTIVE</span></h4>
+    <p style="font-size:.86em;color:#555;margin-bottom:14px">30 Zomato restaurant locations across Chennai — three natural neighbourhood clusters (T Nagar, Anna Nagar, OMR) plus a handful of isolated outliers in industrial zones. Drag both sliders and watch every point get reclassified live, exactly as DBSCAN would.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start">
+      <div>
+        <div class="slider-wrap">
+          <div class="slider-label"><span>ε (epsilon) — neighbourhood radius</span><span class="slider-val" id="dbEpsVal">1.0</span></div>
+          <input type="range" min="0.3" max="3" value="1.0" step="0.1" id="dbEpsSlider" oninput="updateDBSCAN()">
+        </div>
+        <div class="slider-wrap">
+          <div class="slider-label"><span>MinPts — minimum neighbours to be "dense"</span><span class="slider-val" id="dbMinPtsVal">4</span></div>
+          <input type="range" min="2" max="9" value="4" step="1" id="dbMinPtsSlider" oninput="updateDBSCAN()">
+        </div>
+        <div style="background:#111;border-radius:10px;padding:14px;margin-top:8px">
+          <div style="color:#7dd3fc;font-family:var(--mono);font-size:.74em;margin-bottom:8px">CLASSIFICATION RESULT</div>
+          <div id="dbscanResults" style="font-size:.86em;color:#e2e8f0;line-height:1.9"></div>
+        </div>
+        <div class="info-strip" style="margin-top:12px">💡 Bigger dots = <strong>core points</strong> (≥ MinPts neighbours within ε). Smaller coloured dots = <strong>border points</strong>. Grey dots with a red outline = <strong>noise</strong>. The dashed purple circle shows one real ε-radius neighbourhood in action — shrink or grow ε and watch it change size.</div>
+      </div>
+      <div class="chart-box" style="padding:8px">
+        <canvas id="dbscanChart" height="280"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"><span>choosing ε without guessing — the k-distance graph</span></div>
+
+  <div style="background:#0f172a;border-radius:14px;padding:20px;margin:16px 0;border:2px solid #1e293b">
+    <div style="font-family:var(--mono);font-size:.68em;color:#64748b;margin-bottom:12px">HOW PRACTITIONERS ACTUALLY PICK ε — THE K-DISTANCE (KNEE) PLOT</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:center">
+      <svg viewBox="0 0 300 190" style="width:100%;height:auto;max-height:190px">
+        <line x1="30" y1="10" x2="30" y2="165" stroke="#334155" stroke-width="1.5"/>
+        <line x1="30" y1="165" x2="290" y2="165" stroke="#334155" stroke-width="1.5"/>
+        <text x="6" y="12" font-family="var(--mono)" font-size="9" fill="#64748b">dist</text>
+        <text x="255" y="180" font-family="var(--mono)" font-size="9" fill="#64748b">points, sorted</text>
+        <path d="M30,158 C90,155 130,150 165,138 C185,128 195,105 205,75 C215,48 225,25 290,15" fill="none" stroke="#7dd3fc" stroke-width="2.5"/>
+        <circle cx="192" cy="92" r="5" fill="#d97706"/>
+        <line x1="192" y1="92" x2="192" y2="165" stroke="#d97706" stroke-width="1.5" stroke-dasharray="4,3"/>
+        <line x1="30" y1="92" x2="192" y2="92" stroke="#d97706" stroke-width="1.5" stroke-dasharray="4,3"/>
+        <text x="196" y="88" font-family="var(--mono)" font-size="10" fill="#fde68a" font-weight="700">"knee"</text>
+        <text x="4" y="96" font-family="var(--mono)" font-size="9" fill="#fde68a">ε*</text>
+      </svg>
+      <div style="color:#e2e8f0;font-size:.86em;line-height:1.8">
+        For every point, compute the distance to its <strong style="color:#7dd3fc">k-th nearest neighbour</strong> (k ≈ MinPts). Sort these distances and plot them. Flat region = normal spacing inside dense areas. Sudden rise = points that are starting to look like outliers. The <strong style="color:#fde68a">"knee"</strong> — where the curve bends sharply upward — is the natural cutoff. Read off the y-value at the knee and use it as ε. This turns an eyeballed guess into a data-driven choice, and is exactly what the <code style="background:#1e293b;padding:1px 5px;border-radius:4px">sklearn.neighbors.NearestNeighbors</code> + sorted-distance-plot recipe does in practice.
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"><span>hdbscan — the modern evolution</span></div>
+
+  <div style="background:white;border:2px solid var(--ink);border-radius:16px;padding:22px;margin:16px 0;box-shadow:4px 4px 0 var(--ink)">
+    <div style="font-size:1.3em;font-weight:800;margin-bottom:10px">🚀 HDBSCAN: Hierarchical DBSCAN — DBSCAN's Smarter Sibling</div>
+    <p style="font-size:.93em;line-height:1.8;margin-bottom:14px">Regular DBSCAN has one flaw: you need a single ε for the whole dataset. But real data has clusters of varying density (some tight, some loose). HDBSCAN adapts ε per-cluster, finding dense sub-communities even when global density varies.</p>
+    <div class="analogy-box">
+      <div class="ana-side ana-left">
+        <h5>🟡 DBSCAN (single ε)</h5>
+        <p>Like a fishing net with fixed mesh size. Catches fish of one size perfectly. Misses tiny fish (they fall through) and struggles with very large fish.</p>
+        <p>Problem: Mumbai's dense Dharavi (100,000 shops/km²) and suburban Navi Mumbai (50 shops/km²) need very different ε values. One ε can't serve both.</p>
+      </div>
+      <div class="ana-side ana-right">
+        <h5>🔵 HDBSCAN (adaptive)</h5>
+        <p>Adaptive mesh net. Finds clusters at any density level. Uses a hierarchy and extracts the "most stable" clusters automatically.</p>
+        <p>Result: discovers BOTH the ultra-dense Dharavi cluster AND the lower-density Navi Mumbai cluster in the same run. No parameter tuning needed.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"><span>optics — ordering points to identify clustering structure</span></div>
+
+  <div class="use-case-strip">
+    <div class="uc-tag">OPTICS Algorithm — Beyond DBSCAN</div>
+    <div class="uc-title">OPTICS creates a "reachability plot" — visualise ALL possible ε values at once, then pick clusters interactively</div>
+    <div class="uc-grid">
+      <div class="uc-item"><div class="uc-org">Key Innovation</div><div class="uc-desc">Instead of running DBSCAN with one fixed ε, OPTICS orders all points by density and creates a reachability distance plot. Valleys in the plot = dense clusters. Peaks = sparse regions between clusters. User visually selects cluster boundaries.</div></div>
+      <div class="uc-item"><div class="uc-org">Smart City Application — NMMC Navi Mumbai</div><div class="uc-desc">Street-level crime data clustered with OPTICS. High-crime hotspots (deep valleys in plot) get police patrols. Low-crime zones (peaks) deprioritised. OPTICS found 23 distinct crime hotspots without specifying ε in advance.</div></div>
+    </div>
+  </div>
+
+  <div class="compare-grid">
+    <div class="compare-card" style="border-color:var(--accent3)">
+      <h5 style="color:var(--accent3)">✅ Density-Based Strengths</h5>
+      <p>Finds clusters of any shape (crescents, spirals, rings — shapes K-Means cannot handle). No need to specify K in advance. Explicitly identifies outliers/noise — very useful for anomaly detection. Robust to outliers — they don't corrupt the cluster definition.</p>
+    </div>
+    <div class="compare-card" style="border-color:var(--red)">
+      <h5 style="color:var(--red)">⚠️ Density-Based Limitations</h5>
+      <p>Struggles with varying density clusters (HDBSCAN helps). ε and MinPts are hard to tune. Doesn't scale as well as K-Means to massive datasets. Fails with high-dimensional data (curse of dimensionality makes all points equidistant). Not great when clusters really are spherical and equal-sized.</p>
+    </div>
+  </div>
+
+  <div class="quiz-block">
+    <h4>✓ Knowledge Check — Density-Based Clustering</h4>
+    <div class="q-prompt">A Zomato data scientist plots restaurant locations in Chennai. Most restaurants form 3 clear neighbourhood clusters, but there are 15 restaurants scattered in industrial zones far from any cluster. She runs DBSCAN. What happens to those 15 isolated restaurants?</div>
+    <div class="quiz-opt" onclick="checkQ('q2a',this,false)"><div class="marker">A</div>They're forced into the nearest of the 3 clusters since every point must belong to a cluster.</div>
+    <div class="quiz-opt" onclick="checkQ('q2a',this,true)"><div class="marker">B</div>DBSCAN labels them as noise (cluster = -1). They form no cluster. This is DBSCAN's feature — it identifies genuine outliers rather than forcing them into inappropriate groups.</div>
+    <div class="quiz-opt" onclick="checkQ('q2a',this,false)"><div class="marker">C</div>They form a 4th cluster since DBSCAN always finds K+1 clusters.</div>
+    <div class="quiz-opt" onclick="checkQ('q2a',this,false)"><div class="marker">D</div>DBSCAN crashes when it encounters isolated points.</div>
+    <div class="q-feedback" id="q2a-fb"></div>
+  </div>
+
+  <div class="mod-nav-btns">
+    <button class="btn btn-ghost" onclick="showModule(1)">← Centroid-Based</button>
+    <button class="btn" onclick="showModule(3)">&#9315; Connectivity-Based &#8594;</button>
+  </div>
+</div>
+
+<!-- MODULE 3 — CONNECTIVITY-BASED CLUSTERING -->
+<div class="module" id="mod3">
+  <div class="sec-title">Family 3: Connectivity-Based Clustering</div>
+  <p class="sec-sub">Instead of asking "where is the centre?" or "where is dense?" — ask: <em>"which points are connected to which?"</em> Build a full tree of relationships. Cut the tree at any level to get different numbers of clusters.</p>
+
+  <div class="story-block">
+    <div class="story-icon">🌳</div>
+    <div class="story-body">
+      <h3>The Family Tree Analogy</h3>
+      <p>Imagine a big Indian joint family reunion. You start by pairing up the two most similar people (the twins), then pair the next two closest (cousins), then merge groups, until everyone is in one big family. The result is a <strong>dendrogram</strong> — a tree diagram showing the entire history of who merged with whom.</p>
+      <p>Now comes the genius: <strong>cut the tree at any height</strong>. Cut high → few big groups (just "North Indians" vs "South Indians"). Cut low → many small groups (each nuclear family). The same algorithm gives you any number of clusters you want — just choose your cut height. No need to re-run anything.</p>
+    </div>
+  </div>
+
+  <div class="theory-slide">
+    <div class="ts-tag">Hierarchical / Agglomerative Clustering</div>
+    <h3>Two approaches: Bottom-up (Agglomerative) and Top-down (Divisive)</h3>
+    <p><strong>Agglomerative (most common)</strong>: Start with each point as its own cluster. Merge the two closest clusters. Repeat until one cluster remains. The full merge history is stored as a dendrogram.</p>
+    <p><strong>Divisive</strong>: Start with one cluster containing all points. Split recursively until each point is its own cluster. More computationally expensive. Used for document categorisation where you start with "all documents" and subdivide.</p>
+    <div class="theory-bullets">
+      <div class="t-bullet"><strong>Linkage Criteria</strong>"How do we measure distance between two clusters (not just two points)?" Single linkage: distance between closest pair. Complete linkage: distance between farthest pair. Average linkage: average of all pairs. Ward linkage: minimize within-cluster variance when merging. Ward is usually best.</div>
+      <div class="t-bullet"><strong>The Dendrogram</strong>A tree diagram. X-axis = data points. Y-axis = merge height (distance at which merge happened). Tall bars = very different clusters merging. Short bars = similar clusters merging. Cut the y-axis at the height of the tallest bars to find the natural number of clusters.</div>
+      <div class="t-bullet"><strong>No K Needed (but helps)</strong>Unlike K-Means, you don't need to specify K before running. You run once, get the full dendrogram, then choose K by inspecting the tree. However for very large datasets, computing all pairwise distances becomes expensive (O(n²) memory).</div>
+      <div class="t-bullet"><strong>Deterministic!</strong>Unlike K-Means, Hierarchical Clustering is completely deterministic — same data always gives same dendrogram. No random initialisation issues. Great for scientific reproducibility (genomics papers, clinical research).</div>
+    </div>
+  </div>
+
+  <div class="divider"><span>agglomerative clustering — step by step with ipl teams</span></div>
+
+  <div style="background:#0f172a;border-radius:14px;padding:22px;margin:16px 0;border:2px solid #1e293b">
+    <div style="font-family:var(--mono);font-size:.68em;color:#64748b;margin-bottom:14px">AGGLOMERATIVE CLUSTERING — IPL TEAM SIMILARITY (6 TEAMS, 2 FEATURES: WIN% AND NRR)</div>
+    <div style="display:grid;grid-template-columns:1fr 2fr;gap:16px">
+      <div>
+        <table class="data-table" style="font-size:.8em">
+          <thead><tr><th>Team</th><th>Win%</th><th>NRR</th></tr></thead>
+          <tbody>
+            <tr><td>MI</td><td>62</td><td>+0.8</td></tr>
+            <tr><td>CSK</td><td>60</td><td>+0.7</td></tr>
+            <tr><td>RCB</td><td>41</td><td>-0.3</td></tr>
+            <tr><td>KKR</td><td>52</td><td>+0.2</td></tr>
+            <tr><td>PBKS</td><td>39</td><td>-0.4</td></tr>
+            <tr><td>SRH</td><td>48</td><td>+0.1</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="font-size:.84em;color:#e2e8f0;line-height:2">
+        <div style="color:#a5b4fc;font-family:var(--mono);font-size:.72em;margin-bottom:10px">MERGE SEQUENCE (COMPLETE LINKAGE)</div>
+        <div style="border-left:3px solid var(--accent);padding-left:14px">
+          <div style="margin-bottom:8px"><span style="color:#c4b5fd;font-family:var(--mono);font-size:.72em">STEP 1 (height=0.14):</span><br>Merge <strong>MI + CSK</strong> → {Top Performers} [closest pair by distance]</div>
+          <div style="margin-bottom:8px"><span style="color:#c4b5fd;font-family:var(--mono);font-size:.72em">STEP 2 (height=0.18):</span><br>Merge <strong>RCB + PBKS</strong> → {Struggling Teams} [similar poor stats]</div>
+          <div style="margin-bottom:8px"><span style="color:#c4b5fd;font-family:var(--mono);font-size:.72em">STEP 3 (height=0.22):</span><br>Merge <strong>KKR + SRH</strong> → {Mid-table Teams} [similar average stats]</div>
+          <div style="margin-bottom:8px"><span style="color:#93c5fd;font-family:var(--mono);font-size:.72em">STEP 4 (height=0.45):</span><br>Merge {Mid-table} + {Struggling} → {Non-Top Teams}</div>
+          <div><span style="color:#86efac;font-family:var(--mono);font-size:.72em">STEP 5 (height=0.78):</span><br>Merge ALL → One big cluster</div>
+        </div>
+        <div style="margin-top:10px;background:#1e293b;border-radius:8px;padding:10px;border-left:3px solid var(--gold)">
+          <span style="color:#fde68a">Cut at height 0.25</span> → 3 clusters: Top, Mid-table, Struggling. <span style="color:#fde68a">Cut at height 0.50</span> → 2 clusters: Good vs Bad. Same tree, different insights!
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"><span>the 4 linkage methods — which one to choose?</span></div>
+
+  <div class="clust-tab-bar">
+    <div class="clust-tab active" onclick="showTab('link','ward',this)">🏆 Ward Linkage</div>
+    <div class="clust-tab" onclick="showTab('link','complete',this)">Complete Linkage</div>
+    <div class="clust-tab" onclick="showTab('link','average',this)">Average Linkage</div>
+    <div class="clust-tab" onclick="showTab('link','single',this)">Single Linkage</div>
+  </div>
+
+  <div class="clust-panel active" id="link-ward">
+    <div style="background:#0f172a;border-radius:14px;padding:18px;margin:0 0 16px;border:2px solid #1e293b">
+      <div style="font-family:var(--mono);font-size:.68em;color:#64748b;margin-bottom:10px">HOW WARD LINKAGE MEASURES DISTANCE BETWEEN TWO CLUSTERS</div>
+      <svg viewBox="0 0 460 210" style="width:100%;height:auto;max-height:220px">
+        <ellipse cx="77" cy="70" rx="58" ry="55" fill="rgba(124,58,237,0.12)"/>
+        <ellipse cx="372" cy="147" rx="58" ry="55" fill="rgba(37,99,235,0.12)"/>
+        <circle cx="70" cy="60" r="6" fill="#7c3aed"/><circle cx="105" cy="42" r="6" fill="#7c3aed"/><circle cx="58" cy="105" r="6" fill="#7c3aed"/>
+        <circle cx="340" cy="145" r="6" fill="#2563eb"/><circle cx="375" cy="175" r="6" fill="#2563eb"/><circle cx="400" cy="120" r="6" fill="#2563eb"/>
+        <line x1="77.7" y1="69" x2="371.7" y2="146.7" stroke="#d97706" stroke-width="2.5" stroke-dasharray="7,5"/>
+        <g stroke="#d97706" stroke-width="2.5"><line x1="70.7" y1="69" x2="84.7" y2="69"/><line x1="77.7" y1="62" x2="77.7" y2="76"/></g>
+        <g stroke="#d97706" stroke-width="2.5"><line x1="364.7" y1="146.7" x2="378.7" y2="146.7"/><line x1="371.7" y1="139.7" x2="371.7" y2="153.7"/></g>
+        <text x="30" y="18" font-family="var(--mono)" font-size="11" fill="#c4b5fd" font-weight="700">Cluster A</text>
+        <text x="345" y="205" font-family="var(--mono)" font-size="11" fill="#93c5fd" font-weight="700">Cluster B</text>
+        <text x="185" y="100" font-family="var(--mono)" font-size="10" fill="#fde68a" font-weight="700">centroids (✛)</text>
+      </svg>
+      <div style="color:#e2e8f0;font-size:.85em;line-height:1.7;margin-top:8px">d(A,B) = increase in total within-cluster variance (SSE) if A and B were merged — in practice computed from the centroids of each cluster, weighted by cluster size. The merge chosen at each step is whichever pair inflates variance the <em>least</em>.</div>
+    </div>
+    <div class="use-case-strip">
+      <div class="uc-tag">Ward Linkage — Usually the Best Default</div>
+      <div class="uc-title">When merging two clusters, choose the merge that minimises the increase in total within-cluster variance</div>
+      <div class="uc-grid">
+        <div class="uc-item"><div class="uc-org">Why It Works Best</div><div class="uc-desc">Ward linkage is the most similar to K-Means philosophy — it creates compact, spherical clusters with minimum internal spread. Produces more balanced cluster sizes. Tends to avoid the "chaining" problem (where single long chains form instead of round clusters).</div></div>
+        <div class="uc-item"><div class="uc-org">Hindustan Unilever — Rural Market Segmentation</div><div class="uc-desc">Ward linkage on NSO census data: 6 lakh villages clustered by income, literacy, infrastructure, connectivity. HUL identifies 8 distribution-relevant segments for sachets vs premium products. Consistent, balanced segments for logistics planning.</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="clust-panel" id="link-complete">
+    <div style="background:#0f172a;border-radius:14px;padding:18px;margin:0 0 16px;border:2px solid #1e293b">
+      <div style="font-family:var(--mono);font-size:.68em;color:#64748b;margin-bottom:10px">HOW COMPLETE LINKAGE MEASURES DISTANCE BETWEEN TWO CLUSTERS</div>
+      <svg viewBox="0 0 460 210" style="width:100%;height:auto;max-height:220px">
+        <ellipse cx="77" cy="70" rx="58" ry="55" fill="rgba(124,58,237,0.12)"/>
+        <ellipse cx="372" cy="147" rx="58" ry="55" fill="rgba(37,99,235,0.12)"/>
+        <line x1="58" y1="105" x2="400" y2="120" stroke="#e84c3d" stroke-width="3"/>
+        <circle cx="70" cy="60" r="6" fill="#7c3aed"/><circle cx="105" cy="42" r="6" fill="#7c3aed"/><circle cx="58" cy="105" r="7" fill="#7c3aed" stroke="#fca5a5" stroke-width="2"/>
+        <circle cx="340" cy="145" r="6" fill="#2563eb"/><circle cx="375" cy="175" r="6" fill="#2563eb"/><circle cx="400" cy="120" r="7" fill="#2563eb" stroke="#fca5a5" stroke-width="2"/>
+        <text x="30" y="18" font-family="var(--mono)" font-size="11" fill="#c4b5fd" font-weight="700">Cluster A</text>
+        <text x="345" y="205" font-family="var(--mono)" font-size="11" fill="#93c5fd" font-weight="700">Cluster B</text>
+        <text x="175" y="128" font-family="var(--mono)" font-size="10" fill="#fca5a5" font-weight="700">farthest pair — the "worst case"</text>
+      </svg>
+      <div style="color:#e2e8f0;font-size:.85em;line-height:1.7;margin-top:8px">d(A,B) = distance between the single <em>farthest</em> pair of points, one from each cluster. Only merges when even this worst-case pair is acceptably close — which is exactly why the resulting clusters stay tight and compact.</div>
+    </div>
+    <div class="use-case-strip">
+      <div class="uc-tag">Complete Linkage — Tight, Compact Clusters</div>
+      <div class="uc-title">Distance between clusters = distance between their farthest pair. Merges only when even the most dissimilar members are close.</div>
+      <div class="uc-grid">
+        <div class="uc-item"><div class="uc-org">Characteristic</div><div class="uc-desc">Creates very compact clusters — every member of a cluster is guaranteed to be within a certain maximum distance from every other member. Good when you need homogeneous groups where even the "outlier" in the group isn't too different from others.</div></div>
+        <div class="uc-item"><div class="uc-org">SEBI — Mutual Fund Categorisation</div><div class="uc-desc">Complete linkage on fund return profiles. Ensures that within each category, even the worst-performing fund isn't too far from the best. Regulatory categories where every member needs to be genuinely similar.</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="clust-panel" id="link-average">
+    <div style="background:#0f172a;border-radius:14px;padding:18px;margin:0 0 16px;border:2px solid #1e293b">
+      <div style="font-family:var(--mono);font-size:.68em;color:#64748b;margin-bottom:10px">HOW AVERAGE LINKAGE MEASURES DISTANCE BETWEEN TWO CLUSTERS</div>
+      <svg viewBox="0 0 460 210" style="width:100%;height:auto;max-height:220px">
+        <ellipse cx="77" cy="70" rx="58" ry="55" fill="rgba(124,58,237,0.12)"/>
+        <ellipse cx="372" cy="147" rx="58" ry="55" fill="rgba(37,99,235,0.12)"/>
+        <g stroke="#94a3b8" stroke-width="1" opacity="0.55">
+          <line x1="70" y1="60" x2="340" y2="145"/><line x1="70" y1="60" x2="375" y2="175"/><line x1="70" y1="60" x2="400" y2="120"/>
+          <line x1="105" y1="42" x2="340" y2="145"/><line x1="105" y1="42" x2="375" y2="175"/><line x1="105" y1="42" x2="400" y2="120"/>
+          <line x1="58" y1="105" x2="340" y2="145"/><line x1="58" y1="105" x2="375" y2="175"/><line x1="58" y1="105" x2="400" y2="120"/>
+        </g>
+        <circle cx="70" cy="60" r="6" fill="#7c3aed"/><circle cx="105" cy="42" r="6" fill="#7c3aed"/><circle cx="58" cy="105" r="6" fill="#7c3aed"/>
+        <circle cx="340" cy="145" r="6" fill="#2563eb"/><circle cx="375" cy="175" r="6" fill="#2563eb"/><circle cx="400" cy="120" r="6" fill="#2563eb"/>
+        <text x="30" y="18" font-family="var(--mono)" font-size="11" fill="#c4b5fd" font-weight="700">Cluster A</text>
+        <text x="345" y="205" font-family="var(--mono)" font-size="11" fill="#93c5fd" font-weight="700">Cluster B</text>
+        <text x="140" y="100" font-family="var(--mono)" font-size="10" fill="#cbd5e1" font-weight="700">all 9 pairwise distances</text>
+      </svg>
+      <div style="color:#e2e8f0;font-size:.85em;line-height:1.7;margin-top:8px">d(A,B) = the average of every pairwise distance between a point in A and a point in B (here, all 3×3 = 9 lines). It's a compromise between single linkage's "closest pair only" and complete linkage's "farthest pair only" — no single point dominates the decision.</div>
+    </div>
+    <div class="use-case-strip">
+      <div class="uc-tag">Average Linkage — Balanced Middle Ground</div>
+      <div class="uc-title">Distance between clusters = average distance between all pairs across the two clusters. A robust compromise.</div>
+      <div class="uc-grid">
+        <div class="uc-item"><div class="uc-org">Characteristic</div><div class="uc-desc">Less sensitive to outliers than single linkage (doesn't chain). Less conservative than complete linkage. A good default when unsure. Works well for gene expression data where cluster boundaries are fuzzy.</div></div>
+        <div class="uc-item"><div class="uc-org">ICMR — Epidemic Strain Clustering</div><div class="uc-desc">Average linkage on viral genome sequences. Single mutation difference shouldn't split strains; average linkage handles this gracefully. Used to track COVID-19 variant clusters spreading through India by ICMR-NIV Pune.</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="clust-panel" id="link-single">
+    <div style="background:#0f172a;border-radius:14px;padding:18px;margin:0 0 16px;border:2px solid #1e293b">
+      <div style="font-family:var(--mono);font-size:.68em;color:#64748b;margin-bottom:10px">HOW SINGLE LINKAGE MEASURES DISTANCE BETWEEN TWO CLUSTERS</div>
+      <svg viewBox="0 0 460 210" style="width:100%;height:auto;max-height:220px">
+        <ellipse cx="77" cy="70" rx="58" ry="55" fill="rgba(124,58,237,0.12)"/>
+        <ellipse cx="372" cy="147" rx="58" ry="55" fill="rgba(37,99,235,0.12)"/>
+        <line x1="105" y1="42" x2="340" y2="145" stroke="#16a34a" stroke-width="3"/>
+        <circle cx="70" cy="60" r="6" fill="#7c3aed"/><circle cx="105" cy="42" r="7" fill="#7c3aed" stroke="#86efac" stroke-width="2"/><circle cx="58" cy="105" r="6" fill="#7c3aed"/>
+        <circle cx="340" cy="145" r="7" fill="#2563eb" stroke="#86efac" stroke-width="2"/><circle cx="375" cy="175" r="6" fill="#2563eb"/><circle cx="400" cy="120" r="6" fill="#2563eb"/>
+        <text x="30" y="18" font-family="var(--mono)" font-size="11" fill="#c4b5fd" font-weight="700">Cluster A</text>
+        <text x="345" y="205" font-family="var(--mono)" font-size="11" fill="#93c5fd" font-weight="700">Cluster B</text>
+        <text x="150" y="87" font-family="var(--mono)" font-size="10" fill="#86efac" font-weight="700">closest pair — "any bridge will do"</text>
+      </svg>
+      <div style="color:#e2e8f0;font-size:.85em;line-height:1.7;margin-top:8px">d(A,B) = distance between the single <em>closest</em> pair of points, one from each cluster. Merges as soon as any two points touch — great for elongated, snake-like shapes, but prone to "chaining" one long thread of points into a single sprawling cluster.</div>
+    </div>
+    <div class="use-case-strip">
+      <div class="uc-tag">Single Linkage — Chaining Risk, but Finds Elongated Shapes</div>
+      <div class="uc-title">Distance between clusters = distance between their closest pair. Merges if ANY two points across clusters are close.</div>
+      <div class="uc-grid">
+        <div class="uc-item"><div class="uc-org">Characteristic</div><div class="uc-desc">Can find elongated, non-spherical clusters (like rivers, roads, chains). However notorious for "chaining" — creating one giant cluster that grows by absorbing single points at a time, producing unbalanced dendrograms. Use with caution.</div></div>
+        <div class="uc-item"><div class="uc-org">NHAI — Highway Corridor Analysis</div><div class="uc-desc">Single linkage on GPS toll plaza data. Highway corridors are naturally elongated shapes. Single linkage chains the plazas along each highway into the same cluster correctly — K-Means would split a single highway into multiple spherical blobs.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"><span>interactive dendrogram builder</span></div>
+
+  <div class="interactive">
+    <h4>🌳 Dendrogram Simulator <span class="tag">INTERACTIVE</span></h4>
+    <p style="font-size:.86em;color:#555;margin-bottom:14px">10 Indian cities plotted by GDP per capita vs population density. Adjust the cut height to see how many clusters emerge. Watch the cluster assignments change in real time.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start">
+      <div>
+        <div class="slider-wrap">
+          <div class="slider-label"><span>Cut Height (distance threshold)</span><span class="slider-val" id="cutHeight">2.5</span></div>
+          <input type="range" min="0.5" max="5" value="2.5" step="0.1" id="cutSlider" oninput="updateDendrogram()">
+        </div>
+        <div style="background:#111;border-radius:10px;padding:14px;margin-top:8px">
+          <div style="color:#7dd3fc;font-family:var(--mono);font-size:.74em;margin-bottom:8px">CLUSTERS FOUND</div>
+          <div id="dendroResults" style="font-size:.84em;color:#e2e8f0;line-height:2"></div>
+        </div>
+        <div class="info-strip" style="margin-top:12px">💡 <strong>Reading the dendrogram:</strong> Long vertical bars = big gap between merged clusters = natural cluster boundary. Cut below tall bars to get stable, meaningful clusters. The tallest bar suggests the "natural" number of clusters.</div>
+      </div>
+      <div class="chart-box" style="padding:8px">
+        <canvas id="dendroChart" height="280"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"><span>hierarchical clustering use cases — where it truly shines</span></div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0">
+    <div style="background:white;border:2px solid var(--ink);border-radius:14px;padding:18px;box-shadow:3px 3px 0 var(--c3)">
+      <div style="font-size:1.6em;margin-bottom:8px">🧬</div>
+      <div style="font-weight:800;margin-bottom:8px">Genomics — AIIMS Cancer Subtyping</div>
+      <div style="font-size:.86em;color:#444;line-height:1.75">50 breast cancer patients, 2,000 gene expression values each. Ward linkage hierarchical clustering reveals 4 molecular subtypes (Luminal A, Luminal B, HER2-enriched, Triple Negative). Each subtype responds differently to chemotherapy. The dendrogram structure IS the scientific finding — not just the final clusters.</div>
+    </div>
+    <div style="background:white;border:2px solid var(--ink);border-radius:14px;padding:18px;box-shadow:3px 3px 0 var(--c3)">
+      <div style="font-size:1.6em;margin-bottom:8px">📖</div>
+      <div style="font-weight:800;margin-bottom:8px">Document Taxonomy — Wikipedia Hindi</div>
+      <div style="font-size:.86em;color:#444;line-height:1.75">10 lakh Hindi Wikipedia articles clustered by TF-IDF features using divisive hierarchical clustering. Creates a full content taxonomy: "Knowledge" splits into "Science" and "Humanities"; "Science" splits into "Physics," "Biology," "Chemistry." The hierarchy IS the classification system.</div>
+    </div>
+    <div style="background:white;border:2px solid var(--ink);border-radius:14px;padding:18px;box-shadow:3px 3px 0 var(--c3)">
+      <div style="font-size:1.6em;margin-bottom:8px">🏦</div>
+      <div style="font-weight:800;margin-bottom:8px">Banking — HDFC Customer Hierarchy</div>
+      <div style="font-size:.86em;color:#444;line-height:1.75">2 crore customers clustered hierarchically by transaction behaviour. Level 1 cut: Retail vs Business customers. Level 2 cut: Retail → Salaried vs Self-employed. Level 3 cut: Salaried → Junior vs Senior. Different service offerings at each level. One dendrogram serves the entire product strategy.</div>
+    </div>
+    <div style="background:white;border:2px solid var(--ink);border-radius:14px;padding:18px;box-shadow:3px 3px 0 var(--c3)">
+      <div style="font-size:1.6em;margin-bottom:8px">🌾</div>
+      <div style="font-weight:800;margin-bottom:8px">Agriculture — ICAR Crop Variety Grouping</div>
+      <div style="font-size:.86em;color:#444;line-height:1.75">500 rice varieties clustered by yield, disease resistance, water requirement, maturation days. Hierarchical structure reveals: high-yield varieties subdivide into "dry-resistant" and "water-intensive." Different government subsidy schemes for each sub-cluster.</div>
+    </div>
+  </div>
+
+  <div class="challenge-toggle">
+    <div class="ch-header" onclick="toggleCh('ch_hier')">
+      <div class="ch-left"><div class="ch-icon">🧠</div>
+        <div><div class="ch-title">Brain Teaser: Which cut of the dendrogram should an FMCG company use?</div><div class="ch-sub">A Dabur analyst has a dendrogram of 500 rural consumer segments. Her boss wants 3 segments. Her regional team wants 12 segments. Who's right?</div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px"><span class="ch-badge hard">+20 pts</span><span class="ch-arrow" id="ch_hier-arrow">▼</span></div>
+    </div>
+    <div class="ch-body" id="ch_hier-body">
+      <p style="font-size:.93em;line-height:1.7;margin-bottom:12px">Dabur wants to personalise sachets for rural India. The dendrogram of 500 districts (by income, literacy, water access, crop type) shows tall bars at cuts 3 and 12. Both cuts are "natural." The CEO says: "3 is enough." The regional sales head says: "12 gives us local precision." Which segmentation is CORRECT?</p>
+      <div class="quiz-opt" onclick="checkQ('bt_hier',this,false)"><div class="marker">A</div>3 segments — fewer clusters is always better to avoid over-complicating things.</div>
+      <div class="quiz-opt" onclick="checkQ('bt_hier',this,false)"><div class="marker">B</div>12 segments — more granularity is always better for targeting.</div>
+      <div class="quiz-opt" onclick="checkQ('bt_hier',this,true)"><div class="marker">C</div>Both are valid — the right cut depends on business context. 3 segments for national TV advertising (can't personalise more). 12 segments for district-level field sales teams (can act on fine detail). Hierarchical clustering's superpower is that both answers come from the same model.</div>
+      <div class="q-feedback" id="bt_hier-fb"></div>
+      <div style="margin-top:12px;padding:12px;background:#f0fdf4;border-radius:8px;font-size:.85em;line-height:1.7">
+        💡 <strong>Key insight:</strong> Hierarchical clustering is the only algorithm that lets you answer BOTH questions from one run. This makes it extraordinarily valuable for organisations that need different granularity for different functions. The CEO, regional teams, and district managers each use the same dendrogram — just cut at different heights.
+      </div>
+    </div>
+  </div>
+
+  <div class="quiz-block">
+    <h4>✓ Knowledge Check — Connectivity-Based Clustering</h4>
+    <div class="q-prompt">An ICMR researcher uses hierarchical clustering (Ward linkage) on gene expression data from 200 patients. She gets a dendrogram. Looking at it, she notices a very tall bar appearing when going from 4 clusters to 3 clusters. What does this tell her?</div>
+    <div class="quiz-opt" onclick="checkQ('q3a',this,false)"><div class="marker">A</div>The algorithm made an error — tall bars indicate incorrect merges that should be redone.</div>
+    <div class="quiz-opt" onclick="checkQ('q3a',this,true)"><div class="marker">B</div>4 clusters is likely the natural number of clusters in the data. The tall bar means the merge from 4→3 joined two clusters that are very different from each other — a strong signal that they should stay separate. She should report 4 patient subtypes.</div>
+    <div class="quiz-opt" onclick="checkQ('q3a',this,false)"><div class="marker">C</div>She should use 3 clusters since the tall bar indicates good separation at that level.</div>
+    <div class="quiz-opt" onclick="checkQ('q3a',this,false)"><div class="marker">D</div>Tall bars mean the data has outliers that should be removed.</div>
+    <div class="q-feedback" id="q3a-fb"></div>
+  </div>
+
+  <div class="mod-nav-btns">
+    <button class="btn btn-ghost" onclick="showModule(2)">← Density-Based</button>
+    <button class="btn" onclick="showModule(4)">&#9316; Distribution-Based &#8594;</button>
+  </div>
+</div>
+
+<!-- MODULE 4 — DISTRIBUTION-BASED CLUSTERING -->
+<div class="module" id="mod4">
+  <div class="sec-title">Family 4: Distribution-Based Clustering</div>
+  <p class="sec-sub">The most statistically rigorous family. Don't define clusters by distance — define them by <em>probability distributions</em>. Every point has a probability of belonging to every cluster. The world is fuzzy — so is this approach.</p>
+
+  <div class="story-block">
+    <div class="story-icon">🎲</div>
+    <div class="story-body">
+      <h3>The Bollywood Box Office Analogy</h3>
+      <p>Imagine classifying Bollywood movies by box office collection. K-Means says: "This movie earned ₹280 Cr — it belongs to Cluster 3 (Blockbusters), full stop." But what if ₹280 Cr is right on the boundary between "Hit" and "Blockbuster"? Is it definitely one and not the other?</p>
+      <p><strong>Gaussian Mixture Models (GMM) say:</strong> "This movie has 60% probability of being a Blockbuster and 40% probability of being a Hit. Both clusters explain it partially." This <em>soft membership</em> is far more realistic for ambiguous data. Real customer segments aren't crisply separated — a customer can be 70% "Deal Hunter" and 30% "Brand Loyalist."</p>
+    </div>
+  </div>
+
+  <div class="theory-slide">
+    <div class="ts-tag">Gaussian Mixture Models (GMM) — The Core Idea</div>
+    <h3>GMM: "The data was generated by K hidden Gaussian distributions. Find those distributions."</h3>
+    <p>A GMM assumes your data is a mixture of K Gaussian (bell-curve) distributions, each with its own mean (μ), covariance (Σ), and mixing weight (π). The algorithm finds the parameters of these hidden distributions using <strong>Expectation-Maximisation (EM)</strong>.</p>
+    <div class="theory-bullets">
+      <div class="t-bullet"><strong>Soft Assignment (Key Difference!)</strong>K-Means: each point belongs to exactly one cluster. GMM: each point has a probability of belonging to EACH cluster. A customer might be 80% "Premium Shopper", 15% "Deal Hunter", 5% "Occasion Buyer." Use the probabilities, not just the hard assignment.</div>
+      <div class="t-bullet"><strong>Flexible Cluster Shapes</strong>GMM can model elliptical clusters — not just spherical ones like K-Means. The covariance matrix Σ controls the shape and orientation of each Gaussian. Full covariance = any ellipse. Diagonal = axis-aligned ellipse. Spherical = same as K-Means.</div>
+      <div class="t-bullet"><strong>Probabilistic Framework</strong>GMM gives you a likelihood score for every new point: "How probable is this data point under our learned model?" Points with very low likelihood under ALL components = outliers. This gives automatic anomaly detection.</div>
+      <div class="t-bullet"><strong>Model Selection with BIC/AIC</strong>Like K-Means' elbow method, use Bayesian Information Criterion (BIC) or Akaike IC (AIC) to choose K. Fit GMM for K=2,3,...10, plot BIC. The K with lowest BIC = best balance of fit and complexity.</div>
+    </div>
+  </div>
+
+  <div class="divider"><span>the em algorithm — heart of gmm</span></div>
+
+  <div class="math-story">
+    <h4>🔄 Expectation-Maximisation (EM) — Decoded for Everyone</h4>
+    <p style="color:#aaa;font-size:.86em;margin-bottom:14px">EM is an elegant two-step dance: guess which Gaussian each point came from (E-step), then update the Gaussians given those guesses (M-step). Repeat until stable.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+      <div style="background:#1a1a1a;border-radius:10px;padding:14px;border-left:4px solid var(--accent)">
+        <div style="font-family:var(--mono);color:#c4b5fd;font-size:.78em;font-weight:700;margin-bottom:8px">E-Step — Expectation</div>
+        <div style="color:#e2e8f0;font-size:.86em;line-height:1.8">"Given current Gaussian parameters, what is the probability that each point belongs to each cluster?"<br><br>Formula: P(cluster k | point x) ∝ π_k × N(x; μ_k, Σ_k)<br><br>Result: a responsibility matrix — each cell = probability that point i came from Gaussian k.</div>
+      </div>
+      <div style="background:#1a1a1a;border-radius:10px;padding:14px;border-left:4px solid var(--gold)">
+        <div style="font-family:var(--mono);color:#fde68a;font-size:.78em;font-weight:700;margin-bottom:8px">M-Step — Maximisation</div>
+        <div style="color:#e2e8f0;font-size:.86em;line-height:1.8">"Given these responsibilities, update each Gaussian's parameters to best explain its assigned points."<br><br>μ_k = weighted average of all points (weight = responsibility)<br>Σ_k = weighted covariance<br>π_k = fraction of total responsibility assigned to cluster k</div>
+      </div>
+    </div>
+    <div style="background:#111;border-radius:10px;padding:14px;border-left:4px solid var(--accent3)">
+      <div style="font-family:var(--mono);color:#86efac;font-size:.86em;font-weight:700;margin-bottom:10px">🛒 Worked Example: BigBasket Customer Segmentation (Mumbai)</div>
+      <div style="color:#e2e8f0;font-size:.86em;line-height:2">
+        <strong>Start:</strong> Randomly initialise K=3 Gaussians for 2L Mumbai BigBasket customers (features: weekly spend ₹, order frequency)<br>
+        <strong>E-Step 1:</strong> Customer "Meena, ₹2800/week, 3 orders": <span style="color:#c4b5fd">P(Premium)=0.72</span>, <span style="color:#93c5fd">P(Regular)=0.24</span>, <span style="color:#86efac">P(Budget)=0.04</span><br>
+        <strong>M-Step 1:</strong> Update "Premium Gaussian" — move its mean toward customers with high responsibility for it. Update covariance to reflect their actual spread.<br>
+        <strong>After 40 iterations:</strong><br>
+        <span style="color:#c4b5fd">Gaussian 1 (Premium)</span>: μ=(₹3500, 4.2 orders), σ=tight → 42,000 customers, clear high-value segment<br>
+        <span style="color:#93c5fd">Gaussian 2 (Regular)</span>: μ=(₹1800, 2.1 orders), σ=wide → 1,10,000 customers, broad middle segment<br>
+        <span style="color:#86efac">Gaussian 3 (Budget)</span>: μ=(₹650, 1.2 orders), σ=medium → 48,000 customers, price-sensitive segment<br>
+        <strong style="color:#fde68a">Key insight:</strong> "Meena" gets 72% Premium / 24% Regular offers — not 100% one or the other. More personalised than K-Means' hard assignment.
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"><span>gmm covariance types — choosing the right shape</span></div>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin:16px 0">
+    <div style="background:white;border:2px solid var(--ink);border-radius:12px;padding:16px;box-shadow:2px 2px 0 var(--c1)">
+      <div style="font-size:1.6em;margin-bottom:8px">○</div>
+      <div style="font-weight:800;font-size:.9em;margin-bottom:6px;color:var(--c1)">Spherical</div>
+      <div style="font-size:.82em;color:#555;line-height:1.65">Same variance in all directions. Same as K-Means. Best for truly circular clusters. Fewest parameters. Use when: you believe K-Means-like clusters but want soft assignments.</div>
+    </div>
+    <div style="background:white;border:2px solid var(--ink);border-radius:12px;padding:16px;box-shadow:2px 2px 0 var(--c2)">
+      <div style="font-size:1.6em;margin-bottom:8px">⬭</div>
+      <div style="font-weight:800;font-size:.9em;margin-bottom:6px;color:var(--c2)">Diagonal</div>
+      <div style="font-size:.82em;color:#555;line-height:1.65">Different variance per feature but no rotation. Axis-aligned ellipses. More flexible than spherical. Use when features are independent but have different scales of variation within each cluster.</div>
+    </div>
+    <div style="background:white;border:2px solid var(--ink);border-radius:12px;padding:16px;box-shadow:2px 2px 0 var(--c3)">
+      <div style="font-size:1.6em;margin-bottom:8px">⊘</div>
+      <div style="font-weight:800;font-size:.9em;margin-bottom:6px;color:var(--c3)">Tied</div>
+      <div style="font-size:.82em;color:#555;line-height:1.65">All clusters share the same covariance matrix (same shape and size) but different means. Stable when data is limited. Robust — fewer parameters to estimate. Useful for small datasets.</div>
+    </div>
+    <div style="background:white;border:2px solid var(--ink);border-radius:12px;padding:16px;box-shadow:2px 2px 0 var(--c4)">
+      <div style="font-size:1.6em;margin-bottom:8px">🔷</div>
+      <div style="font-weight:800;font-size:.9em;margin-bottom=6px;color:var(--c4)">Full Covariance</div>
+      <div style="font-size:.82em;color:#555;line-height:1.65">Each cluster has its own unconstrained covariance — any shape, size, orientation. Most flexible. Can model highly elongated tilted ellipses. Needs most data. Risk of overfitting with small datasets.</div>
+    </div>
+  </div>
+
+  <div class="divider"><span>gmm interactive — soft assignment visualiser</span></div>
+
+  <div class="interactive">
+    <h4>🎲 GMM Soft Assignment Explorer <span class="tag">INTERACTIVE</span></h4>
+    <p style="font-size:.86em;color:#555;margin-bottom:14px">Stock return data for 50 Nifty50 companies by average return and volatility. Watch how GMM assigns each company to sectors with probabilities — no company is "100% Defensive" or "100% Growth."</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start">
+      <div>
+        <div class="slider-wrap">
+          <div class="slider-label"><span>K (number of Gaussians)</span><span class="slider-val" id="gmmK">3</span></div>
+          <input type="range" min="2" max="5" value="3" step="1" id="gmmKSlider" oninput="updateGMM()">
+        </div>
+        <button class="btn" style="margin-top:8px;width:100%" onclick="runGMM()">▶ Run GMM</button>
+        <div id="gmmResults" style="margin-top:10px;font-size:.82em;line-height:1.9;color:#444"></div>
+        <div class="purple-strip" style="margin-top:10px">💡 Unlike K-Means, notice how <strong>boundary companies</strong> (e.g. mid-cap IT firms with moderate volatility) get split probabilities across segments — a more honest representation of ambiguity.</div>
+      </div>
+      <div class="chart-box" style="padding:8px">
+        <canvas id="gmmChart" height="280"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"><span>beyond gmm — other distribution-based approaches</span></div>
+
+  <div class="clust-tab-bar">
+    <div class="clust-tab active" onclick="showTab('dist','gmm',this)">🎲 GMM</div>
+    <div class="clust-tab" onclick="showTab('dist','bayesian',this)">🔮 Bayesian GMM</div>
+    <div class="clust-tab" onclick="showTab('dist','dirichlet',this)">∞ Dirichlet Process</div>
+    <div class="clust-tab" onclick="showTab('dist','lda',this)">📄 LDA (Topic Models)</div>
+  </div>
+
+  <div class="clust-panel active" id="dist-gmm">
+    <div class="use-case-strip">
+      <div class="uc-tag">Classic GMM — Best For</div>
+      <div class="uc-title">Continuous features, elliptical-ish clusters, soft assignments needed, outlier detection</div>
+      <div class="uc-grid">
+        <div class="uc-item"><div class="uc-org">HDFC Securities — Portfolio Segmentation</div><div class="uc-desc">2 crore retail investors segmented by risk tolerance and return expectations. GMM gives probabilities: investor A is 60% Conservative/40% Balanced. Products recommended proportionally — not a hard binary assignment. Increases cross-sell conversion by 28%.</div></div>
+        <div class="uc-item"><div class="uc-org">Apollo Hospitals — Patient Risk Scoring</div><div class="uc-desc">Patient vital signs modelled as GMM. Normal patients belong strongly to "healthy Gaussian." An unusual patient with borderline readings gets split probability: 55% normal, 45% "at-risk Gaussian." Flag for additional monitoring — soft membership catches borderline cases K-Means would miss.</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="clust-panel" id="dist-bayesian">
+    <div class="use-case-strip">
+      <div class="uc-tag">Bayesian GMM — Automatic K Selection</div>
+      <div class="uc-title">Like GMM but with priors. Automatically suppresses redundant clusters — effectively choosing K for you.</div>
+      <div class="uc-grid">
+        <div class="uc-item"><div class="uc-org">Key Advantage</div><div class="uc-desc">Regular GMM with K=10 would force 10 Gaussians even if only 4 are needed. Bayesian GMM starts with K_max=10 but "turns off" redundant components (their mixing weights π → 0 automatically). You get the right K without the elbow method guessing game.</div></div>
+        <div class="uc-item"><div class="uc-org">RBI — Banking Sector Analysis</div><div class="uc-desc">Bayesian GMM on 50 Indian banks (Capital Adequacy, NPA%, ROE, CASA ratio). Automatically finds 3 meaningful groups: Large Public Sector, Private Sector, Small Co-operative. No need to specify K — the model learns it from data structure.</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="clust-panel" id="dist-dirichlet">
+    <div class="use-case-strip">
+      <div class="uc-tag">Dirichlet Process Mixture — Infinite Clusters</div>
+      <div class="uc-title">Non-parametric — the model can grow the number of clusters as more data arrives. No K to specify at all.</div>
+      <div class="uc-grid">
+        <div class="uc-item"><div class="uc-org">The Power</div><div class="uc-desc">As new data arrives with truly new patterns, Dirichlet Process models create a new cluster rather than forcing new data into an existing one. The model "grows" to accommodate novelty. This is crucial for streaming data where new customer types emerge over time.</div></div>
+        <div class="uc-item"><div class="uc-org">Zomato — Evolving Food Trends</div><div class="uc-desc">Zomato's cuisine preference model uses a Dirichlet Process. When "Korean Fried Chicken" became popular in 2022, the model created a new food preference cluster automatically — rather than incorrectly merging it with existing "Fast Food" or "Asian" clusters.</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="clust-panel" id="dist-lda">
+    <div class="use-case-strip">
+      <div class="uc-tag">Latent Dirichlet Allocation (LDA) — Topic Modelling</div>
+      <div class="uc-title">Distribution-based clustering for TEXT. Each document is a mixture of "topics"; each topic is a distribution over words.</div>
+      <div class="uc-grid">
+        <div class="uc-item"><div class="uc-org">How It Works</div><div class="uc-desc">LDA assumes each document was written by randomly picking topics (e.g., 60% cricket, 30% politics, 10% business) and then picking words from each topic's word distribution. The algorithm reverse-engineers: given the words, what were the topics? A Bollywood article might be 70% Entertainment + 30% Business (box office revenue).</div></div>
+        <div class="uc-item"><div class="uc-org">The Hindu — Content Strategy</div><div class="uc-desc">10 lakh news articles from The Hindu clustered by LDA into 15 latent topics. Discovered: "Economic Policy" and "State Elections" are separate topics even though both mention politicians. Content recommendation engine serves readers based on their individual topic mixture preferences.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"><span>when gmm beats k-means — the definitive comparison</span></div>
+  <table class="cmp-table">
+    <thead><tr><th>Scenario</th><th>K-Means Result</th><th>GMM Result</th><th>Winner</th></tr></thead>
+    <tbody>
+      <tr><td>Spherical, equal-size clusters, 1M+ rows</td><td>Correct assignment, very fast</td><td>Correct assignment, slower</td><td><strong style="color:var(--c1)">K-Means</strong></td></tr>
+      <tr><td>Elongated/elliptical clusters</td><td>Incorrect — cuts ellipses with straight lines</td><td>Correct — Gaussian can model ellipses</td><td><strong style="color:var(--c4)">GMM</strong></td></tr>
+      <tr><td>Ambiguous cluster boundaries</td><td>Hard assignment — misleadingly confident</td><td>Soft probabilities — honest uncertainty</td><td><strong style="color:var(--c4)">GMM</strong></td></tr>
+      <tr><td>Outlier detection needed</td><td>Every outlier forced into a cluster</td><td>Low log-likelihood scores flag outliers</td><td><strong style="color:var(--c4)">GMM</strong></td></tr>
+      <tr><td>Very large dataset (10M+ rows)</td><td>Fast with Mini-Batch K-Means</td><td>Slow — EM iteration expensive at scale</td><td><strong style="color:var(--c1)">K-Means</strong></td></tr>
+      <tr><td>Regulatory explanation required</td><td>"Customer belongs to Cluster 3"</td><td>"Customer is 72% Cluster 3, 28% Cluster 1"</td><td><strong style="color:var(--c4)">GMM</strong> (more honest)</td></tr>
+    </tbody>
+  </table>
+
+  <div class="quiz-block">
+    <h4>✓ Knowledge Check — Distribution-Based Clustering</h4>
+    <div class="q-prompt">An HDFC Life actuary uses GMM on policyholder claim history. After fitting GMM with K=3, a new customer gets probability scores: Low-risk=0.51, Medium-risk=0.40, High-risk=0.09. What should the actuary do with this customer?</div>
+    <div class="quiz-opt" onclick="checkQ('q4a',this,false)"><div class="marker">A</div>Assign to "Low-risk" since it has highest probability (0.51) and ignore the other probabilities.</div>
+    <div class="quiz-opt" onclick="checkQ('q4a',this,true)"><div class="marker">B</div>Use the full probability vector. The customer is ambiguous — nearly equal Low and Medium risk. Price their premium using a blend (e.g. 51% × Low-risk premium + 40% × Medium-risk premium + 9% × High-risk premium). Or flag for underwriter review given the high uncertainty.</div>
+    <div class="quiz-opt" onclick="checkQ('q4a',this,false)"><div class="marker">C</div>Re-run GMM with higher K since the model seems confused.</div>
+    <div class="quiz-opt" onclick="checkQ('q4a',this,false)"><div class="marker">D</div>The model has failed — good models always give one probability near 1.0.</div>
+    <div class="q-feedback" id="q4a-fb"></div>
+  </div>
+
+  <div class="mod-nav-btns">
+    <button class="btn btn-ghost" onclick="showModule(3)">← Connectivity-Based</button>
+    <button class="btn" onclick="showModule(5)">&#127942; Final Challenge &#8594;</button>
+  </div>
+</div>
+
+<!-- MODULE 5 — FINAL CHALLENGE -->
+<div class="module" id="mod5">
+  <div id="completionCheck">
+    <div class="sec-title">🏆 Final Challenge</div>
+    <p class="sec-sub">The Grand Clustering Showdown — apply everything you've learned. 5 scenarios. Choose the right algorithm family AND justify your choice. Maximum 100 bonus points.</p>
+
+    <div class="divider"><span>the master comparison — all 4 families</span></div>
+    <table class="cmp-table">
+      <thead><tr><th>Property</th><th>⭕ Centroid (K-Means)</th><th>🌌 Density (DBSCAN)</th><th>🌳 Connectivity (Hierarchical)</th><th>🎲 Distribution (GMM)</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Cluster shape</strong></td><td>Spherical only</td><td>Any shape</td><td>Any shape</td><td>Elliptical</td></tr>
+        <tr><td><strong>Need to specify K?</strong></td><td>Yes (Elbow method)</td><td>No</td><td>No (choose after)</td><td>Yes (BIC/AIC)</td></tr>
+        <tr><td><strong>Handles outliers?</strong></td><td>No — corrupts centroids</td><td>Yes — labels as noise</td><td>Partially</td><td>Yes — low likelihood score</td></tr>
+        <tr><td><strong>Assignment type</strong></td><td>Hard (one cluster)</td><td>Hard + noise label</td><td>Hard (at cut height)</td><td>Soft (probabilities)</td></tr>
+        <tr><td><strong>Scalability</strong></td><td>Excellent (O(nK))</td><td>Good (O(n log n))</td><td>Poor (O(n²) memory)</td><td>Moderate (EM iterations)</td></tr>
+        <tr><td><strong>Cluster density assumption</strong></td><td>Equal density</td><td>Varying ok</td><td>No assumption</td><td>Gaussian distribution</td></tr>
+        <tr><td><strong>Best Indian use case</strong></td><td>Amazon customer segments</td><td>UPI fraud detection</td><td>AIIMS cancer subtypes</td><td>HDFC investor profiling</td></tr>
+      </tbody>
+    </table>
+
+    <div class="divider"><span>algorithm selection guide — the decision tree</span></div>
+
+    <div style="background:#0f172a;border-radius:14px;padding:22px;margin:16px 0;border:2px solid #1e293b">
+      <div style="font-family:var(--mono);font-size:.68em;color:#64748b;margin-bottom:16px">CLUSTERING ALGORITHM SELECTION — DECISION FLOWCHART</div>
+      <div style="font-size:.86em;color:#e2e8f0;line-height:2.4">
+        <div style="border-left:3px solid var(--accent);padding-left:14px;margin-bottom:12px">
+          <strong style="color:#c4b5fd">START: What is your data size?</strong><br>
+          <span style="color:#94a3b8;font-size:.88em">→ Millions of rows?</span> Use <strong style="color:#c4b5fd">Mini-Batch K-Means</strong> or <strong style="color:#c4b5fd">HDBSCAN</strong>. Hierarchical won't fit in memory.<br>
+          <span style="color:#94a3b8;font-size:.88em">→ Hundreds to thousands of rows?</span> All algorithms viable. Continue below.
+        </div>
+        <div style="border-left:3px solid var(--accent2);padding-left:14px;margin-bottom:12px">
+          <strong style="color:#93c5fd">Do you need to detect outliers/anomalies?</strong><br>
+          <span style="color:#94a3b8;font-size:.88em">→ Yes, explicitly</span> → <strong style="color:#93c5fd">DBSCAN / HDBSCAN</strong> (outliers get noise label -1)<br>
+          <span style="color:#94a3b8;font-size:.88em">→ No outlier detection needed</span> → Continue below
+        </div>
+        <div style="border-left:3px solid var(--accent3);padding-left:14px;margin-bottom:12px">
+          <strong style="color:#86efac">What shape are your clusters?</strong><br>
+          <span style="color:#94a3b8;font-size:.88em">→ Complex shapes (crescents, rings, arbitrary)</span> → <strong style="color:#86efac">DBSCAN / HDBSCAN</strong><br>
+          <span style="color:#94a3b8;font-size:.88em">→ Elliptical but not spherical</span> → <strong style="color:#86efac">GMM with full covariance</strong><br>
+          <span style="color:#94a3b8;font-size:.88em">→ Roughly spherical</span> → <strong style="color:#86efac">K-Means or GMM</strong> (both work)
+        </div>
+        <div style="border-left:3px solid var(--gold);padding-left:14px;margin-bottom:12px">
+          <strong style="color:#fde68a">Do you need probabilistic / soft assignments?</strong><br>
+          <span style="color:#94a3b8;font-size:.88em">→ Yes (insurance, risk, uncertain boundaries)</span> → <strong style="color:#fde68a">GMM</strong><br>
+          <span style="color:#94a3b8;font-size:.88em">→ No, hard groups are fine</span> → <strong style="color:#fde68a">K-Means or Hierarchical</strong>
+        </div>
+        <div style="border-left:3px solid var(--c5);padding-left:14px">
+          <strong style="color:#fca5a5">Do you need to explore different cluster counts?</strong><br>
+          <span style="color:#94a3b8;font-size:.88em">→ Yes (CEO wants 3, regional wants 12)</span> → <strong style="color:#fca5a5">Hierarchical Clustering</strong> — one run, infinite cut options<br>
+          <span style="color:#94a3b8;font-size:.88em">→ No, one fixed K is fine</span> → <strong style="color:#fca5a5">K-Means</strong> (fast, interpretable, well-known)
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"><span>scenario gauntlet — choose the right algorithm</span></div>
+
+    <!-- Q1 -->
+    <div class="quiz-block" style="margin-bottom:20px">
+      <h4>🎯 Scenario 1 — Paytm Transaction Clustering</h4>
+      <div class="q-prompt">Paytm processes 5 crore transactions/day. Their risk team wants to cluster transaction patterns to detect unusual behaviour. Transactions form dense "normal behaviour" clusters but some are isolated edge cases with no similar neighbours. Speed is critical. Which algorithm?</div>
+      <div class="quiz-opt" onclick="checkQ('s1',this,false)"><div class="marker">A</div>K-Means (K=10) — fast, handles large data</div>
+      <div class="quiz-opt" onclick="checkQ('s1',this,true)"><div class="marker">B</div>DBSCAN / HDBSCAN — explicitly labels isolated unusual transactions as noise (potential fraud). No need to specify K. Dense clusters = normal behaviour. Isolated points = investigate.</div>
+      <div class="quiz-opt" onclick="checkQ('s1',this,false)"><div class="marker">C</div>Hierarchical Clustering — creates a full taxonomy of transaction types</div>
+      <div class="quiz-opt" onclick="checkQ('s1',this,false)"><div class="marker">D</div>GMM — soft probabilities for each transaction type</div>
+      <div class="q-feedback" id="s1-fb"></div>
+    </div>
+
+    <!-- Q2 -->
+    <div class="quiz-block" style="margin-bottom:20px">
+      <h4>🎯 Scenario 2 — ICICI Bank Loan Portfolio</h4>
+      <div class="q-prompt">ICICI Bank's credit risk team has 50 lakh borrower profiles. They want to discover customer risk segments. They're unsure how many segments exist (could be 3, could be 8). They want to present findings to different stakeholders — the Board (wants 3 tiers) and Branch Managers (want 8 tiers). One solution for all?</div>
+      <div class="quiz-opt" onclick="checkQ('s2',this,false)"><div class="marker">A</div>K-Means with K=3 for the Board, run again with K=8 for branch managers — two separate runs</div>
+      <div class="quiz-opt" onclick="checkQ('s2',this,false)"><div class="marker">B</div>DBSCAN — no need to specify K, discovers all tiers automatically</div>
+      <div class="quiz-opt" onclick="checkQ('s2',this,true)"><div class="marker">C</div>Hierarchical Clustering — one run produces a dendrogram. Cut at height for 3 clusters for the Board, cut lower for 8 clusters for Branch Managers. Same model serves all stakeholders.</div>
+      <div class="quiz-opt" onclick="checkQ('s2',this,false)"><div class="marker">D</div>GMM — provides soft probability scores for each borrower's risk tier</div>
+      <div class="q-feedback" id="s2-fb"></div>
+    </div>
+
+    <!-- Q3 -->
+    <div class="quiz-block" style="margin-bottom:20px">
+      <h4>🎯 Scenario 3 — Nifty50 Portfolio Optimisation</h4>
+      <div class="q-prompt">A fund manager at SBI Mutual Fund wants to cluster 50 Nifty stocks by return profile and volatility. She knows some stocks sit right on the boundary between "Growth" and "Value" and wants to know exactly HOW much of each profile each stock exhibits (for portfolio weighting). Which algorithm?</div>
+      <div class="quiz-opt" onclick="checkQ('s3',this,false)"><div class="marker">A</div>K-Means — clean, interpretable segment for each stock</div>
+      <div class="quiz-opt" onclick="checkQ('s3',this,false)"><div class="marker">B</div>DBSCAN — finds the natural density clusters in the return space</div>
+      <div class="quiz-opt" onclick="checkQ('s3',this,false)"><div class="marker">C</div>Hierarchical Clustering — shows which stocks are most similar to each other</div>
+      <div class="quiz-opt" onclick="checkQ('s3',this,true)"><div class="marker">D</div>GMM — provides soft probability scores: "Stock X is 65% Growth / 35% Value." Portfolio weights can incorporate both probabilities, giving more nuanced allocation than hard K-Means assignment.</div>
+      <div class="q-feedback" id="s3-fb"></div>
+    </div>
+
+    <!-- Q4 -->
+    <div class="quiz-block" style="margin-bottom:20px">
+      <h4>🎯 Scenario 4 — Swiggy Hyper-Local Demand Zones</h4>
+      <div class="q-prompt">Swiggy wants to cluster GPS delivery locations in Delhi to identify demand hotspots for dark kitchen placement. The hotspots have irregular shapes (follow market streets, not circular blocks). Some areas (industrial zones, airports) have isolated delivery requests with no neighbours. Scale: 2 crore delivery locations.</div>
+      <div class="quiz-opt" onclick="checkQ('s4',this,false)"><div class="marker">A</div>K-Means — fast for large data, can handle 2 crore points</div>
+      <div class="quiz-opt" onclick="checkQ('s4',this,true)"><div class="marker">B</div>HDBSCAN — handles irregular shaped clusters (market streets), explicitly marks isolated points as noise, scales well. HDBSCAN over DBSCAN because demand density varies between areas (Connaught Place vs outer Delhi).</div>
+      <div class="quiz-opt" onclick="checkQ('s4',this,false)"><div class="marker">C</div>GMM — gives probability of belonging to each demand zone</div>
+      <div class="quiz-opt" onclick="checkQ('s4',this,false)"><div class="marker">D</div>Hierarchical — builds a full demand zone taxonomy</div>
+      <div class="q-feedback" id="s4-fb"></div>
+    </div>
+
+    <!-- Q5 -->
+    <div class="quiz-block" style="margin-bottom:20px">
+      <h4>🎯 Scenario 5 — HUL Rural India Consumer Research</h4>
+      <div class="q-prompt">Hindustan Unilever runs a survey of 10,000 rural consumers across India collecting: income, household size, brand awareness, purchase frequency for 20 product categories. They want to discover distinct consumer archetypes to guide a 5-year product strategy. Interpretability is critical for presenting to non-technical leadership. Simplest, most interpretable solution?</div>
+      <div class="quiz-opt" onclick="checkQ('s5',this,true)"><div class="marker">A</div>K-Means with Elbow Method to choose K — fast, well-understood, cluster centres are directly interpretable ("Cluster 2's average consumer: ₹18,000/month, 5 members, buys soaps and oils weekly"), easy to present to leadership.</div>
+      <div class="quiz-opt" onclick="checkQ('s5',this,false)"><div class="marker">B</div>GMM — gives more nuanced soft assignments for borderline consumers</div>
+      <div class="quiz-opt" onclick="checkQ('s5',this,false)"><div class="marker">C</div>DBSCAN — no need to pre-specify number of archetypes</div>
+      <div class="quiz-opt" onclick="checkQ('s5',this,false)"><div class="marker">D</div>Hierarchical Clustering with Ward linkage — gives flexible cut options</div>
+      <div class="q-feedback" id="s5-fb"></div>
+    </div>
+
+    <div style="text-align:center;margin-top:30px">
+      <button class="btn" style="font-size:1.1em;padding:14px 32px" onclick="checkCompletion()">🏆 See My Final Score!</button>
+    </div>
+
+    <div class="mod-nav-btns">
+      <button class="btn btn-ghost" onclick="showModule(4)">← Distribution-Based</button>
+      <div></div>
+    </div>
+  </div>
+
+  <div id="trophyScreen" style="display:none">
+    <div class="trophy-screen">
+      <div class="big-trophy">🏆</div>
+      <h2>Clustering Champion!</h2>
+      <p style="color:var(--muted);max-width:480px;margin:0 auto;line-height:1.7">You've mastered all four clustering families — Centroid, Density, Connectivity, and Distribution-Based. You now know which algorithm to pick for any real-world scenario.</p>
+      <span id="finalScore"></span>
+      <div class="final-breakdown" id="breakdownCards"></div>
+      <div style="margin-top:24px;padding:18px;background:var(--cream);border-radius:12px;max-width:500px;margin-inline:auto;text-align:left">
+        <div style="font-weight:800;margin-bottom:10px">📚 What's Next — Session 2.4</div>
+        <p style="font-size:.9em;color:#555;line-height:1.7">Up next: <strong>Dimensionality Reduction</strong> — PCA, t-SNE, UMAP. What if you have 500 features? How do you visualise 50-dimensional customer data? How does reducing dimensions actually improve clustering? Session 2.4 answers all this.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- end page-wrap -->
+
+<script>
+// ─── SCORE SYSTEM ────────────────────────────────────────────
+let totalPts = 0;
+const maxPts = 400;
+const answeredQs = new Set();
+
+function addPts(n) {
+  totalPts = Math.min(maxPts, totalPts + n);
+  document.getElementById('sc-pts').textContent = totalPts;
+  document.getElementById('sc-prog').style.width = (totalPts / maxPts * 100) + '%';
+}
+
+function checkQ(id, el, correct) {
+  if (answeredQs.has(id)) return;
+  answeredQs.add(id);
+  const fb = document.getElementById(id + '-fb');
+  document.querySelectorAll('[onclick*="' + id + '"]').forEach(o => o.style.pointerEvents = 'none');
+  if (correct) {
+    el.classList.add('correct');
+    const pts = id.startsWith('bt_') ? 15 : id.startsWith('s') ? 20 : 25;
+    addPts(pts);
+    if (fb) { fb.className = 'q-feedback ok'; fb.style.display = 'block'; fb.innerHTML = '✅ <strong>Correct! +' + pts + ' pts</strong> — ' + getFeedback(id, true); }
+    // badges
+    if (answeredQs.size === 1) document.getElementById('b1').classList.add('earned');
+    if (answeredQs.size === 3) document.getElementById('b2').classList.add('earned');
+    if (answeredQs.size === 5) document.getElementById('b3').classList.add('earned');
+    if (answeredQs.size === 7) document.getElementById('b4').classList.add('earned');
+    if (answeredQs.size === 9) document.getElementById('b5').classList.add('earned');
+  } else {
+    el.classList.add('incorrect');
+    if (fb) { fb.className = 'q-feedback no'; fb.style.display = 'block'; fb.innerHTML = '❌ <strong>Not quite.</strong> — ' + getFeedback(id, false); }
+  }
+}
+
+function getFeedback(id, correct) {
+  const map = {
+    'q0a': { ok: 'Nykaa has NO pre-labelled customer types. Clustering discovers the natural groups from raw purchase behaviour without any predefined categories — that\'s unsupervised learning at its best.', no: 'Remember: clustering = unsupervised. No labels needed! Classification requires pre-labelled training examples.' },
+    'q1a': { ok: 'The Elbow Method: inertia drop from K=4→5 is only 50 points, same as K=5→6. The "elbow" is at K=4. More clusters give tiny benefit but much more management complexity.', no: 'Lowest inertia doesn\'t mean best K! K=10 would give even lower inertia with 10 trivial micro-clusters. Use the Elbow Method — look for where inertia improvement starts to flatten.' },
+    'q2a': { ok: 'DBSCAN\'s superpower: isolated points that don\'t fit any dense region get noise label = -1. The 15 industrial-zone restaurants are genuinely unusual — forcing them into a cluster would be dishonest.', no: 'K-Means forces every point into a cluster. DBSCAN doesn\'t. Noise label = -1 is DBSCAN\'s explicit way of saying "this point doesn\'t belong anywhere."' },
+    'q3a': { ok: 'Tall bar at 4→3 merge = the algorithm was forced to merge two very dissimilar clusters. This is a natural cluster boundary. 4 is the correct K hidden in the data.', no: 'Tall bars are GOOD signals! They show where natural cluster boundaries exist. Short bars = similar clusters that merge easily. Tall bars = very different groups being forced together = the right cut-off point.' },
+    'q4a': { ok: 'GMM\'s strength is precisely this: use the full probability vector. A 51/40 split is highly uncertain — price accordingly or escalate. Hard assignment (K-Means-style) would miss this nuance.', no: 'GMM\'s whole point is soft assignment. 0.51 is NOT confidently Low-risk — it\'s nearly a coin flip with Medium-risk. A responsible actuary uses all probabilities, not just the highest one.' },
+    'bt_kmeans': { ok: 'K-Means is non-deterministic due to random centroid initialisation. Different starts → different local minima. Always use n_init=10 and keep the run with lowest inertia. K-Means++ reduces but doesn\'t eliminate this.', no: 'This is expected K-Means behaviour, not a bug! Random initialisation leads to different convergence points. Solution: run multiple times (n_init=10), keep best.' },
+    'bt_hier': { ok: 'This is hierarchical clustering\'s unique superpower! One dendrogram serves all stakeholders at different levels of granularity. No other algorithm can do this so efficiently.', no: 'Think about what a dendrogram represents: the FULL merge history at every level. You can cut it anywhere — 3 clusters or 12 clusters from the SAME run.' },
+    's1': { ok: 'DBSCAN explicitly labels unusual isolated transactions as noise (label=-1). This IS the anomaly detection signal! K-Means would force those unusual transactions into a cluster, hiding them.', no: 'Key insight: you need to IDENTIFY the outliers, not just cluster the normals. DBSCAN\'s noise label is perfect for this use case.' },
+    's2': { ok: 'Hierarchical clustering\'s killer feature: one dendrogram, infinite cut options. The Board gets 3-cluster view, branch managers get 8-cluster view. No need to re-run — just cut at different heights.', no: 'Remember: hierarchical clustering runs ONCE and gives you ALL possible K values in the dendrogram. One model, multiple stakeholder views!' },
+    's3': { ok: 'GMM gives probabilities like "65% Growth / 35% Value." This is exactly what a fund manager needs for portfolio weighting — not a hard "this stock IS Growth" assignment.', no: 'The key phrase is "exactly HOW much of each profile." That\'s soft assignment — GMM territory. K-Means gives hard assignments which loses the valuable boundary information.' },
+    's4': { ok: 'HDBSCAN handles irregular shapes (market streets), varying density (inner city vs suburbs), and large scale. HDBSCAN over DBSCAN because density varies significantly across Delhi.', no: 'K-Means would create circular blobs — but demand zones follow streets! DBSCAN handles arbitrary shapes. HDBSCAN handles varying density too.' },
+    's5': { ok: 'K-Means wins on interpretability: cluster centres are concrete averages (income ₹18k, 5 members...) that any non-technical person can understand. GMM/hierarchical add complexity without proportional benefit here.', no: 'The key constraint is "interpretability for non-technical leadership." K-Means cluster centres (the average consumer in each group) are the easiest to present and act on.' }
+  };
+  const f = map[id];
+  return f ? (correct ? f.ok : f.no) : '';
+}
+
+// ─── MODULE NAVIGATION ────────────────────────────────────────
+function showModule(idx) {
+  document.querySelectorAll('.module').forEach(m => m.classList.remove('active'));
+  document.querySelectorAll('.mod-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('mod' + idx).classList.add('active');
+  document.querySelectorAll('.mod-tab')[idx].classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (idx === 1) setTimeout(() => { initElbowChart(); initKMVis(); }, 150);
+  if (idx === 2) setTimeout(initDBSCANChart, 150);
+  if (idx === 3) setTimeout(initDendroChart, 150);
+  if (idx === 4) setTimeout(initGMMChart, 150);
+}
+
+// ─── TOGGLES ──────────────────────────────────────────────────
+function toggleCh(id) {
+  const body = document.getElementById(id + '-body');
+  const arrow = document.getElementById(id + '-arrow');
+  body.classList.toggle('open');
+  if (arrow) arrow.classList.toggle('open');
+}
+
+function showTab(group, id, btn) {
+  document.querySelectorAll('[id^="' + group + '-"]').forEach(p => p.classList.remove('active'));
+  btn.closest('.module').querySelectorAll('.clust-tab-bar .clust-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  const el = document.getElementById(group + '-' + id);
+  if (el) el.classList.add('active');
+}
+
+// ─── CLUSTERING TYPE CARDS ─────────────────────────────────────
+const clustCardData = {
+  centroid: {
+    title: 'Centroid-Based Clustering', color: 'var(--c1)',
+    what: 'Define each cluster by a centre point (centroid). Every data point belongs to the cluster of its nearest centroid. K-Means is the prototype — assign, update centres, repeat.',
+    best: 'Large datasets | Spherical clusters | Known K | Interpretable means | Fast training',
+    worst: 'Non-spherical clusters | Unknown K | Sensitive to outliers | Equal size assumption',
+    example: 'Amazon India: 45 crore customers clustered by purchase behaviour into 7 segments driving personalised homepage feeds and promotional offers.',
+    when: 'Large data (millions of rows), spherical clusters, need for fast and interpretable results, exploratory segmentation'
+  },
+  density: {
+    title: 'Density-Based Clustering', color: 'var(--c2)',
+    what: 'Define clusters as dense regions separated by sparse space. No need to specify K — the algorithm finds however many dense regions exist. Points in sparse space are labelled as noise/outliers.',
+    best: 'Arbitrary cluster shapes | Outlier detection | No K required | Varying cluster sizes',
+    worst: 'Varying density (use HDBSCAN) | High-dimensional data | Sensitive to ε and MinPts tuning',
+    example: 'NPCI / UPI: Unusual transactions that don\'t fit any normal behavioural cluster get flagged as noise — a direct anomaly detection signal for fraud investigators.',
+    when: 'Outlier detection needed, irregular cluster shapes, geographic/spatial data, exploratory analysis without K assumption'
+  },
+  hierarchy: {
+    title: 'Connectivity-Based Clustering', color: 'var(--c3)',
+    what: 'Build a dendrogram — a tree of merges from individual points up to one big cluster. Cut the tree at any height to get any number of clusters. Deterministic, no random initialisation.',
+    best: 'Multiple granularity levels needed | Scientific research | Small to medium datasets | Deterministic results',
+    worst: 'Large datasets (O(n²) memory) | Real-time prediction | When K is known and fixed',
+    example: 'AIIMS oncology: Ward linkage hierarchical clustering of 200 breast cancer patients by gene expression reveals 4 molecular subtypes — each responds differently to chemotherapy. The dendrogram IS the scientific finding.',
+    when: 'Need to explore multiple K values, scientific reproducibility required, small-medium data, genome/document/survey analysis'
+  },
+  distribution: {
+    title: 'Distribution-Based Clustering', color: 'var(--c4)',
+    what: 'Assume data was generated by K hidden probability distributions (Gaussians). Find those distributions using EM algorithm. Each point gets a probability of belonging to each cluster — soft, not hard assignment.',
+    best: 'Soft/probabilistic assignments needed | Elliptical clusters | Outlier scores | Statistically principled',
+    worst: 'Very large data (EM is slow) | Non-Gaussian distributions | Requires specifying K | More complex to explain',
+    example: 'HDFC Securities: 2 crore retail investors segmented by risk appetite and return expectations. GMM gives investor A = 60% Conservative / 40% Balanced. Products recommended proportionally.',
+    when: 'Need probability scores (insurance, risk), ambiguous cluster boundaries, outlier likelihood scoring, elliptical cluster shapes'
+  }
+};
+
+let selectedCard = null;
+function showClustCard(id, btn) {
+  const panel = document.getElementById('clustDetailPanel');
+  const content = document.getElementById('clustDetailContent');
+  const d = clustCardData[id];
+  if (!d) return;
+  document.querySelectorAll('.clust-card').forEach(c => c.classList.remove('selected'));
+  if (selectedCard === id) { panel.classList.remove('show'); selectedCard = null; return; }
+  btn.classList.add('selected');
+  selectedCard = id;
+  const pros = d.best.split(' | ').map(p => '<li style="margin-bottom:4px">' + p + '</li>').join('');
+  const cons = d.worst.split(' | ').map(p => '<li style="margin-bottom:4px">' + p + '</li>').join('');
+  content.innerHTML = `
+    <div style="font-family:var(--mono);font-size:.66em;letter-spacing:.12em;color:${d.color};text-transform:uppercase;margin-bottom:10px">Family Deep Dive</div>
+    <h3 style="font-size:1.2em;font-weight:800;margin-bottom:12px;color:white">${d.title}</h3>
+    <p style="color:#c7d2fe;font-size:.9em;line-height:1.75;margin-bottom:14px">${d.what}</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+      <div style="background:rgba(22,163,74,.12);border-radius:8px;padding:11px;border-left:3px solid #16a34a">
+        <div style="font-family:var(--mono);font-size:.66em;color:#86efac;text-transform:uppercase;margin-bottom:7px">Best For</div>
+        <ul style="font-size:.82em;color:#c7d2fe;line-height:1.7;padding-left:14px">${pros}</ul>
+      </div>
+      <div style="background:rgba(220,38,38,.1);border-radius:8px;padding:11px;border-left:3px solid #dc2626">
+        <div style="font-family:var(--mono);font-size:.66em;color:#fca5a5;text-transform:uppercase;margin-bottom:7px">Watch Out For</div>
+        <ul style="font-size:.82em;color:#c7d2fe;line-height:1.7;padding-left:14px">${cons}</ul>
+      </div>
+    </div>
+    <div style="background:#0a1628;border-radius:8px;padding:12px;border-left:4px solid ${d.color};margin-bottom:10px">
+      <div style="font-family:var(--mono);font-size:.66em;color:${d.color};text-transform:uppercase;margin-bottom:6px">Indian Use Case</div>
+      <div style="font-size:.86em;color:#e2e8f0;line-height:1.7">${d.example}</div>
+    </div>
+    <div style="background:#111827;border-radius:8px;padding:10px 12px">
+      <div style="font-family:var(--mono);font-size:.66em;color:#a5b4fc;margin-bottom:4px">USE WHEN</div>
+      <div style="font-size:.85em;color:#c7d2fe;line-height:1.65">${d.when}</div>
+    </div>`;
+  panel.classList.add('show');
+  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// ─── ELBOW METHOD CHART ───────────────────────────────────────
+const inertiaData = [9800, 6200, 3800, 2600, 2400, 2320, 2280, 2240, 2220, 2210];
+const silhouetteData = [0, 0.52, 0.71, 0.68, 0.62, 0.58, 0.54, 0.50, 0.47, 0.44];
+let elbowChart = null;
+
+function initElbowChart() {
+  const canvas = document.getElementById('elbowChart');
+  if (!canvas) return;
+  if (elbowChart) { elbowChart.destroy(); elbowChart = null; }
+  elbowChart = new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels: [1,2,3,4,5,6,7,8,9,10],
+      datasets: [{
+        label: 'Inertia', data: inertiaData,
+        borderColor: '#e84c3d', backgroundColor: 'rgba(232,76,61,.1)',
+        borderWidth: 2.5, fill: true, tension: 0.3, pointRadius: 5,
+        pointBackgroundColor: inertiaData.map((_,i) => i===3 ? '#fde68a' : '#e84c3d'),
+        pointRadius: inertiaData.map((_,i) => i===3 ? 9 : 5)
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { title: { display: true, text: 'K (number of clusters)', font: { size: 10 } } },
+        y: { title: { display: true, text: 'Inertia', font: { size: 10 } } }
+      }
+    }
+  });
+  updateElbow();
+}
+
+function updateElbow() {
+  const k = +document.getElementById('kSlider').value;
+  document.getElementById('kVal').textContent = k;
+  const inertia = inertiaData[k - 1];
+  const sil = silhouetteData[k - 1];
+  document.getElementById('inertia-display').textContent = inertia.toLocaleString('en-IN');
+  document.getElementById('silhouette-display').textContent = sil > 0 ? sil.toFixed(2) : 'N/A';
+  const v = document.getElementById('elbow-verdict');
+  if (v) {
+    if (k === 1) v.innerHTML = '<span style="color:#fca5a5">K=1: No clustering at all — one giant group. Useless.</span>';
+    else if (k <= 3) v.innerHTML = '<span style="color:#86efac">Large inertia drop — still finding structure. Keep going!</span>';
+    else if (k === 4) v.innerHTML = '<span style="color:#fde68a">⭐ ELBOW POINT! Inertia drop slows dramatically here. K=4 is optimal for this Nykaa data.</span>';
+    else if (k <= 6) v.innerHTML = '<span style="color:#fca5a5">Diminishing returns. Adding more clusters gives tiny improvement but far more complexity.</span>';
+    else v.innerHTML = '<span style="color:#f87171">Over-clustering! Tiny marginal improvement. Silhouette declining — clusters becoming meaningless micro-segments.</span>';
+  }
+  if (elbowChart) {
+    elbowChart.data.datasets[0].pointBackgroundColor = inertiaData.map((_,i) => i===k-1 ? '#fde68a' : '#e84c3d');
+    elbowChart.data.datasets[0].pointRadius = inertiaData.map((_,i) => i===k-1 ? 10 : 4);
+    elbowChart.update('none');
+  }
+}
+
+// ─── K-MEANS VISUALISER ───────────────────────────────────────
+// Swiggy Delhi customer data (order freq vs avg spend)
+const swiggyData = [];
+const rng = (a,b) => a + Math.random() * (b - a);
+// Cluster seeds: [freq, spend, count, spread]
+const seeds = [[1.2,200,40,0.3],[2.5,350,35,0.35],[4.5,500,30,0.4],[3,700,25,0.5]];
+seeds.forEach(([f,s,n,sp]) => {
+  for(let i=0;i<n;i++) swiggyData.push({x: Math.max(0.2, f + (Math.random()-.5)*sp*3), y: Math.max(80, s + (Math.random()-.5)*sp*400)});
+});
+const CLUSTER_COLORS = ['rgba(124,58,237,0.75)','rgba(37,99,235,0.75)','rgba(22,163,74,0.75)','rgba(217,119,6,0.75)','rgba(232,76,61,0.75)','rgba(13,148,136,0.75)'];
+const CLUSTER_BORDERS = ['#7c3aed','#2563eb','#16a34a','#d97706','#e84c3d','#0d9488'];
+let kmChart = null;
+
+function initKMVis() {
+  const canvas = document.getElementById('kmVisChart');
+  if (!canvas) return;
+  if (kmChart) { kmChart.destroy(); kmChart = null; }
+  kmChart = new Chart(canvas, {
+    type: 'scatter',
+    data: { datasets: [{ label: 'Customers', data: swiggyData.map(d => ({x:d.x,y:d.y})), backgroundColor: 'rgba(100,116,139,0.5)', pointRadius: 5 }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { title: { display: true, text: 'Orders / Week', font: { size: 10 } }, min: 0, max: 7 },
+        y: { title: { display: true, text: 'Avg Spend ₹', font: { size: 10 } }, min: 50, max: 1000 }
+      }
+    }
+  });
+}
+
+function runKMeans() {
+  const K = +document.getElementById('kmKSlider').value;
+  const pts = swiggyData.map(d => [d.x, d.y]);
+  // Simple K-Means implementation
+  let centroids = [];
+  const used = new Set();
+  for (let k = 0; k < K; k++) {
+    let idx;
+    do { idx = Math.floor(Math.random() * pts.length); } while (used.has(idx));
+    used.add(idx);
+    centroids.push([...pts[idx]]);
+  }
+  let labels = new Array(pts.length).fill(0);
+  for (let iter = 0; iter < 50; iter++) {
+    labels = pts.map(p => {
+      let minD = Infinity, cl = 0;
+      centroids.forEach((c, k) => { const d = (p[0]-c[0])**2 + (p[1]-c[1])**2; if (d < minD) { minD = d; cl = k; } });
+      return cl;
+    });
+    centroids = centroids.map((_, k) => {
+      const members = pts.filter((_, i) => labels[i] === k);
+      if (!members.length) return centroids[k];
+      return [members.reduce((s,p)=>s+p[0],0)/members.length, members.reduce((s,p)=>s+p[1],0)/members.length];
+    });
+  }
+  // Build datasets per cluster
+  const datasets = [];
+  for (let k = 0; k < K; k++) {
+    const members = pts.filter((_, i) => labels[i] === k);
+    datasets.push({ label: 'C'+(k+1), data: members.map(p => ({x:p[0],y:p[1]})), backgroundColor: CLUSTER_COLORS[k], pointRadius: 5 });
+  }
+  // Add centroids
+  datasets.push({ label: 'Centroids', data: centroids.map(c => ({x:c[0],y:c[1]})), backgroundColor: '#fff', borderColor: '#000', pointRadius: 12, pointStyle: 'crossRot', borderWidth: 3, showLine: false });
+
+  if (kmChart) {
+    kmChart.data.datasets = datasets;
+    kmChart.update();
+  }
+
+  const segNames = ['Power Users','Regular Customers','Occasional Buyers','Budget Orderers','Premium Segment','Active Explorers'];
+  const segEmoji = ['🔴','🔵','🟢','🟡','🟣','🔵'];
+  let html = '<strong style="color:var(--ink)">Segments Found:</strong><br>';
+  for (let k = 0; k < K; k++) {
+    const count = pts.filter((_,i) => labels[i]===k).length;
+    const members = pts.filter((_,i) => labels[i]===k);
+    const avgFreq = members.length ? (members.reduce((s,p)=>s+p[0],0)/members.length).toFixed(1) : 0;
+    const avgSpend = members.length ? Math.round(members.reduce((s,p)=>s+p[1],0)/members.length) : 0;
+    html += `<span style="color:${CLUSTER_BORDERS[k]}">${segEmoji[k]} Cluster ${k+1}</span>: ${count} customers — Avg ${avgFreq} orders/wk, ₹${avgSpend} spend<br>`;
+  }
+  document.getElementById('kmResults').innerHTML = html;
+}
+
+// ─── DBSCAN SIMULATOR ──────────────────────────────────────────
+// Zomato Chennai restaurant locations: 3 dense neighbourhood clusters + 6 outliers
+const zomatoChennai = [
+  {x:1.8,y:2.1},{x:2.2,y:1.8},{x:1.9,y:2.4},{x:2.4,y:2.2},{x:1.6,y:1.9},{x:2.0,y:2.6},{x:2.3,y:1.6},{x:1.7,y:2.3},
+  {x:6.8,y:3.1},{x:7.2,y:2.8},{x:6.9,y:3.4},{x:7.4,y:3.2},{x:6.6,y:2.9},{x:7.1,y:3.6},{x:7.3,y:2.6},{x:6.7,y:3.3},
+  {x:4.8,y:7.9},{x:5.2,y:8.1},{x:4.9,y:8.4},{x:5.4,y:7.8},{x:4.6,y:8.2},{x:5.1,y:8.5},{x:5.3,y:7.6},{x:4.7,y:8.0},
+  {x:0.6,y:8.3},{x:9.4,y:1.2},{x:1.0,y:5.8},{x:9.1,y:7.4},{x:4.4,y:0.4},{x:8.6,y:8.6}
+];
+let dbscanChart = null;
+
+function ptDist(p, q) { return Math.sqrt((p.x - q.x) ** 2 + (p.y - q.y) ** 2); }
+
+function runDBSCANAlgo(points, eps, minPts) {
+  const n = points.length;
+  const labels = new Array(n).fill(undefined); // undefined = unvisited, -1 = noise, k = cluster id
+  const isCore = new Array(n).fill(false);
+  let clusterId = -1;
+  const regionQuery = i => {
+    const nb = [];
+    for (let j = 0; j < n; j++) if (ptDist(points[i], points[j]) <= eps) nb.push(j);
+    return nb;
+  };
+  for (let i = 0; i < n; i++) {
+    if (labels[i] !== undefined) continue;
+    const neighbours = regionQuery(i);
+    if (neighbours.length < minPts) { labels[i] = -1; continue; }
+    clusterId++;
+    labels[i] = clusterId; isCore[i] = true;
+    const seeds = neighbours.filter(j => j !== i);
+    for (let s = 0; s < seeds.length; s++) {
+      const j = seeds[s];
+      if (labels[j] === -1) labels[j] = clusterId;
+      if (labels[j] !== undefined) continue;
+      labels[j] = clusterId;
+      const jNeighbours = regionQuery(j);
+      if (jNeighbours.length >= minPts) {
+        isCore[j] = true;
+        jNeighbours.forEach(k => { if (!seeds.includes(k)) seeds.push(k); });
+      }
+    }
+  }
+  return { labels, isCore, numClusters: clusterId + 1 };
+}
+
+// Custom Chart.js plugin: draws one real ε-radius circle around a designated core point
+const epsCirclePlugin = {
+  id: 'epsCircle',
+  afterDatasetsDraw(chart) {
+    const info = chart.__epsCircle;
+    if (!info) return;
+    const { ctx, scales: { x: xScale, y: yScale } } = chart;
+    const px = xScale.getPixelForValue(info.cx), py = yScale.getPixelForValue(info.cy);
+    const r = Math.abs(xScale.getPixelForValue(info.cx + info.eps) - px);
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(px, py, r, 0, Math.PI * 2);
+    ctx.setLineDash([5, 4]);
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = 'rgba(124,58,237,0.85)';
+    ctx.fillStyle = 'rgba(124,58,237,0.10)';
+    ctx.fill(); ctx.stroke();
+    ctx.restore();
+  }
+};
+
+function initDBSCANChart() {
+  const canvas = document.getElementById('dbscanChart');
+  if (!canvas) return;
+  if (dbscanChart) { dbscanChart.destroy(); dbscanChart = null; }
+  dbscanChart = new Chart(canvas, {
+    type: 'scatter',
+    data: { datasets: [{ label: 'Restaurants', data: zomatoChennai.map(d => ({ x: d.x, y: d.y })), backgroundColor: 'rgba(100,116,139,0.5)', pointRadius: 6, borderWidth: 2 }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { title: { display: true, text: 'Longitude Index', font: { size: 10 } }, min: -0.5, max: 10.5 },
+        y: { title: { display: true, text: 'Latitude Index', font: { size: 10 } }, min: -0.5, max: 10.5 }
+      }
+    },
+    plugins: [epsCirclePlugin]
+  });
+  updateDBSCAN();
+}
+
+function updateDBSCAN() {
+  const eps = +document.getElementById('dbEpsSlider').value;
+  const minPts = +document.getElementById('dbMinPtsSlider').value;
+  document.getElementById('dbEpsVal').textContent = eps.toFixed(1);
+  document.getElementById('dbMinPtsVal').textContent = minPts;
+  const { labels, isCore, numClusters } = runDBSCANAlgo(zomatoChennai, eps, minPts);
+  const bg = [], border = [], radius = [];
+  let noiseCount = 0, coreCount = 0, borderCount = 0;
+  labels.forEach((l, i) => {
+    if (l === -1) { bg.push('rgba(148,163,184,0.5)'); border.push('#dc2626'); radius.push(5); noiseCount++; }
+    else if (isCore[i]) { bg.push(CLUSTER_COLORS[l % CLUSTER_COLORS.length]); border.push(CLUSTER_BORDERS[l % CLUSTER_BORDERS.length]); radius.push(8); coreCount++; }
+    else { bg.push(CLUSTER_COLORS[l % CLUSTER_COLORS.length]); border.push(CLUSTER_BORDERS[l % CLUSTER_BORDERS.length]); radius.push(5); borderCount++; }
+  });
+  if (dbscanChart) {
+    dbscanChart.data.datasets[0].backgroundColor = bg;
+    dbscanChart.data.datasets[0].borderColor = border;
+    dbscanChart.data.datasets[0].pointRadius = radius;
+    dbscanChart.data.datasets[0].borderWidth = 2;
+    const anchorIdx = labels.findIndex((l, i) => l !== -1 && isCore[i]);
+    dbscanChart.__epsCircle = anchorIdx >= 0 ? { cx: zomatoChennai[anchorIdx].x, cy: zomatoChennai[anchorIdx].y, eps } : null;
+    dbscanChart.update('none');
+  }
+  let msg;
+  if (numClusters === 0) msg = 'ε is too small (or MinPts too high) — every single point is isolated as noise. Nothing qualifies as "dense."';
+  else if (numClusters === 1 && noiseCount === 0) msg = 'ε is too large — all three neighbourhoods have merged into one giant cluster. Shrink ε to separate them again.';
+  else msg = `Dashed circle shows one real ε-radius neighbourhood around a core point — it contains ≥ ${minPts} points, so it qualifies as "dense."`;
+  document.getElementById('dbscanResults').innerHTML =
+    `<strong>${numClusters}</strong> cluster${numClusters !== 1 ? 's' : ''} found · <span style="color:#86efac">${coreCount} core</span> · <span style="color:#93c5fd">${borderCount} border</span> · <span style="color:#fca5a5">${noiseCount} noise</span><br>${msg}`;
+}
+
+// ─── DENDROGRAM (SIMULATED) ───────────────────────────────────
+const cityNames = ['Mumbai','Delhi','Bangalore','Chennai','Hyderabad','Pune','Ahmedabad','Kolkata','Surat','Jaipur'];
+// City data: [GDP per capita index, Population density index] (normalised)
+const cityData = [[9.2,9.5],[8.8,8.9],[8.5,7.2],[7.8,7.6],[7.5,6.8],[7.0,5.5],[6.5,5.8],[6.8,8.1],[5.5,4.9],[5.2,4.2]];
+let dendroChart = null;
+// Precomputed cluster groups at different cut heights
+function getClusterGroups(cutH) {
+  if (cutH >= 4.5) return [cityNames]; // 1 cluster
+  if (cutH >= 3.5) return [['Mumbai','Delhi','Bangalore'],['Chennai','Hyderabad','Pune','Ahmedabad','Kolkata'],['Surat','Jaipur']];
+  if (cutH >= 2.5) return [['Mumbai','Delhi'],['Bangalore','Chennai','Hyderabad'],['Pune','Ahmedabad'],['Kolkata'],['Surat','Jaipur']];
+  if (cutH >= 1.5) return [['Mumbai','Delhi'],['Bangalore'],['Chennai','Hyderabad'],['Pune'],['Ahmedabad'],['Kolkata'],['Surat'],['Jaipur']];
+  return cityNames.map(c => [c]); // all separate
+}
+
+function initDendroChart() {
+  const canvas = document.getElementById('dendroChart');
+  if (!canvas) return;
+  if (dendroChart) { dendroChart.destroy(); dendroChart = null; }
+  // Draw scatter of cities
+  dendroChart = new Chart(canvas, {
+    type: 'scatter',
+    data: {
+      datasets: [{
+        label: 'Cities', data: cityData.map(d => ({x:d[0],y:d[1]})),
+        backgroundColor: CLUSTER_COLORS[0], pointRadius: 7
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: (ctx) => cityNames[ctx.dataIndex] + ': GDP=' + ctx.raw.x + ', Density=' + ctx.raw.y } }
+      },
+      scales: {
+        x: { title: { display: true, text: 'GDP per Capita Index', font: { size: 10 } }, min: 4, max: 10 },
+        y: { title: { display: true, text: 'Population Density Index', font: { size: 10 } }, min: 3.5, max: 10.5 }
+      }
+    }
+  });
+  updateDendrogram();
+}
+
+function updateDendrogram() {
+  const cutH = +document.getElementById('cutSlider').value;
+  document.getElementById('cutHeight').textContent = cutH.toFixed(1);
+  const groups = getClusterGroups(cutH);
+  // Recolour scatter
+  if (dendroChart) {
+    const colorMap = {};
+    groups.forEach((g, gi) => g.forEach(city => colorMap[city] = CLUSTER_COLORS[gi % CLUSTER_COLORS.length]));
+    dendroChart.data.datasets[0].backgroundColor = cityNames.map(c => colorMap[c] || CLUSTER_COLORS[0]);
+    dendroChart.update('none');
+  }
+  const clusterEmoji = ['🔴','🔵','🟢','🟡','🟣','⚫'];
+  let html = '';
+  groups.forEach((g, i) => {
+    html += `<span style="color:${CLUSTER_BORDERS[i % CLUSTER_BORDERS.length]}">${clusterEmoji[i]} Cluster ${i+1}:</span> ${g.join(', ')}<br>`;
+  });
+  html += `<br><strong>${groups.length} cluster${groups.length>1?'s':''}</strong> at cut height ${cutH.toFixed(1)}`;
+  document.getElementById('dendroResults').innerHTML = html;
+}
+
+// ─── GMM VISUALISER ───────────────────────────────────────────
+// Nifty50 stocks: [avg return %, volatility index]
+const stockData = [
+  {x:18,y:2.2,name:'TCS'},{x:15,y:1.8,name:'Infosys'},{x:20,y:2.5,name:'HCL'},{x:16,y:2.0,name:'Wipro'},
+  {x:12,y:1.2,name:'HDFC Bank'},{x:11,y:1.0,name:'Kotak'},{x:10,y:0.9,name:'SBI'},{x:13,y:1.3,name:'ICICI'},
+  {x:8,y:3.5,name:'Tata Motors'},{x:7,y:4.0,name:'Mahindra'},{x:9,y:3.2,name:'Maruti'},{x:6,y:4.5,name:'Bajaj Auto'},
+  {x:22,y:5.5,name:'Adani Ports'},{x:25,y:6.0,name:'Adani Ent'},{x:18,y:5.0,name:'Tata Steel'},
+  {x:14,y:1.9,name:'Reliance'},{x:13,y:1.5,name:'ITC'},{x:11,y:1.1,name:'HUL'}
+];
+let gmmChart = null;
+
+function initGMMChart() {
+  const canvas = document.getElementById('gmmChart');
+  if (!canvas) return;
+  if (gmmChart) { gmmChart.destroy(); gmmChart = null; }
+  gmmChart = new Chart(canvas, {
+    type: 'scatter',
+    data: {
+      datasets: [{
+        label: 'Stocks',
+        data: stockData.map(d => ({x:d.x, y:d.y})),
+        backgroundColor: 'rgba(100,116,139,0.6)', pointRadius: 6,
+        pointHoverRadius: 8
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: (ctx) => stockData[ctx.dataIndex]?.name || 'Stock' } }
+      },
+      scales: {
+        x: { title: { display: true, text: 'Avg Annual Return %', font: { size: 10 } }, min: 4, max: 28 },
+        y: { title: { display: true, text: 'Volatility Index', font: { size: 10 } }, min: 0, max: 7 }
+      }
+    }
+  });
+}
+
+function updateGMM() {
+  document.getElementById('gmmK').textContent = document.getElementById('gmmKSlider').value;
+}
+
+function runGMM() {
+  const K = +document.getElementById('gmmKSlider').value;
+  // Simulated GMM results
+  const gmmSegments = [
+    { name: 'IT Growth', colour: CLUSTER_COLORS[0], border: CLUSTER_BORDERS[0], stocks: ['TCS','Infosys','HCL','Wipro'], desc: 'High returns, medium volatility' },
+    { name: 'Defensive BFSI', colour: CLUSTER_COLORS[1], border: CLUSTER_BORDERS[1], stocks: ['HDFC Bank','Kotak','SBI','ICICI','HUL','ITC'], desc: 'Stable returns, low volatility' },
+    { name: 'Auto Cyclical', colour: CLUSTER_COLORS[2], border: CLUSTER_BORDERS[2], stocks: ['Tata Motors','Mahindra','Maruti','Bajaj Auto'], desc: 'Lower returns, high volatility' },
+    { name: 'Conglomerate', colour: CLUSTER_COLORS[3], border: CLUSTER_BORDERS[3], stocks: ['Adani Ports','Adani Ent','Tata Steel'], desc: 'High returns, very high volatility' },
+    { name: 'Defensive Consumption', colour: CLUSTER_COLORS[4], border: CLUSTER_BORDERS[4], stocks: ['Reliance'], desc: 'Steady, diversified returns' }
+  ];
+  const usedSegs = gmmSegments.slice(0, K);
+  // Map stocks to segments
+  const segIndex = {};
+  usedSegs.forEach((seg, si) => seg.stocks.forEach(s => segIndex[s] = si));
+  // Build datasets
+  const datasets = usedSegs.map((seg, si) => ({
+    label: seg.name,
+    data: stockData.filter(d => (segIndex[d.name] ?? si % K) === si).map(d => ({x:d.x, y:d.y})),
+    backgroundColor: seg.colour,
+    borderColor: seg.border,
+    borderWidth: 1.5,
+    pointRadius: 7
+  }));
+  if (gmmChart) {
+    gmmChart.data.datasets = datasets;
+    gmmChart.options.plugins.legend.display = true;
+    gmmChart.update();
+  }
+  let html = '<strong>Soft Assignment Examples (GMM probabilities):</strong><br>';
+  // Borderline stocks — show split probability
+  html += '<span style="color:var(--c2)">Reliance:</span> 55% Defensive BFSI | 35% IT Growth | 10% Other<br>';
+  html += '<span style="color:var(--c1)">HCL Tech:</span> 72% IT Growth | 28% Conglomerate<br>';
+  html += '<span style="color:var(--c3)">Tata Steel:</span> 61% Conglomerate | 39% Auto Cyclical<br>';
+  document.getElementById('gmmResults').innerHTML = html;
+}
+
+// ─── COMPLETION ───────────────────────────────────────────────
+function checkCompletion() {
+  document.getElementById('completionCheck').style.display = 'none';
+  document.getElementById('trophyScreen').style.display = 'block';
+  document.getElementById('finalScore').textContent = totalPts + ' / ' + maxPts + ' pts';
+  const modules = [
+    { icon: '⭕', label: 'Centroid-Based' },
+    { icon: '🌌', label: 'Density-Based' },
+    { icon: '🌳', label: 'Connectivity' },
+    { icon: '🎲', label: 'Distribution' }
+  ];
+  document.getElementById('breakdownCards').innerHTML =
+    modules.map(m => `<div class="fb-card"><div class="icon">${m.icon}</div><div class="label">${m.label}</div></div>`).join('') +
+    `<div class="fb-card"><div class="icon" style="font-family:var(--mono);font-size:1.2em">${totalPts}</div><div class="label">Total Score</div></div>`;
+  if (totalPts >= 320) document.getElementById('b6').classList.add('earned');
+  celebrate();
+}
+
+function celebrate() {
+  const e = ['🎊', '⭐', '✨', '🌟', '🎉', '💡', '🏆', '📊', '🔥'];
+  for (let i = 0; i < 18; i++) {
+    setTimeout(() => {
+      const el = document.createElement('div');
+      el.className = 'confetti-piece';
+      el.innerHTML = e[Math.floor(Math.random() * e.length)];
+      el.style.left = Math.random() * 100 + 'vw';
+      el.style.animationDuration = (1.4 + Math.random() * 1.6) + 's';
+      el.style.fontSize = (0.9 + Math.random() * 0.9) + 'em';
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 3000);
+    }, i * 80);
+  }
+}
+
+// ─── PARTICLES ────────────────────────────────────────────────
+function renderParticles() {
+  const c = document.getElementById('particles');
+  c.width = window.innerWidth; c.height = window.innerHeight;
+  const ctx = c.getContext('2d');
+  const clrs = ['#7c3aed','#2563eb','#16a34a','#d97706'];
+  const dots = Array.from({ length: 30 }, () => ({
+    x: Math.random() * c.width, y: Math.random() * c.height,
+    vx: (Math.random() - .5) * .25, vy: (Math.random() - .5) * .25,
+    r: .7 + Math.random() * 1.4,
+    col: clrs[Math.floor(Math.random() * clrs.length)]
+  }));
+  (function draw() {
+    ctx.clearRect(0, 0, c.width, c.height);
+    dots.forEach(d => {
+      d.x += d.vx; d.y += d.vy;
+      if (d.x < 0) d.x = c.width; if (d.x > c.width) d.x = 0;
+      if (d.y < 0) d.y = c.height; if (d.y > c.height) d.y = 0;
+      ctx.beginPath(); ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+      ctx.fillStyle = d.col; ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  })();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  renderParticles();
+  initElbowChart();
+  initKMVis();
+});
+</script>
+</body>
+</html>
